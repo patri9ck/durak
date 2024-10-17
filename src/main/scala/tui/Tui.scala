@@ -1,31 +1,33 @@
 package tui
 
-import card.{Card, getBiggestValueLength}
+import card.{Card, getBiggestRankLength}
 import player.Player
 
 import scala.collection.mutable.ListBuffer
 import scala.io.StdIn
 
 def getCardDisplay(card: Card) : List[String] = {
-  val biggestLen = getBiggestValueLength
+  val biggestLength = getBiggestRankLength
 
   List(
-    "┌" + "─" * (biggestLen + 2) + "┐",
-    "│" + card.suit.display + " " * (biggestLen + 1) + "│",
-    "│ " + " " * (biggestLen - card.value.display.length) + card.value.display + " │",
-    "│" + " " * (biggestLen + 1) + card.suit.display + "│",
-    "└" + "─" * (biggestLen + 2) + "┘",
+    "┌" + "─" * (biggestLength * 2 + 1) + "┐",
+    "│" + card.rank.display + " " * (2 * biggestLength + 1 - card.rank.display.length) + "│",
+    "│" + " " * biggestLength + card.suit.display + " " * biggestLength + "│",
+    "│" + " " * (2 * biggestLength + 1 - card.rank.display.length) + card.rank.display + "│",
+    "└" + "─" * (biggestLength * 2 + 1) + "┘",
   )
 }
 
 def getCardsOrder(cards: List[Card]): String = {
+  val biggestLength = getBiggestRankLength
+
   var orderStr = ""
 
   for (i <- cards.indices) {
     orderStr += (i + 1)
 
     if (i != cards.length - 1) {
-      orderStr += " " * 6
+      orderStr += " " * (2 * biggestLength + 3)
     }
   }
 

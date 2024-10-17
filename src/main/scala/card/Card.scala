@@ -1,7 +1,7 @@
 package card
 
-case class Card(value: Value, suit: Suit)
+case class Card(rank: Rank, suit: Suit)
 
-def getRandomCard: Card = Card(getRandomValue, getRandomSuit)
+def getRandomCard: Card = Card(getRandomRank, getRandomSuit)
 
 def getRandomCards(n: Int) : List[Card] = List.fill(n)(getRandomCard)
