@@ -1,59 +1,70 @@
-import card.getRandomCards
-import player.{Player, PlayerState}
-import tui.{askForDefend, askForOwn, askForPickUp, clearScreen, getDefendedDisplay, getOwnDisplay, getToDefendDisplay}
+import card.{Card, getRandomCards}
+import round.{Player, Round, Turn, getNewPlayer}
+import tui.*
 
 import scala.collection.mutable.ListBuffer
-import scala.util.control.Breaks.{break, breakable}
+
+class Prototype(val toDefend: ListBuffer[Card], val defended: ListBuffer[Card], val used: ListBuffer[Card]) {
+  def run(mappedPlayers: Map[Player, Turn]): Map[Player, Turn] = {
+    if (mappedPlayers.size != 1) {
+      return finish(mappedPlayers)
+    }
+
+    val player = mappedPlayers.head._1
+
+    if (toDefend.isEmpty) {
+      return finish(mappedPlayers)
+    }
+
+    getToDefendDisplay(toDefend.toList).foreach(println)
+
+    println("\n")
+
+    getDefendedDisplay(defended.toList, used.toList).foreach(println)
+
+    println("\n")
+
+    getOwnDisplay(player).foreach(println)
+
+    println("\n")
+
+    if (askForPickUp()) {
+      return finish(mappedPlayers)
+    }
+
+    val toDef = askForDefend(toDefend.toList)
+
+    if (toDef.isEmpty) {
+      return finish(mappedPlayers)
+    }
+
+    val own = askForOwn(player.cards)
+
+    if (own.isEmpty) {
+      return finish(mappedPlayers)
+    }
+
+    val newPlayer = Player(player.name, player.cards.filterNot(_ == own.get))
+    toDefend -= toDef.get
+
+    defended.prepend(toDef.get)
+    used.prepend(own.get)
+
+    clearScreen()
+
+    Map(newPlayer -> Turn.Defending)
+  }
+
+  private def finish(mappedPlayers: Map[Player, Turn]): Map[Player, Turn] = mappedPlayers.map {
+    case (key, _) => key -> Turn.Finished
+  }
+}
 
 @main
 def main(): Unit = {
-  val cardsToDef = getRandomCards(5).to(ListBuffer)
-  val ownCards = getRandomCards(7).to(ListBuffer)
-  val defended = getRandomCards(3).to(ListBuffer)
-  val usedForDef = getRandomCards(3).to(ListBuffer)
+  val mappedPlayers = Map[Player, Turn](getNewPlayer("Patrick", 7, getRandomCards) -> Turn.Defending)
 
-  breakable {
-    while (true) {
-      if (cardsToDef.isEmpty) {
-        break
-      }
+  Round(mappedPlayers).run(Prototype(getRandomCards(5).to(ListBuffer), getRandomCards(3).to(ListBuffer), getRandomCards(3).to(ListBuffer)).run)
 
-      getToDefendDisplay(cardsToDef.toList).foreach(println)
-
-      println("\n")
-
-      getDefendedDisplay(defended.toList, usedForDef.toList).foreach(println)
-
-      println("\n")
-
-      getOwnDisplay(Player("Patrick", ownCards.toList, PlayerState()), ownCards.toList).foreach(println)
-
-      println("\n")
-
-      if (askForPickUp()) {
-        break
-      }
-
-      val toDef = askForDefend(cardsToDef.toList)
-
-      if (toDef.isEmpty) {
-        break
-      }
-
-      val own = askForOwn(ownCards.toList)
-
-      if (own.isEmpty) {
-        break
-      }
-
-      ownCards -= own.get
-      cardsToDef -= toDef.get
-
-      defended.prepend(toDef.get)
-      usedForDef.prepend(own.get)
-
-      clearScreen()
-    }
-  }
 }
 
