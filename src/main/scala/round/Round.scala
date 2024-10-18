@@ -2,11 +2,13 @@ package round
 
 class Round(val group: Group, val run: Group => Group, val stop: Group => Boolean, val loser: Group => Player) {
   def start(): Player = {
-    if (stop.apply(group)) {
-      loser.apply(group)
+    val newGroup = run.apply(group)
+
+    if (stop.apply(newGroup)) {
+      return loser.apply(newGroup)
     }
 
-    Round(run.apply(group), run, stop, loser).start()
+    Round(newGroup, run, stop, loser).start()
   }
 }
 
