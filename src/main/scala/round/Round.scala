@@ -1,18 +1,12 @@
 package round
 
-enum Status {
-  case Started
-}
-
-class Round(mappedPlayers: Map[Player, Turn]) {
-  def run(round: Map[Player, Turn] => Map[Player, Turn]): Map[Player, Turn] = {
-    val newlyMappedPlayers = round.apply(mappedPlayers)
-
-    if (newlyMappedPlayers.values.forall(_ == Turn.Finished)) {
-      return newlyMappedPlayers
+class Round(val group: Group, val run: Group => Group, val stop: Group => Boolean, val loser: Group => Player) {
+  def start(): Player = {
+    if (stop.apply(group)) {
+      loser.apply(group)
     }
-    
-    Round(newlyMappedPlayers).run(round)
+
+    Round(run.apply(group), run, stop, loser).start()
   }
 }
 
