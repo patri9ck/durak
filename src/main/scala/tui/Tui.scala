@@ -1,7 +1,7 @@
 package tui
 
 import card.{Card, getBiggestRankLength}
-import player.Player
+import round.Player
 
 import scala.collection.mutable.ListBuffer
 import scala.io.StdIn
@@ -48,9 +48,9 @@ def getOrderedCardsDisplay(cards: List[Card]) : List[String] = getCardsOrder(car
 
 def getToDefendDisplay(cards: List[Card]) : List[String] = "Zu Verteidigen" :: getOrderedCardsDisplay(cards)
 
-def getDefendedDisplay(defended: List[Card], own: List[Card]) : List[String] = "Verteidigt" :: getCardsDisplay(defended) ++ getCardsDisplay(own)
+def getDefendedDisplay(defended: List[Card], used: List[Card]) : List[String] = "Verteidigt" :: getCardsDisplay(defended) ++ getCardsDisplay(used)
 
-def getOwnDisplay(player: Player, cards: List[Card]): List[String] = s"${player.name}, Deine Karten" :: getOrderedCardsDisplay(cards)
+def getOwnDisplay(player: Player): List[String] = s"${player.name}, Deine Karten" :: getOrderedCardsDisplay(player.cards)
 
 def clearScreen(): Unit = {
   println("\n" * 100)
@@ -74,17 +74,17 @@ def askForPickUp(): Boolean = {
   false
 }
 
-def askForCard(prompt: String, cards: List[Card]): Option[Card] = {
+def askForCard(prompt: String, cards: List[Card], pickUp: Boolean): Option[Card] = {
   if (cards.isEmpty) {
     return None
   }
 
   while (true) {
-    print(s"$prompt (" + 1 + "-" + cards.length + "/[A]ufnehmen) ")
-
+    print(s"$prompt (" + 1 + "-" + cards.length + s"${if (pickUp) "/[A]ufnehmen" else ""}) ")
+    
     val answer = StdIn.readLine()
 
-    if (answer.equalsIgnoreCase("a")) {
+    if (pickUp && answer.equalsIgnoreCase("a")) {
       return None
     }
 
@@ -99,10 +99,10 @@ def askForCard(prompt: String, cards: List[Card]): Option[Card] = {
 }
 
 def askForDefend(cards: List[Card]): Option[Card] = {
-  askForCard("Welche Karte möchtest du verteidigen?", cards)
+  askForCard("Welche Karte möchtest du verteidigen?", cards, true)
 }
 
 def askForOwn(cards: List[Card]): Option[Card] = {
-  askForCard("Welche Karte möchtest du dafür nutzen?", cards)
+  askForCard("Welche Karte möchtest du dafür nutzen?", cards, true)
 }
 
