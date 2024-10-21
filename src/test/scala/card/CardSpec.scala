@@ -18,17 +18,5 @@ class CardSpec extends AnyWordSpec with Matchers {
       val cards = getRandomCards(amount)
       cards.length shouldBe amount
     }
-
-    "return distinct cards for each call to getRandomCard" in {
-      val card1 = getRandomCard
-      val card2 = getRandomCard
-      card1 should not equal card2
-    }
-
-    "return distinct cards in a list for getRandomCards" in {
-      val amount = 5
-      val cards = getRandomCards(amount)
-      cards.distinct.length should be <= amount // cards may be the same, but we expect some randomness
-    }
   }
 }

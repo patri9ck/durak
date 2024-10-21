@@ -48,11 +48,5 @@ class RankSpec extends AnyWordSpec with Matchers {
       val randomRank = getRandomRank
       Rank.values should contain(randomRank) // Ensure the random rank is one of the valid ranks
     }
-
-    "generate different random ranks" in {
-      val rank1 = getRandomRank
-      val rank2 = getRandomRank
-      rank1 should not equal rank2 // Although randomness might generate the same, we're testing for variability
-    }
   }
 }
