@@ -19,11 +19,5 @@ class SuitSpec extends AnyWordSpec with Matchers {
       val randomSuit = getRandomSuit
       Suit.values should contain(randomSuit) // Ensure the random suit is one of the valid suits
     }
-
-    "generate different random suits" in {
-      val suit1 = getRandomSuit
-      val suit2 = getRandomSuit
-      suit1 should not equal suit2 // Although randomness might generate the same, we're testing for variability
-    }
   }
 }
