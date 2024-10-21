@@ -3,15 +3,14 @@ name: Scala CI
 on:
   push:
     branches:
-      - prototype-tests
+      - main
   pull_request:
     branches:
-      - prototype-tests
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
