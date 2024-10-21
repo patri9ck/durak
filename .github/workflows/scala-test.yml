@@ -13,34 +13,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the code from the repository
-      - name: Check out the repository
-        uses: actions/checkout@v3
-
-      # Set up JDK 17, which is compatible with Scala 3.x
-      - name: Set up JDK
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup JDK
         uses: actions/setup-java@v3
         with:
+          distribution: temurin
           java-version: '17'
-          distribution: 'adopt'
-
-      # Cache SBT dependencies to speed up the build process
-      - name: Cache SBT dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.ivy2/cache
-            ~/.sbt
-          key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt') }}
-          restore-keys: |
-            ${{ runner.os }}-sbt-
-
-      # Install SBT (Scala Build Tool)
-      - name: Install SBT
-        run: |
-          curl -L https://piccolo.link/sbt-1.5.5.tgz | tar xz
-          sudo mv sbt /usr/local/
-
-      # Run the tests using SBT
+          cache: sbt
       - name: Run Scala Tests
         run: sbt test
