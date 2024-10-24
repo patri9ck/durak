@@ -2,97 +2,77 @@ package round
 
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
-import card._  // Importiere die benötigten Klassen aus dem card-Package
+import card._
 
 class GroupSpec extends AnyWordSpec with Matchers {
 
-  "A Group" should {
+  "The chooseDefending function" should {
+    "set the defending player and adjust the turns correctly for more than 2 players" in {
+      val players = List(
+        Player("Alice", List(Card(Rank.Ace, Suit.Hearts)), Turn.Watching),
+        Player("Bob", List(Card(Rank.Two, Suit.Diamonds)), Turn.Watching),
+        Player("Charlie", List(Card(Rank.Three, Suit.Clubs)), Turn.Watching)
+      )
+      val group = Group(players)
 
-    "correctly initialize with players and their turns" in {
-      // Erstelle einige Spieler
-      val player1 = Player("Alice", List(Card(Rank.Ace, Suit.Hearts)))
-      val player2 = Player("Bob", List(Card(Rank.Two, Suit.Diamonds)))
-      val player3 = Player("Charlie", List(Card(Rank.Three, Suit.Clubs)))
+      val updatedGroup = group.chooseDefending(players(1)) // Bob is defending
 
-      // Erstelle die Gruppe mit einer Map von Spielern und deren Zügen
-      val group = Group(Map(
-        player1 -> Turn.Defending,
-        player2 -> Turn.FirstlyAttacking,
-        player3 -> Turn.Watching
-      ))
-
-      // Überprüfe, dass die Gruppe die richtige Anzahl an Spielern enthält
-      group.mappedPlayers.size shouldBe 3
-
-      // Überprüfe, dass die Spieler die richtigen Züge haben
-      group.mappedPlayers(player1) shouldBe Turn.Defending
-      group.mappedPlayers(player2) shouldBe Turn.FirstlyAttacking
-      group.mappedPlayers(player3) shouldBe Turn.Watching
+      updatedGroup.players(0).turn shouldEqual Turn.SecondlyAttacking // Alice
+      updatedGroup.players(1).turn shouldEqual Turn.Defending // Bob
+      updatedGroup.players(2).turn shouldEqual Turn.FirstlyAttacking // Charlie
     }
 
-    "allow adding a new player" in {
-      // Erstelle einige Spieler
-      val player1 = Player("Alice", List(Card(Rank.Ace, Suit.Hearts)))
-      val player2 = Player("Bob", List(Card(Rank.Two, Suit.Diamonds)))
+    "set the defending player and adjust the turns correctly for 2 players" in {
+      val players = List(
+        Player("Alice", List(Card(Rank.Ace, Suit.Hearts)), Turn.Watching),
+        Player("Bob", List(Card(Rank.Two, Suit.Diamonds)), Turn.Watching)
+      )
+      val group = Group(players)
 
-      // Erstelle die Gruppe mit einem Spieler
-      var group = Group(Map(player1 -> Turn.Defending))
+      val updatedGroup = group.chooseDefending(players(1)) // Bob is defending
 
-      // Überprüfe die anfängliche Gruppengröße
-      group.mappedPlayers.size shouldBe 1
-
-      // Füge einen neuen Spieler hinzu
-      group = Group(group.mappedPlayers + (player2 -> Turn.FirstlyAttacking))
-
-      // Überprüfe die neue Gruppengröße
-      group.mappedPlayers.size shouldBe 2
-
-      // Überprüfe, dass der neue Spieler hinzugefügt wurde
-      group.mappedPlayers(player2) shouldBe Turn.FirstlyAttacking
+      updatedGroup.players(0).turn shouldEqual Turn.FirstlyAttacking // Alice
+      updatedGroup.players(1).turn shouldEqual Turn.Defending // Bob
     }
 
-    "allow removing a player" in {
-      // Erstelle einige Spieler
-      val player1 = Player("Alice", List(Card(Rank.Ace, Suit.Hearts)))
-      val player2 = Player("Bob", List(Card(Rank.Two, Suit.Diamonds)))
-      val player3 = Player("Charlie", List(Card(Rank.Three, Suit.Clubs)))
+    "return the same group if the defending player is not found" in {
+      val players = List(
+        Player("Alice", List(Card(Rank.Ace, Suit.Hearts)), Turn.Watching),
+        Player("Bob", List(Card(Rank.Two, Suit.Diamonds)), Turn.Watching)
+      )
+      val group = Group(players)
 
-      // Erstelle die Gruppe mit drei Spielern
-      var group = Group(Map(
-        player1 -> Turn.Defending,
-        player2 -> Turn.FirstlyAttacking,
-        player3 -> Turn.Watching
-      ))
+      val unknownPlayer = Player("Unknown", List(Card(Rank.Ace, Suit.Hearts)), Turn.Watching)
+      val updatedGroup = group.chooseDefending(unknownPlayer)
 
-      // Überprüfe die anfängliche Gruppengröße
-      group.mappedPlayers.size shouldBe 3
-
-      // Entferne einen Spieler (z.B. Alice)
-      group = Group(group.mappedPlayers - player1)
-
-      // Überprüfe die neue Gruppengröße
-      group.mappedPlayers.size shouldBe 2
-
-      // Überprüfe, dass der Spieler entfernt wurde
-      group.mappedPlayers.get(player1) shouldBe None
-      group.mappedPlayers.get(player2) shouldBe Some(Turn.FirstlyAttacking)
-      group.mappedPlayers.get(player3) shouldBe Some(Turn.Watching)
+      updatedGroup shouldEqual group
     }
+  }
 
-    "return the correct turn for a player" in {
-      // Erstelle einige Spieler
-      val player1 = Player("Alice", List(Card(Rank.Ace, Suit.Hearts)))
-      val player2 = Player("Bob", List(Card(Rank.Two, Suit.Diamonds)))
+  "The createGroup function" should {
+    "create a group with the correct number of players and cards" in {
+      val names = List("Alice", "Bob", "Charlie")
+      val group = createGroup(2, names)
 
-      // Erstelle die Gruppe mit zwei Spielern
-      val group = Group(Map(
-        player1 -> Turn.Defending,
-        player2 -> Turn.FirstlyAttacking
-      ))
+      group.players should have length 3
+      group.players.foreach { player =>
+        player.cards should have length 2
+      }
+    }
+  }
 
-      // Überprüfe, dass die Turns korrekt zurückgegeben werden
-      group.mappedPlayers(player1) shouldBe Turn.Defending
-      group.mappedPlayers(player2) shouldBe Turn.FirstlyAttacking
+  "The chooseDefendingRandomly function" should {
+    "set a random player as defending" in {
+      val players = List(
+        Player("Alice", List(Card(Rank.Ace, Suit.Hearts)), Turn.Watching),
+        Player("Bob", List(Card(Rank.Two, Suit.Diamonds)), Turn.Watching),
+        Player("Charlie", List(Card(Rank.Three, Suit.Clubs)), Turn.Watching)
+      )
+      val group = Group(players)
+
+      val updatedGroup = group.chooseDefendingRandomly()
+
+      updatedGroup.players.count(_.turn == Turn.Defending) shouldEqual 1
     }
   }
 }

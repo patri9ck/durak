@@ -41,12 +41,12 @@ class RankSpec extends AnyWordSpec with Matchers {
     }
 
     "return the correct biggest rank length with getBiggestRankLength" in {
-      getBiggestRankLength shouldBe 2 // "10" has the longest display value, which is 2 characters long
+      getBiggestRankLength shouldBe 2
     }
 
     "generate a random rank with getRandomRank" in {
       val randomRank = getRandomRank
-      Rank.values should contain(randomRank) // Ensure the random rank is one of the valid ranks
+      Rank.values should contain(randomRank)
     }
   }
 }
