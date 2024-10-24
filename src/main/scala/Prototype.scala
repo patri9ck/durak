@@ -1,12 +1,12 @@
 import card.{Card, getRandomCards}
-import round.{Group, Player, Round, Turn, getNewPlayer}
+import round.{Group, Player, Round, Turn, createGroup, getNewPlayer}
 import tui.*
 
 import scala.collection.mutable.ListBuffer
 
 class Prototype(val toDefend: ListBuffer[Card], val defended: ListBuffer[Card], val used: ListBuffer[Card]) {
   def start(group: Group): Group = {
-    val player = group.mappedPlayers.head._1
+    val player = group.players.head
 
     if (toDefend.isEmpty) {
       return stop(group)
@@ -40,7 +40,7 @@ class Prototype(val toDefend: ListBuffer[Card], val defended: ListBuffer[Card], 
       return stop(group)
     }
 
-    val newPlayer = Player(player.name, player.cards.filterNot(_ == own.get))
+    val newPlayer = Player(player.name, player.cards.filterNot(_ == own.get), Turn.Defending)
     toDefend -= toDef.get
 
     defended.prepend(toDef.get)
@@ -48,24 +48,33 @@ class Prototype(val toDefend: ListBuffer[Card], val defended: ListBuffer[Card], 
 
     clearScreen()
 
-    Group(Map(newPlayer -> Turn.Defending))
+    Group(List(newPlayer))
   }
 
   private def stop(group: Group): Group = {
-    val player = group.mappedPlayers.head._1
+    val player = group.players.head
 
-    Group(Map(Player(player.name, List()) -> Turn.Defending))
+    Group(List(Player(player.name, List(), Turn.Defending)))
   }
 }
 
 @main
 def main(): Unit = {
-  val group = Group(Map(getNewPlayer("Patrick", 5, getRandomCards) -> Turn.Defending))
+  val names = askForAmountAndPlayers()
 
-  Round(group,
+  val group = askForDefendingPlayer(createGroup(1, names))
+  
+  print(group)
+
+  val round = Round(group,
     Prototype(getRandomCards(5).to(ListBuffer), getRandomCards(3).to(ListBuffer), getRandomCards(3).to(ListBuffer)).start,
-    group => group.mappedPlayers.head._1.cards.isEmpty,
-    group => group.mappedPlayers.head._1).start()
+    group => group.players.head.cards.isEmpty,
+    group => group.players.head)
+
+  round.start()
+
+
+
 
 }
 

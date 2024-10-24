@@ -1,10 +1,67 @@
 package tui
 
 import card.{Card, getBiggestRankLength}
-import round.Player
+import round.{Group, Player}
 
 import scala.collection.mutable.ListBuffer
 import scala.io.StdIn
+
+def askForPlayerAmount: Int = {
+  while (true) {
+    print("Wie viele Spieler sollen mitspielen? (Keine Doppelungen, mindestens 2) ")
+
+    val amount = StdIn.readLine().toIntOption
+
+    if (amount.isDefined && amount.get > 1) {
+      return amount.get
+    }
+  }
+
+  2
+}
+
+def askForPlayers(amount: Int): List[String] = {
+  val names = ListBuffer[String]()
+  
+  for (i <- 1 until amount + 1) {
+    var name = "";
+    
+    while (name.isBlank || names.contains(name)) {
+      print(s"Name von Spieler ${i}: ")
+
+      name = StdIn.readLine()
+    }
+    
+    names += name
+  }
+  
+  names.toList
+}
+
+def askForAmountAndPlayers() : List[String] = {
+  askForPlayers(askForPlayerAmount)
+}
+
+def askForDefendingPlayer(group: Group) : Group = {
+  while (true) {
+    print(s"Welcher Spieler soll anfangen? (Name/[Z]ufällig) ")
+
+    val name = StdIn.readLine()
+
+    if (name.equalsIgnoreCase("z")) {
+      return group.chooseDefendingRandomly()
+    }
+    
+    val players = group.players.filter(_.name.equalsIgnoreCase(name))
+
+    if (players.nonEmpty) {
+      return group.chooseDefending(players.head)
+    }
+  }
+  
+  group
+}
+
 
 def getCardDisplay(card: Card) : List[String] = {
   val biggestLength = getBiggestRankLength

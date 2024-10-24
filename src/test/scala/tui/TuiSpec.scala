@@ -4,7 +4,8 @@ package tui
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
 import card.{Card, Rank, Suit}
-import round.Player
+import round.{Player, Turn}
+
 import scala.io.StdIn
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, PrintStream}
 
@@ -13,10 +14,10 @@ class TuiSpec extends AnyWordSpec with Matchers {
   "TUI" should {
 
     "correctly display a card" in {
-      val rank = Rank.Ace // Verwende den Ace-Rang aus dem Enum
-      val suit = Suit.Spades // Verwende Pik (Spades) aus dem Enum
+      val rank = Rank.Ace
+      val suit = Suit.Spades
 
-      val card = new Card(rank, suit)
+      val card = Card(rank, suit)
 
       val cardDisplay = getCardDisplay(card)
 
@@ -35,8 +36,8 @@ class TuiSpec extends AnyWordSpec with Matchers {
       val rank = Rank.Ace
       val suit = Suit.Spades
 
-      val card1 = new Card(rank, suit)
-      val card2 = new Card(rank, suit)
+      val card1 = Card(rank, suit)
+      val card2 = Card(rank, suit)
 
       val cards = List(card1, card2)
 
@@ -49,8 +50,8 @@ class TuiSpec extends AnyWordSpec with Matchers {
       val rank = Rank.Ace
       val suit = Suit.Spades
 
-      val card1 = new Card(rank, suit)
-      val card2 = new Card(rank, suit)
+      val card1 = Card(rank, suit)
+      val card2 = Card(rank, suit)
 
       val cards = List(card1, card2)
 
@@ -71,8 +72,8 @@ class TuiSpec extends AnyWordSpec with Matchers {
       val rank = Rank.Ace
       val suit = Suit.Spades
 
-      val card1 = new Card(rank, suit)
-      val card2 = new Card(rank, suit)
+      val card1 = Card(rank, suit)
+      val card2 = Card(rank, suit)
 
       val cards = List(card1, card2)
 
@@ -94,8 +95,8 @@ class TuiSpec extends AnyWordSpec with Matchers {
       val rank = Rank.Ace
       val suit = Suit.Spades
 
-      val card1 = new Card(rank, suit)
-      val card2 = new Card(rank, suit)
+      val card1 = Card(rank, suit)
+      val card2 = Card(rank, suit)
 
       val cards = List(card1, card2)
 
@@ -118,8 +119,8 @@ class TuiSpec extends AnyWordSpec with Matchers {
       val rank = Rank.Ace
       val suit = Suit.Spades
 
-      val defendedCard = new Card(rank, suit)
-      val usedCard = new Card(rank, suit)
+      val defendedCard = Card(rank, suit)
+      val usedCard = Card(rank, suit)
 
       val defended = List(defendedCard)
       val used = List(usedCard)
@@ -147,10 +148,10 @@ class TuiSpec extends AnyWordSpec with Matchers {
       val rank = Rank.Ace
       val suit = Suit.Spades
 
-      val card1 = new Card(rank, suit)
-      val card2 = new Card(rank, suit)
+      val card1 = Card(rank, suit)
+      val card2 = Card(rank, suit)
 
-      val player = new Player("Max", List(card1, card2))
+      val player = Player("Max", List(card1, card2), Turn.Watching)
 
       val ownDisplay = getOwnDisplay(player)
 
@@ -167,9 +168,9 @@ class TuiSpec extends AnyWordSpec with Matchers {
       ownDisplay shouldEqual expectedDisplay
     }
 
-    "clear screen by printing 100 new lines" in {
-  val outContent = new ByteArrayOutputStream()
-  Console.withOut(new PrintStream(outContent)) {
+    "clear screen by printing 100 lines" in {
+  val outContent = ByteArrayOutputStream()
+  Console.withOut(PrintStream(outContent)) {
     clearScreen()
   }
 
@@ -178,12 +179,12 @@ class TuiSpec extends AnyWordSpec with Matchers {
 }
 
     "ask for pick up and return true or false based on user input" in {
-      val stdin = new ByteArrayInputStream("J\n".getBytes)
+      val stdin = ByteArrayInputStream("J\n".getBytes)
       Console.withIn(stdin) {
         askForPickUp() shouldEqual true
       }
 
-      val stdin2 = new ByteArrayInputStream("N\n".getBytes)
+      val stdin2 = ByteArrayInputStream("N\n".getBytes)
       Console.withIn(stdin2) {
         askForPickUp() shouldEqual false
       }
@@ -193,15 +194,15 @@ class TuiSpec extends AnyWordSpec with Matchers {
       val rank = Rank.Ace
       val suit = Suit.Spades
 
-      val card1 = new Card(rank, suit)
+      val card1 = Card(rank, suit)
       val cards = List(card1)
 
-      val stdin = new ByteArrayInputStream("1\n".getBytes)
+      val stdin = ByteArrayInputStream("1\n".getBytes)
       Console.withIn(stdin) {
         askForCard("Wähle eine Karte", cards, true) shouldEqual Some(card1)
       }
 
-      val stdin2 = new ByteArrayInputStream("A\n".getBytes)
+      val stdin2 = ByteArrayInputStream("A\n".getBytes)
       Console.withIn(stdin2) {
         askForCard("Wähle eine Karte", cards, true) shouldEqual None
       }
@@ -211,15 +212,15 @@ class TuiSpec extends AnyWordSpec with Matchers {
       val rank = Rank.Ace
       val suit = Suit.Spades
 
-      val card1 = new Card(rank, suit)
+      val card1 = Card(rank, suit)
       val cards = List(card1)
 
-      val stdin = new ByteArrayInputStream("1\n".getBytes)
+      val stdin = ByteArrayInputStream("1\n".getBytes)
       Console.withIn(stdin) {
         askForDefend(cards) shouldEqual Some(card1)
       }
 
-      val stdin2 = new ByteArrayInputStream("A\n".getBytes)
+      val stdin2 = ByteArrayInputStream("A\n".getBytes)
       Console.withIn(stdin2) {
         askForDefend(cards) shouldEqual None
       }
@@ -229,15 +230,15 @@ class TuiSpec extends AnyWordSpec with Matchers {
       val rank = Rank.Ace
       val suit = Suit.Spades
 
-      val card1 = new Card(rank, suit)
+      val card1 = Card(rank, suit)
       val cards = List(card1)
 
-      val stdin = new ByteArrayInputStream("1\n".getBytes)
+      val stdin = ByteArrayInputStream("1\n".getBytes)
       Console.withIn(stdin) {
         askForOwn(cards) shouldEqual Some(card1)
       }
 
-      val stdin2 = new ByteArrayInputStream("A\n".getBytes)
+      val stdin2 = ByteArrayInputStream("A\n".getBytes)
       Console.withIn(stdin2) {
         askForOwn(cards) shouldEqual None
       }
