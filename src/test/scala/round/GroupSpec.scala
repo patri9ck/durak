@@ -1,12 +1,12 @@
 package round
 
-import org.scalatest.wordspec.AnyWordSpec
+import card.*
 import org.scalatest.matchers.should.Matchers
-import card._
+import org.scalatest.wordspec.AnyWordSpec
 
 class GroupSpec extends AnyWordSpec with Matchers {
 
-  "The chooseDefending function" should {
+  "chooseDefending" should {
     "return the same group if players.isEmpty" in {
       val group = Group(List.empty[Player])
 
@@ -64,7 +64,7 @@ class GroupSpec extends AnyWordSpec with Matchers {
     }
   }
 
-  "The createGroup function" should {
+  "createGroup" should {
     "create a group with the correct number of players and cards" in {
       val names = List("Alice", "Bob", "Charlie")
       val group = createGroup(2, names)
@@ -76,7 +76,7 @@ class GroupSpec extends AnyWordSpec with Matchers {
     }
   }
 
-  "The chooseDefendingRandomly function" should {
+  "chooseDefendingRandomly" should {
     "set a random player as defending" in {
       val players = List(
         Player("Alice", List(Card(Rank.Ace, Suit.Hearts)), Turn.Watching),

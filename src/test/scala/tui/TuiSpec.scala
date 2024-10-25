@@ -48,8 +48,9 @@ class TuiSpec extends AnyWordSpec with Matchers {
         Console.withIn(input) {
           askForDefendingPlayer(group) shouldEqual group.chooseDefending(player1)
         }
-      }
 
+
+      }
       "choose a random player if 'Z' is entered" in {
         val player1 = Player("Alice", List(Card(Rank.Ace, Suit.Spades)), Turn.Watching)
         val player2 = Player("Bob", List(Card(Rank.King, Suit.Hearts)), Turn.Watching)
@@ -63,8 +64,40 @@ class TuiSpec extends AnyWordSpec with Matchers {
 
           defendingPlayer.get.name should (be(player1.name) or be(player2.name))
         }
+
+
       }
 
+      "loop twice before selecting a player" in {
+        // Mocking the Group and Players
+        val mockPlayer1 = Player("Alice", List(Card(Rank.Ace, Suit.Spades)), Turn.Watching)
+        val mockPlayer2 = Player("Bob", List(Card(Rank.King, Suit.Hearts)), Turn.Watching)
+        val group = Group(List(mockPlayer1, mockPlayer2))
+
+        // Prepare simulated input and output streams
+        val input = "Charlie\nAlice\n" // Simulated inputs (newline separated)
+        val inputStream = new ByteArrayInputStream(input.getBytes)
+        val outputStream = new ByteArrayOutputStream()
+
+        // Redirect Console input and output
+        Console.withIn(inputStream) {
+          Console.withOut(new PrintStream(outputStream)) {
+            // Call the method
+            val defendingGroup = askForDefendingPlayer(group)
+
+            // Assertions
+            defendingGroup shouldBe group.chooseDefending(mockPlayer1) // Should choose Alice
+
+            // Optionally check printed output
+            val output = outputStream.toString
+            output should include("Welcher Spieler soll anfangen?") // Check if prompt is shown
+          }
+        }
+      }
+
+
+    }
+    "getCardDisplay" should {
       "correctly display a card" in {
         val rank = Rank.Ace
         val suit = Suit.Spades
@@ -83,7 +116,9 @@ class TuiSpec extends AnyWordSpec with Matchers {
 
         cardDisplay shouldEqual expectedDisplay
       }
+    }
 
+    "getCardsOrder" should {
       "correctly get the card order display" in {
         val rank = Rank.Ace
         val suit = Suit.Spades
@@ -97,7 +132,9 @@ class TuiSpec extends AnyWordSpec with Matchers {
 
         orderDisplay shouldEqual "1       2"
       }
+    }
 
+    "getCardsDisplay" should {
       "correctly display multiple cards" in {
         val rank = Rank.Ace
         val suit = Suit.Spades
@@ -119,7 +156,9 @@ class TuiSpec extends AnyWordSpec with Matchers {
 
         cardsDisplay shouldEqual expectedDisplay
       }
+    }
 
+    "getOrderedCardsDisplay" should {
       "correctly display ordered cards" in {
         val rank = Rank.Ace
         val suit = Suit.Spades
@@ -142,7 +181,9 @@ class TuiSpec extends AnyWordSpec with Matchers {
 
         orderedCardsDisplay shouldEqual expectedDisplay
       }
+    }
 
+    "getToDefendDisplay" should {
       "correctly display cards to defend" in {
         val rank = Rank.Ace
         val suit = Suit.Spades
@@ -166,7 +207,9 @@ class TuiSpec extends AnyWordSpec with Matchers {
 
         toDefendDisplay shouldEqual expectedDisplay
       }
+    }
 
+    "getDefendedDisplay" should {
       "correctly display defended cards" in {
         val rank = Rank.Ace
         val suit = Suit.Spades
@@ -195,7 +238,9 @@ class TuiSpec extends AnyWordSpec with Matchers {
 
         defendedDisplay shouldEqual expectedDisplay
       }
+    }
 
+    "getOwnDisplay" should {
       "correctly display own cards" in {
         val rank = Rank.Ace
         val suit = Suit.Spades
@@ -219,7 +264,9 @@ class TuiSpec extends AnyWordSpec with Matchers {
 
         ownDisplay shouldEqual expectedDisplay
       }
+    }
 
+    "clearScreen" should {
       "clear screen by printing 100 lines" in {
         val outContent = ByteArrayOutputStream()
         Console.withOut(PrintStream(outContent)) {
@@ -229,7 +276,9 @@ class TuiSpec extends AnyWordSpec with Matchers {
         val output = outContent.toString.trim
         output shouldEqual ("\n" * 100).trim
       }
+    }
 
+    "askForPickUp" should {
       "ask for pick up and return true or false based on user input" in {
         val stdin = ByteArrayInputStream("J\n".getBytes)
         Console.withIn(stdin) {
@@ -242,14 +291,23 @@ class TuiSpec extends AnyWordSpec with Matchers {
         }
       }
 
-      "ask for a card and return None when the cards list is empty" in {
-        val emptyCards: List[Card] = List()
+      "continue prompting for valid input" in {
+        val input = "X\nY\nJ\n"
+        val inputStream = new ByteArrayInputStream(input.getBytes)
+        val outputStream = new ByteArrayOutputStream()
 
-        val result = askForCard("Select a card", emptyCards, pickUp = false)
+        Console.withIn(inputStream) {
+          Console.withOut(new PrintStream(outputStream)) {
+            val result = askForPickUp()
 
-        result should be(None)
+            result shouldBe true
+          }
+        }
       }
+    }
 
+
+    "askForCard" should {
       "ask for a card and not include 'Aufnehmen' in the prompt when pickUp is false" in {
         val card1 = Card(Rank.Ace, Suit.Spades)
         val card2 = Card(Rank.King, Suit.Hearts)
@@ -270,6 +328,14 @@ class TuiSpec extends AnyWordSpec with Matchers {
 
       }
 
+      "ask for a card and return None when the cards list is empty" in {
+        val emptyCards: List[Card] = List()
+
+        val result = askForCard("Select a card", emptyCards, pickUp = false)
+
+        result should be(None)
+      }
+
       "ask for a card and return the selected card or None" in {
         val rank = Rank.Ace
         val suit = Suit.Spades
@@ -288,6 +354,24 @@ class TuiSpec extends AnyWordSpec with Matchers {
         }
       }
 
+      "continue prompting for valid input" in {
+        val cards = List(Card(Rank.Ace, Suit.Spades), Card(Rank.King, Suit.Hearts), Card(Rank.Ten, Suit.Diamonds))
+
+        val input = "0\n4\n2\n"
+        val inputStream = new ByteArrayInputStream(input.getBytes)
+        val outputStream = new ByteArrayOutputStream()
+
+        Console.withIn(inputStream) {
+          Console.withOut(new PrintStream(outputStream)) {
+            val result = askForCard("Select a card", cards, pickUp = false)
+
+            result shouldBe Some(cards(1))
+          }
+        }
+      }
+    }
+
+    "askForDefend" should {
       "ask for defend card and return the selected card or None" in {
         val rank = Rank.Ace
         val suit = Suit.Spades
@@ -305,7 +389,10 @@ class TuiSpec extends AnyWordSpec with Matchers {
           askForDefend(cards) shouldEqual None
         }
       }
+    }
 
+
+    "askForOwn" should {
       "ask for own card and return the selected card or None" in {
         val rank = Rank.Ace
         val suit = Suit.Spades
