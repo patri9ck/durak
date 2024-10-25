@@ -1,13 +1,12 @@
 package round
 
-import org.scalatest.wordspec.AnyWordSpec
+import card.*
 import org.scalatest.matchers.should.Matchers
-
-import card._
+import org.scalatest.wordspec.AnyWordSpec
 
 class PlayerSpec extends AnyWordSpec with Matchers {
 
-  "The getNewPlayer function" should {
+  "getNewPlayer" should {
 
     "create a new Player with the correct name, cards, and Watching turn" in {
       val testCards = List(
