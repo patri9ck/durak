@@ -1,5 +1,7 @@
+package prototype
+
 import card.{Card, getRandomCards}
-import round.{Group, Player, Round, Turn, createGroup, getNewPlayer}
+import round.*
 import tui.*
 
 import scala.collection.mutable.ListBuffer
@@ -63,8 +65,6 @@ def main(): Unit = {
   val names = askForAmountAndPlayers()
 
   val group = askForDefendingPlayer(createGroup(1, names))
-  
-  print(group)
 
   val round = Round(group,
     Prototype(getRandomCards(5).to(ListBuffer), getRandomCards(3).to(ListBuffer), getRandomCards(3).to(ListBuffer)).start,
