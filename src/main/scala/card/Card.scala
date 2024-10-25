@@ -1,7 +1,5 @@
 package card
 
-import scala.collection.mutable.ListBuffer
-
 case class Card(rank: Rank, suit: Suit)
 
 def getRandomCard: Card = Card(getRandomRank, getRandomSuit)

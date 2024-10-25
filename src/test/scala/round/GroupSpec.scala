@@ -7,19 +7,34 @@ import card._
 class GroupSpec extends AnyWordSpec with Matchers {
 
   "The chooseDefending function" should {
+    "return the same group if players.isEmpty" in {
+      val group = Group(List.empty[Player])
+
+      val updatedGroup = group.chooseDefending(Player("Unknown", List.empty, Turn.Watching))
+
+      updatedGroup shouldEqual group // Die Gruppe bleibt unverändert
+    }
+
     "set the defending player and adjust the turns correctly for more than 2 players" in {
       val players = List(
         Player("Alice", List(Card(Rank.Ace, Suit.Hearts)), Turn.Watching),
         Player("Bob", List(Card(Rank.Two, Suit.Diamonds)), Turn.Watching),
-        Player("Charlie", List(Card(Rank.Three, Suit.Clubs)), Turn.Watching)
+        Player("Charlie", List(Card(Rank.Three, Suit.Clubs)), Turn.Watching),
+        Player("Alice", List(Card(Rank.Five, Suit.Spades)), Turn.Defending)
       )
       val group = Group(players)
 
-      val updatedGroup = group.chooseDefending(players(1)) // Bob is defending
+      val updatedGroup = group.chooseDefending(players(1))
 
-      updatedGroup.players(0).turn shouldEqual Turn.SecondlyAttacking // Alice
-      updatedGroup.players(1).turn shouldEqual Turn.Defending // Bob
-      updatedGroup.players(2).turn shouldEqual Turn.FirstlyAttacking // Charlie
+      updatedGroup.players(0).turn shouldEqual Turn.SecondlyAttacking
+      updatedGroup.players(1).turn shouldEqual Turn.Defending
+      updatedGroup.players(2).turn shouldEqual Turn.FirstlyAttacking
+
+      updatedGroup.players.foreach { player =>
+        if (player.name != "Bob" && player.name != "Alice" && player.name != "Charlie") {
+          player.turn shouldEqual Turn.Watching
+        }
+      }
     }
 
     "set the defending player and adjust the turns correctly for 2 players" in {
