@@ -1,5 +1,6 @@
 package round
 
+import model.Turn
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

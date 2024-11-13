@@ -1,6 +1,7 @@
 package round
 
-import card.{Card, Rank, Suit}
+import controller.Group
+import model.{Card, Player, Rank, Suit, Turn}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

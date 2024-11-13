@@ -1,4 +1,4 @@
-package card
+package model
 
 import scala.util.Random
 
@@ -17,6 +17,12 @@ enum Rank(val order: Int, val display: String):
   case King extends Rank(13, "K")
   case Ace extends Rank(14, "A")
 
-def getBiggestRankLength: Int = Rank.values.map(_.display.length).max
+object Rank {
+  def getBiggestRankLength: Int = Rank.values.map(_.display.length).max
 
-def getRandomRank: Rank = Rank.values(Random.nextInt(Rank.values.length))
+  def getRandomRank: Rank = Rank.values(Random.nextInt(Rank.values.length))
+}
+
+
+
+

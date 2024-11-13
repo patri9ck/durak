@@ -1,4 +1,4 @@
-package round
+package model
 
 enum Turn {
   case Defending

@@ -1,5 +1,6 @@
 package card
 
+import model.{Card, Rank, Suit, getRandomCard, getRandomCards}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -27,7 +28,7 @@ class CardSpec extends AnyWordSpec with Matchers {
 
       newCards.size shouldEqual 3
       newCards.foreach { card =>
-        givenCards should not contain card // Ensure no new card is in givenCards
+        givenCards should not contain card
       }
     }
   }
