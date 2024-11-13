@@ -1,6 +1,7 @@
 package card
 
 import card.*
+import model.{Suit, getRandomSuit}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

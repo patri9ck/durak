@@ -1,4 +1,4 @@
-package card
+package model
 
 import scala.util.Random
 
@@ -7,5 +7,8 @@ enum Suit(val display: String):
   case Hearts extends Suit("♥")
   case Diamonds extends Suit("♦")
   case Clubs extends Suit("♣")
+  
+object Suit {
+  def getRandomSuit: Suit = Suit.values(Random.nextInt(Suit.values.length))
+}
 
-def getRandomSuit: Suit = Suit.values(Random.nextInt(Suit.values.length))

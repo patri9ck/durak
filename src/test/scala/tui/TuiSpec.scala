@@ -1,9 +1,10 @@
 package tui
 
-import card.{Card, Rank, Suit}
+import controller.Group
+import model.{Card, Player, Rank, Suit, Turn}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import round.{Group, Player, Turn}
+import view.{askForAmountAndPlayers, askForCard, askForDefend, askForDefendingPlayer, askForOwn, askForPickUp, askForPlayerAmount, askForPlayers, clearScreen, getCardDisplay, getCardsDisplay, getCardsOrder, getDefendedDisplay, getOrderedCardsDisplay, getOwnDisplay, getToDefendDisplay}
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, PrintStream}
 
