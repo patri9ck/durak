@@ -1,15 +1,15 @@
 package view
 
-import controller.GroupController
+import controller.Controller
 import model.{Card, Group, Player, Rank}
 import observer.Observer
 
 import scala.collection.mutable.ListBuffer
 import scala.io.StdIn
 
-class Tui(val groupController: GroupController) extends Observer {
+class Tui(val controller: Controller) extends Observer {
   
-  groupController.add(this)
+  controller.add(this)
   
   def update(): Unit = {
     
