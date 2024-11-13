@@ -1,4 +1,4 @@
-package controller
+package controller.base
 
 import model.*
 import observer.Observable
@@ -6,7 +6,9 @@ import observer.Observable
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
-case class GroupController() extends Observable {
+// To-do: Methoden als abstrakte Methoden in Controller definieren und hier implementieren
+// To-do: Weitere Methoden für Spiellogik hinzufügen
+case class BaseController() extends Observable {
 
   def chooseDefending(group: Group, defendingPlayer: Player): Group = {
     if (group.players.isEmpty) {
@@ -33,31 +35,29 @@ case class GroupController() extends Observable {
       }
     }
     
-    Group(updatedPlayers)
+    Group(updatedPlayers, group.stack)
   }
 
   def chooseDefendingRandomly(group: Group): Group = {
     chooseDefending(group, Random.shuffle(group.players).head)
   }
-}
+  
+  // To-do:
+  // Falls Spieler weniger als 6 Karten haben, vom Stack welche entfernen und in richtiger Reihenfolge verteilen
+  // Immer mit dem Spieler anfangen, der vor/links von secondlyAttacking ist
+  def drawFromStack(group: Group): Group = {
+    
+  }
 
-object GroupController {
-  def createGroup(cardAmount: Int, names: List[String]): Group = {
-    val givenCards = ListBuffer[Card]()
+  // To-do: 
+  // Überprüfen ob ein Spieler keine Karten mehr hart und anschließend auf WATCHING setzen
+  // Aktualisierte Gruppe und gewonnener Spieler zurückgeben
+  // Falls kein neuer Spieler gewonnen hat, Player auf null setzen über Option
+  def removeIfWon(group: Group): (Group, Option[Player]) = {
 
-    val players: List[Player] = names.map { name => {
-      val player = PlayerController.getNewPlayer(name, cardAmount, givenCards.toList, Card.getRandomCards)
-
-      givenCards ++= player.cards
-
-      player
-    }
-
-    }
-
-    Group(players)
   }
 }
+
 
 
 
