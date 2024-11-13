@@ -12,9 +12,17 @@ class Tui(val controller: Controller) extends Observer {
   controller.add(this)
   
   def update(): Unit = {
-    
-  }
 
+  }
+  
+  def start() : Unit = {
+    val amount = askForPlayerAmount
+
+    controller.createStatus(amount, askForNames(amount))
+    
+    askForDefendingPlayer()
+  }
+  
   def askForPlayerAmount: Int = {
     while (true) {
       print("Wie viele Spieler sollen mitspielen? (Keine Doppelungen, mindestens 2) ")
@@ -29,7 +37,7 @@ class Tui(val controller: Controller) extends Observer {
     2
   }
 
-  def askForPlayers(amount: Int): List[String] = {
+  def askForNames(amount: Int): List[String] = {
     val names = ListBuffer[String]()
 
     for (i <- 1 until amount + 1) {
@@ -47,10 +55,6 @@ class Tui(val controller: Controller) extends Observer {
     names.toList
   }
 
-  def askForAmountAndPlayers(): List[String] = {
-    askForPlayers(askForPlayerAmount)
-  }
-
   def askForDefendingPlayer(): Unit = {
     while (true) {
       print(s"Welcher Spieler soll anfangen? (Name/[Z]ufällig) ")
@@ -58,17 +62,15 @@ class Tui(val controller: Controller) extends Observer {
       val name = StdIn.readLine()
 
       if (name.equalsIgnoreCase("z")) {
-        return group.chooseDefendingRandomly()
+        controller.chooseDefendingRandomly()
       }
 
-      val players = group.players.filter(_.name.equalsIgnoreCase(name))
+      val players = controller.status.group.players.filter(_.name.equalsIgnoreCase(name))
 
       if (players.nonEmpty) {
-        return group.chooseDefending(players.head)
+        controller.chooseDefending(players.head)
       }
     }
-
-    group
   }
 
 
@@ -165,11 +167,17 @@ class Tui(val controller: Controller) extends Observer {
   }
 
   def askForDefend(cards: List[Card]): Option[Card] = {
-    askForCard("Welche Karte möchtest du verteidigen?", cards, true)
+    askForCard("Welche Karte möchtest du verteidigen?", controller.status.round.undefended, true)
   }
 
   def askForOwn(cards: List[Card]): Option[Card] = {
-    askForCard("Welche Karte möchtest du dafür nutzen?", cards, true)
+    val defending = controller.defending()
+    
+    if (defending.isEmpty) {
+      return None
+    }
+
+    askForCard("Welche Karte möchtest du dafür nutzen?", defending.get.cards, true)
   }
 
 }
