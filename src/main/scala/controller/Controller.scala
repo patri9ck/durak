@@ -1,6 +1,6 @@
 package controller
 
-import model.{Card, Group, Player, Rank, Status, Suit}
+import model.{Card, Group, Player, Rank, Status, Suit, Turn}
 import observer.Observable
 
 import scala.collection.mutable.ListBuffer
@@ -14,11 +14,19 @@ trait Controller extends Observable {
 
   def chooseDefending(defending: Player): Unit
 
-  def chooseDefendingRandomly(): Unit
-  
-  def drawFromStack(): Unit
+  def chooseDefending(): Unit
 
-  def removeIfWon(): Option[Player]
+  def canAttack(card: Card): Boolean
+
+  def denied(): Unit
+
+  def pickup(): Unit 
+
+  def attack(card: Card): Unit 
   
-  def defending(): Option[Player]
+  def canDefend(used: Card, undefended: Card): Boolean
+  
+  def defend(used: Card, undefended: Card): Unit
+
+  def byTurn(turn: Turn): Option[Player]
 }

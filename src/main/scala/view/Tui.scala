@@ -1,28 +1,55 @@
 package view
 
 import controller.Controller
-import model.{Card, Group, Player, Rank}
+import model.{Card, Group, Player, Rank, Turn}
 import observer.Observer
 
 import scala.collection.mutable.ListBuffer
 import scala.io.StdIn
 
 class Tui(val controller: Controller) extends Observer {
-  
-  controller.add(this)
-  
-  def update(): Unit = {
 
+  controller.add(this)
+
+  def update(): Unit = {
+    println(controller.status.round.turn)
+    println(controller.status.group)
+
+    if (controller.status.round.turn == Turn.FirstlyAttacking || controller.status.round.turn == Turn.SecondlyAttacking) {
+      val attacking = controller.byTurn(controller.status.round.turn)
+
+      if (attacking.isEmpty) {
+        return
+      }
+
+      getUndefendedDisplay.foreach(println)
+      getDefendedDisplay.foreach(println)
+      getOwnDisplay.foreach(println)
+
+      askForAttack()
+
+      return;
+    }
+
+
+    if (controller.status.round.turn == Turn.Defending) {
+
+      getUndefendedDisplay.foreach(println)
+      getDefendedDisplay.foreach(println)
+      getOwnDisplay.foreach(println)
+
+      askForDefend()
+    }
   }
-  
-  def start() : Unit = {
+
+  def start(): Unit = {
     val amount = askForPlayerAmount
 
     controller.createStatus(amount, askForNames(amount))
-    
+
     askForDefendingPlayer()
   }
-  
+
   def askForPlayerAmount: Int = {
     while (true) {
       print("Wie viele Spieler sollen mitspielen? (Keine Doppelungen, mindestens 2) ")
@@ -62,7 +89,7 @@ class Tui(val controller: Controller) extends Observer {
       val name = StdIn.readLine()
 
       if (name.equalsIgnoreCase("z")) {
-        controller.chooseDefendingRandomly()
+        controller.chooseDefending()
       }
 
       val players = controller.status.group.players.filter(_.name.equalsIgnoreCase(name))
@@ -114,45 +141,47 @@ class Tui(val controller: Controller) extends Observer {
 
   def getOrderedCardsDisplay(cards: List[Card]): List[String] = getCardsOrder(cards) :: getCardsDisplay(cards)
 
-  def getToDefendDisplay(cards: List[Card]): List[String] = "Zu Verteidigen" :: getOrderedCardsDisplay(cards)
+  def getUndefendedDisplay: List[String] = {
+    val display = getOrderedCardsDisplay(controller.status.round.undefended)
 
-  def getDefendedDisplay(defended: List[Card], used: List[Card]): List[String] = "Verteidigt" :: getCardsDisplay(defended) ++ getCardsDisplay(used)
+    if (display.isEmpty) {
+      return display
+    }
 
-  def getOwnDisplay(player: Player): List[String] = s"${player.name}, Deine Karten" :: getOrderedCardsDisplay(player.cards)
+    "Zu Verteidigen" :: display
+  }
+
+  def getDefendedDisplay: List[String] = {
+    val display = getCardsDisplay(controller.status.round.defended) ++ getCardsDisplay(controller.status.round.used)
+
+    if (display.isEmpty) {
+      return display
+    }
+
+    "Verteidigt" :: display
+  }
+
+  def getOwnDisplay: List[String] = {
+    val player = controller.byTurn(controller.status.round.turn)
+
+    if (player.isEmpty) {
+      return List()
+    }
+
+    s"${player.get.name}, Deine Karten" :: getOrderedCardsDisplay(player.get.cards)
+  }
 
   def clearScreen(): Unit = {
     println("\n" * 100)
   }
 
-  def askForPickUp(): Boolean = {
+  def askForCard(prompt: String, cards: List[Card], cancel: Boolean): Option[Card] = {
     while (true) {
-      print("Möchtest du aufnehmen? (J/N) ")
+      print(s"$prompt (" + 1 + "-" + cards.length + s"${if (cancel) "/[A]bbrechen" else ""}) ")
 
       val answer = StdIn.readLine()
 
-      if (answer.equalsIgnoreCase("J")) {
-        return true
-      }
-
-      if (answer.equalsIgnoreCase("N")) {
-        return false
-      }
-    }
-
-    false
-  }
-
-  def askForCard(prompt: String, cards: List[Card], pickUp: Boolean): Option[Card] = {
-    if (cards.isEmpty) {
-      return None
-    }
-
-    while (true) {
-      print(s"$prompt (" + 1 + "-" + cards.length + s"${if (pickUp) "/[A]ufnehmen" else ""}) ")
-
-      val answer = StdIn.readLine()
-
-      if (pickUp && answer.equalsIgnoreCase("a")) {
+      if (cancel && answer.equalsIgnoreCase("a")) {
         return None
       }
 
@@ -166,20 +195,64 @@ class Tui(val controller: Controller) extends Observer {
     None
   }
 
-  def askForDefend(cards: List[Card]): Option[Card] = {
-    askForCard("Welche Karte möchtest du verteidigen?", controller.status.round.undefended, true)
-  }
+  def askForAttack(): Unit = {
+    val attacking = controller.byTurn(controller.status.round.turn)
 
-  def askForOwn(cards: List[Card]): Option[Card] = {
-    val defending = controller.defending()
-    
-    if (defending.isEmpty) {
-      return None
+    if (attacking.isEmpty || attacking.get.turn != Turn.FirstlyAttacking && attacking.get.turn != Turn.SecondlyAttacking || attacking.get.cards.isEmpty) {
+      return
     }
 
-    askForCard("Welche Karte möchtest du dafür nutzen?", defending.get.cards, true)
+    while (true) {
+      val card = askForCard("Mit welcher Karte möchtest du angreifen?", attacking.get.cards, true)
+
+      if (card.isEmpty) {
+        controller.denied()
+
+        return;
+      }
+
+      if (controller.canAttack(card.get)) {
+        controller.attack(card.get)
+
+        return
+      }
+
+      println("Mit dieser Karte kannst du nicht angreifen.")
+    }
   }
 
-}
+  def askForDefend(): Unit = {
+    val defending = controller.byTurn(controller.status.round.turn)
 
+    if (defending.isEmpty || defending.get.turn != Turn.Defending || defending.get.cards.isEmpty) {
+      return
+    }
+
+    while (true) {
+      val undefended = askForCard("Welche Karte möchtest du verteidigen?", controller.status.round.undefended, true)
+
+      if (undefended.isEmpty) {
+        controller.pickup()
+
+        return;
+      }
+
+      val used = askForCard("Welche Karte möchtest du dafür nutzen?", defending.get.cards, true)
+
+      if (used.isEmpty) {
+        controller.pickup()
+
+        return
+      }
+
+      if (controller.canDefend(used.get, undefended.get)) {
+        controller.defend(used.get, undefended.get)
+
+        return
+      }
+
+      println("Mit dieser Karte kannst du nicht verteidigen.")
+    }
+  }
+}
 
