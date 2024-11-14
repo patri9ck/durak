@@ -4,7 +4,7 @@ import view.Tui
 object Durak {
   @main
   def main(): Unit = {
-    val tui = Tui(BaseController())
+    val tui = Tui(BaseController(Tui.createStatus()))
 
     tui.start()
   }
