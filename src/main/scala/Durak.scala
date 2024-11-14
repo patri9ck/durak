@@ -8,5 +8,4 @@ object Durak {
 
     tui.start()
   }
-
 }

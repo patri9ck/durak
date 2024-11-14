@@ -12,9 +12,6 @@ class Tui(val controller: Controller) extends Observer {
   controller.add(this)
 
   def update(): Unit = {
-    println(controller.status.round.turn)
-    println(controller.status.group)
-
     if (controller.status.round.turn == Turn.FirstlyAttacking || controller.status.round.turn == Turn.SecondlyAttacking) {
       val attacking = controller.byTurn(controller.status.round.turn)
 
@@ -242,7 +239,7 @@ class Tui(val controller: Controller) extends Observer {
       val undefended = askForCard("Welche Karte möchtest du verteidigen?", controller.status.round.undefended, true)
 
       if (undefended.isEmpty) {
-        controller.pickup()
+        controller.pickUp()
 
         return;
       }
@@ -250,13 +247,10 @@ class Tui(val controller: Controller) extends Observer {
       val used = askForCard("Welche Karte möchtest du dafür nutzen?", defending.get.cards, true)
 
       if (used.isEmpty) {
-        controller.pickup()
+        controller.pickUp()
 
         return
       }
-
-      println(used.get)
-      println(undefended.get)
 
       if (controller.canDefend(used.get, undefended.get)) {
         controller.defend(used.get, undefended.get)

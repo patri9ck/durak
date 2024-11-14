@@ -20,7 +20,7 @@ trait Controller extends Observable {
 
   def denied(): Unit
 
-  def pickup(): Unit 
+  def pickUp(): Unit 
 
   def attack(card: Card): Unit 
   
