@@ -28,24 +28,27 @@ class Tui(val controller: Controller) extends Observer {
 
       askForAttack()
 
+      clearScreen()
+
       return;
     }
 
 
     if (controller.status.round.turn == Turn.Defending) {
-
       getUndefendedDisplay.foreach(println)
       getDefendedDisplay.foreach(println)
       getOwnDisplay.foreach(println)
 
       askForDefend()
+
+      clearScreen()
     }
   }
 
   def start(): Unit = {
     val amount = askForPlayerAmount
 
-    controller.createStatus(amount, askForNames(amount))
+    controller.createStatus(6, askForNames(amount))
 
     askForDefendingPlayer()
   }
@@ -139,13 +142,19 @@ class Tui(val controller: Controller) extends Observer {
     displayedCards.toList.transpose.map(_.mkString(" "))
   }
 
-  def getOrderedCardsDisplay(cards: List[Card]): List[String] = getCardsOrder(cards) :: getCardsDisplay(cards)
+  def getOrderedCardsDisplay(cards: List[Card]): List[String] = {
+    if (cards.isEmpty) {
+      return List()
+    }
+
+    getCardsOrder(cards) :: getCardsDisplay(cards)
+  }
 
   def getUndefendedDisplay: List[String] = {
     val display = getOrderedCardsDisplay(controller.status.round.undefended)
 
     if (display.isEmpty) {
-      return display
+      return List()
     }
 
     "Zu Verteidigen" :: display
@@ -155,7 +164,7 @@ class Tui(val controller: Controller) extends Observer {
     val display = getCardsDisplay(controller.status.round.defended) ++ getCardsDisplay(controller.status.round.used)
 
     if (display.isEmpty) {
-      return display
+      return List()
     }
 
     "Verteidigt" :: display
@@ -203,7 +212,8 @@ class Tui(val controller: Controller) extends Observer {
     }
 
     while (true) {
-      val card = askForCard("Mit welcher Karte möchtest du angreifen?", attacking.get.cards, true)
+      val card = askForCard("Mit welcher Karte möchtest du angreifen?", attacking.get.cards, controller.status.round.defended.nonEmpty
+        || controller.status.round.undefended.nonEmpty)
 
       if (card.isEmpty) {
         controller.denied()
@@ -244,6 +254,9 @@ class Tui(val controller: Controller) extends Observer {
 
         return
       }
+
+      println(used.get)
+      println(undefended.get)
 
       if (controller.canDefend(used.get, undefended.get)) {
         controller.defend(used.get, undefended.get)
