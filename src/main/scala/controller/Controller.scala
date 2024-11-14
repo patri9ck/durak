@@ -10,8 +10,6 @@ trait Controller extends Observable {
   
   def status: Status
 
-  def createStatus(amount: Int, names: List[String]): Unit
-
   def chooseDefending(defending: Player): Unit
 
   def chooseDefending(): Unit

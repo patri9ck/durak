@@ -1,7 +1,7 @@
 package view
 
 import controller.Controller
-import model.{Card, Group, Player, Rank, Turn}
+import model.{Card, Group, Player, Rank, Status, Turn}
 import observer.Observer
 
 import scala.collection.mutable.ListBuffer
@@ -25,8 +25,6 @@ class Tui(val controller: Controller) extends Observer {
 
       askForAttack()
 
-      clearScreen()
-
       return;
     }
 
@@ -37,49 +35,11 @@ class Tui(val controller: Controller) extends Observer {
       getOwnDisplay.foreach(println)
 
       askForDefend()
-
-      clearScreen()
     }
   }
 
   def start(): Unit = {
-    val amount = askForPlayerAmount
-
-    controller.createStatus(6, askForNames(amount))
-
     askForDefendingPlayer()
-  }
-
-  def askForPlayerAmount: Int = {
-    while (true) {
-      print("Wie viele Spieler sollen mitspielen? (Keine Doppelungen, mindestens 2) ")
-
-      val amount = StdIn.readLine().toIntOption
-
-      if (amount.isDefined && amount.get > 1) {
-        return amount.get
-      }
-    }
-
-    2
-  }
-
-  def askForNames(amount: Int): List[String] = {
-    val names = ListBuffer[String]()
-
-    for (i <- 1 until amount + 1) {
-      var name = "";
-
-      while (name.isBlank || names.contains(name)) {
-        print(s"Name von Spieler ${i}: ")
-
-        name = StdIn.readLine()
-      }
-
-      names += name
-    }
-
-    names.toList
   }
 
   def askForDefendingPlayer(): Unit = {
@@ -213,12 +173,14 @@ class Tui(val controller: Controller) extends Observer {
         || controller.status.round.undefended.nonEmpty)
 
       if (card.isEmpty) {
+        clearScreen()
         controller.denied()
 
         return;
       }
 
       if (controller.canAttack(card.get)) {
+        clearScreen()
         controller.attack(card.get)
 
         return
@@ -247,12 +209,14 @@ class Tui(val controller: Controller) extends Observer {
       val used = askForCard("Welche Karte möchtest du dafür nutzen?", defending.get.cards, true)
 
       if (used.isEmpty) {
+        clearScreen()
         controller.pickUp()
 
         return
       }
 
       if (controller.canDefend(used.get, undefended.get)) {
+        clearScreen()
         controller.defend(used.get, undefended.get)
 
         return
@@ -260,6 +224,63 @@ class Tui(val controller: Controller) extends Observer {
 
       println("Mit dieser Karte kannst du nicht verteidigen.")
     }
+  }
+}
+
+object Tui {
+  def createStatus(): Status = {
+    val playerAmount = askForPlayerAmount
+    val cardAmount = askForCardAmount(playerAmount)
+
+    Status.createStatus(cardAmount, askForNames(playerAmount))
+  }
+
+  def askForCardAmount(playerAmount: Int): Int = {
+    val limit = 52 / playerAmount
+
+    while (true) {
+      print(s"Wie viele Karten soll jeder Spieler erhalten? (2-${limit}) ")
+
+      val amount = StdIn.readLine().toIntOption
+
+      if (amount.isDefined && amount.get >= 2 && amount.get <= limit) {
+        return amount.get
+      }
+    }
+
+    2
+  }
+
+  def askForPlayerAmount: Int = {
+    while (true) {
+      print("Wie viele Spieler sollen mitspielen? (Keine Doppelungen, mindestens 2) ")
+
+      val amount = StdIn.readLine().toIntOption
+
+      if (amount.isDefined && amount.get > 1) {
+        return amount.get
+      }
+    }
+
+    2
+  }
+
+  def askForNames(amount: Int): List[String] = {
+    val names = ListBuffer[String]()
+
+    for (i <- 1 until amount + 1) {
+      var name = "";
+
+      while (name.isBlank || names.contains(name)) {
+        print(s"Name von Spieler ${i}: ")
+
+        name = StdIn.readLine()
+      }
+
+      names += name
+    }
+
+    names.toList
   }
 }
 
