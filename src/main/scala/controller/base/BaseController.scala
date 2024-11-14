@@ -12,33 +12,37 @@ case class BaseController() extends Observable, Controller {
   var status: Status = _
 
   override def createStatus(amount: Int, names: List[String]): Unit = {
-    val allCards = for {
-      rank <- Rank.values
+    val fullDeck: Array[Card] = for {
       suit <- Suit.values
+      rank <- Rank.values
     } yield Card(rank, suit)
 
-    val (playersCards, remainingCards) = names.foldLeft((List[Player](), allCards.toList)) { case ((players, cards), name) =>
-      val player = Player.getNewPlayer(name, amount, Nil, Card.getRandomCards)
-      (players :+ player, cards.filterNot(player.cards.contains))
+    val shuffledDeck = scala.util.Random.shuffle(fullDeck)
+
+    val index = Random.nextInt(shuffledDeck.size)
+    val trump = shuffledDeck(index)
+
+    var remainingDeck = shuffledDeck.patch(index, Nil, 1)
+
+    val players = names.map { name =>
+      val playerCards = remainingDeck.take(amount)
+      remainingDeck = remainingDeck.drop(amount)
+      Player(name, playerCards.toList, Turn.Watching)
     }
 
-    val randomIndex = Random.nextInt(remainingCards.size)
-    val trump = remainingCards(randomIndex)
+    status = Status(
+      Group(players, remainingDeck.toList, trump, amount),
+      Round(Turn.Watching, List(), List(), List(), None, false)
+    )
 
-    status = Status(Group(playersCards, remainingCards.take(randomIndex) ++ remainingCards.drop(randomIndex + 1) :+ trump, trump),
-      Round(Turn.Watching, List(), List(), List(), None, false))
-    
     notifySubscribers()
   }
 
-  private def chooseDefending(index: Int): Unit = {
-    require(status != null)
+  def chooseDefending(players: List[Player], index: Int): List[Player] = {
+    require(index >= 0)
+    require(index < players.size)
 
-    if (index < 0 || index >= status.group.players.size) {
-      return;
-    }
-
-    val updatedPlayers = status.group.players.zipWithIndex.map { case (player, idx) =>
+    players.zipWithIndex.map { case (player, idx) =>
       if (idx == index) {
         player.copy(turn = Turn.Defending)
       } else if (status.group.players.length == 2) {
@@ -51,32 +55,31 @@ case class BaseController() extends Observable, Controller {
         player.copy(turn = Turn.Watching)
       }
     }
-
-    status = status.copy(group = status.group.copy(players = updatedPlayers), status.round.copy(turn = Turn.FirstlyAttacking))
+  }
+  
+  def chooseNextDefending(players: List[Player], previous: Player): List[Player] = {
+    chooseDefending(players, (players.indexOf(previous) - 1 + players.size) % players.size)
   }
 
   override def chooseDefending(defending: Player): Unit = {
-    require(status != null)
-    
-    if (status.group.players.isEmpty) {
-      return
-    }
-    
-    chooseDefending(status.group.players.indexWhere(_ == defending))
+    requireStatus()
+
+    status = status.copy(group = status.group.copy(players = chooseDefending(status.group.players,
+      status.group.players.indexWhere(_ == defending))),
+      round = status.round.copy(turn = Turn.FirstlyAttacking))
 
     notifySubscribers()
   }
 
   override def chooseDefending(): Unit = {
-    require(status != null)
+    requireStatus()
+    require(status.group.players.nonEmpty)
     
     chooseDefending(Random.shuffle(status.group.players).head)
-
-    notifySubscribers()
   }
 
-  private def drawFromStack(): Unit = {
-    require(status != null)
+  def drawFromStack(): Unit = {
+    requireStatus()
     
     val orderedPlayers = {
       val startIndex = status.round.passed.map(status.group.players.indexOf).getOrElse(
@@ -87,7 +90,7 @@ case class BaseController() extends Observable, Controller {
     }
 
     val (updatedPlayers, updatedStack) = orderedPlayers.foldLeft((List.empty[Player], status.group.stack)) {
-      case ((playersAcc, stack), player) if player.cards.size < 6 =>
+      case ((playersAcc, stack), player) if player.cards.size < status.group.amount =>
         val (toDraw, remainingStack) = stack.splitAt(6 - player.cards.size)
 
         (playersAcc :+ player.copy(cards = player.cards ++ toDraw), remainingStack)
@@ -98,45 +101,51 @@ case class BaseController() extends Observable, Controller {
     status = status.copy(group = (status.group.copy(players = updatedPlayers, stack = updatedStack)))
   }
 
-
-  private def finished(finished: Player): Unit = {
-    require(status != null)
-    require(finished.turn == Turn.Defending || finished.turn == Turn.FirstlyAttacking || finished.turn == Turn.SecondlyAttacking)
+  def updatePlayers(old: Player, updated: Player): List[Player] = {
+    requireStatus()
     
-    if (status.group.stack.nonEmpty || finished.cards.nonEmpty) {
-      return
-    }
-
-    val updatedPlayer = finished.copy(turn = Turn.Watching)
-
-    val updatedPlayers = status.group.players.map { player => 
-      if (player == finished) {
-        updatedPlayer
+    status.group.players.map { player =>
+      if (old == player) {
+        updated
       } else {
         player
       }
     }
+  }
+
+  def hasFinished(finished: Player): Boolean = {
+    requireStatus()
     
-    if (finished.turn == Turn.Defending) {
-      status = status.copy(group = status.group.copy(players = updatedPlayers),
-        round = status.round.copy(defended = List(), undefended = List(), used = List()))
-      
-      chooseDefending((status.group.players.indexOf(updatedPlayer) - 1 + status.group.players.size) % status.group.players.size)
+    (finished.turn == Turn.Defending || finished.turn == Turn.FirstlyAttacking || finished.turn == Turn.SecondlyAttacking)
+      && status.group.stack.nonEmpty && finished.cards.nonEmpty
+  }
+
+  def handleFinish(finished: Player): Unit = {
+    requireStatus()
     
+    if (!hasFinished(finished)) {
       return;
     }
+  
+    val updated = finished.copy(turn = Turn.Watching)
     
-    if (finished.turn == Turn.FirstlyAttacking && byTurn(Turn.SecondlyAttacking).isEmpty || finished.turn == Turn.SecondlyAttacking) {
-      status = status.copy(group = status.group.copy(players = updatedPlayers), round = status.round.copy(turn = Turn.Defending))
+    var updatedPlayers = updatePlayers(finished, updated)
+    
+    val round = if (finished.turn == Turn.Defending) {
+      updatedPlayers = chooseDefending(updatedPlayers, (updatedPlayers.indexOf(updated) - 1 + updatedPlayers.size) % updatedPlayers.size)
       
-      return;
+      status.round.copy(turn = Turn.FirstlyAttacking, defended = List(), undefended = List(), used = List())
+    } else if (finished.turn == Turn.FirstlyAttacking && byTurn(Turn.SecondlyAttacking).isEmpty || finished.turn == Turn.SecondlyAttacking) {
+      status.round.copy(turn = Turn.Defending)
+    } else {
+      status.round.copy(turn = Turn.SecondlyAttacking)
     }
 
-    status = status.copy(group = status.group.copy(players = updatedPlayers), round = status.round.copy(turn = Turn.SecondlyAttacking))
+    status = status.copy(group = status.group.copy(players = updatedPlayers), round = round)
   }
   
   override def canAttack(card: Card): Boolean = {
-    require(status != null);
+    requireStatus()
 
     status.round.defended.isEmpty && status.round.undefended.isEmpty
       || status.round.used.exists(_.rank == card.rank)
@@ -145,115 +154,76 @@ case class BaseController() extends Observable, Controller {
   }
 
   override def denied(): Unit = {
-    require(status != null)
+    requireAttack()
+    require(status.round.defended.isEmpty && status.round.undefended.isEmpty)
 
-    if (status.round.defended.isEmpty && status.round.undefended.isEmpty) {
-      return;
-    }
+    val attacking = byTurnThrow(status.round.turn)
     
-    val attacking = byTurn(status.round.turn)
-    
-    if (attacking.isEmpty || attacking.get.turn != Turn.FirstlyAttacking && attacking.get.turn != Turn.SecondlyAttacking) {
-      return;
-    }
-    
-    if (attacking.get.turn == Turn.FirstlyAttacking) {
+    if (attacking.turn == Turn.FirstlyAttacking) {
       status = status.copy(round = status.round.copy(denied = true))
-
-      notifySubscribers()
-      
-      return
-    } 
-
-    if (status.round.denied) {
-      status = status.copy(round = status.round.copy(defended = List(),
+    } else if (status.round.denied) {
+      status = status.copy(
+        group = status.group.copy(
+          players = chooseNextDefending(status.group.players, attacking)
+        ),
+        round = status.round.copy(defended = List(),
         undefended = List(),
         used = List(),
         denied = false))
       
       drawFromStack()
-      
-      chooseDefending((status.group.players.indexOf(attacking.get) - 1 + status.group.players.size) % status.group.players.size)
-      
-      notifySubscribers()
-      
-      return
+    } else {
+      status = status.copy(round = status.round.copy(turn = Turn.Defending))
     }
-
-    status = status.copy(round = status.round.copy(turn = Turn.Defending))
     
     notifySubscribers()
   }
 
-  override def pickup(): Unit = {
-    require(status != null)
+  override def pickUp(): Unit = {
+    requireDefend()
 
-    val defending = byTurn(Turn.Defending)
+    val defending = byTurnThrow(Turn.Defending)
 
-    if (defending.isEmpty) {
-      return;
-    }
-
-    val updatedPlayer = defending.get.copy(cards = defending.get.cards ++ status.round.used ++ status.round.defended ++ status.round.undefended)
-
-    val updatedPlayers = status.group.players.map { player =>
-      if (player == defending.get) {
-        updatedPlayer
-      } else {
-        player
-      }
-    }
+    val updated = defending.copy(cards = defending.cards ++ status.round.used ++ status.round.defended ++ status.round.undefended)
+    
+    var updatedPlayers = updatePlayers(defending, updated)
+    
+    updatedPlayers = chooseNextDefending(updatedPlayers, updated)
 
     status = status.copy(group = status.group.copy(players = updatedPlayers),
-      round = status.round.copy(defended = List(), undefended = List(), used = List()))
-    
-    chooseDefending((status.group.players.indexOf(defending.get) - 1 + status.group.players.size) % status.group.players.size)
+      round = status.round.copy(turn = Turn.FirstlyAttacking, defended = List(), undefended = List(), used = List()))
     
     notifySubscribers()
   }
 
   override def attack(card: Card): Unit = {
-    require(status != null)
-    require(status.round.turn == Turn.FirstlyAttacking || status.round.turn == Turn.SecondlyAttacking)
+    requireAttack()
 
     if (!canAttack(card)) {
       return
     }
 
-    val attacking = byTurn(status.round.turn)
+    val attacking = byTurnThrow(status.round.turn)
 
-    if (attacking.isEmpty || !attacking.get.cards.contains(card)) {
-      return
-    }
+    val updated = attacking.copy(cards = attacking.cards.filterNot(_ == card))
 
-    val updatedPlayer = attacking.get.copy(cards = attacking.get.cards.filterNot(_ == card))
+    val updatedPlayers = updatePlayers(attacking, updated)
 
-    val updatedPlayers = status.group.players.map { player =>
-      if (player == attacking.get) {
-        updatedPlayer
-      } else {
-        player
-      }
-    }
-
-    if (attacking.get.turn == Turn.FirstlyAttacking) {
-      status = status.copy(
-        group = status.group.copy(players = updatedPlayers),
-        round = status.round.copy(undefended = card :: status.round.undefended,
-          turn = Turn.SecondlyAttacking,
-          denied = false)
-      )
+    val round = if (updated.turn == Turn.FirstlyAttacking) {
+      status.round.copy(undefended = card :: status.round.undefended,
+        turn = Turn.SecondlyAttacking,
+        denied = false)
     } else {
-      status = status.copy(
-        group = status.group.copy(players = updatedPlayers),
-        round = status.round.copy(undefended = card :: status.round.undefended,
-          turn = Turn.Defending)
-      )
+      status.round.copy(undefended = card :: status.round.undefended,
+        turn = Turn.Defending)
     }
 
+    status = status.copy(
+      group = status.group.copy(players = updatedPlayers),
+      round = round
+    )
 
-    
-    finished(updatedPlayer)
+    handleFinish(updated)
     
     notifySubscribers()
   }
@@ -265,54 +235,57 @@ case class BaseController() extends Observable, Controller {
   }
   
   override def defend(used: Card, undefended: Card): Unit = {
-    require(status != null)
+    requireDefend()
     
     if (!canDefend(used, undefended)) {
       return
     }
     
-    val defending = byTurn(Turn.Defending)
-    
-    if (defending.isEmpty || !defending.get.cards.contains(used)) {
-      return
-    }
+    val defending = byTurnThrow(Turn.Defending)
 
-    val updatedPlayer = defending.get.copy(cards = defending.get.cards.filterNot(_ == used))
+    val updated = defending.copy(cards = defending.cards.filterNot(_ == used))
 
-    val updatedPlayers = status.group.players.map { player =>
-      if (player == defending.get) {
-        updatedPlayer
-      } else {
-        player
-      }
-    }
+    val updatedPlayers = updatePlayers(defending, updated)
 
     if (status.round.undefended.size == 1) {
-      status = status.copy(
-        group = status.group.copy(players = updatedPlayers),
-        round = status.round.copy(turn = Turn.FirstlyAttacking,
-          undefended = status.round.undefended.filterNot(_ == undefended),
-          defended = undefended :: status.round.defended,
-          used = used :: status.round.used)
-      )
+      status = status.copy(group = status.group.copy(players = updatedPlayers), round = status.round.copy(turn = Turn.FirstlyAttacking,
+        undefended = status.round.undefended.filterNot(_ == undefended),
+        defended = undefended :: status.round.defended,
+        used = used :: status.round.used))
 
-      finished(updatedPlayer)
+      handleFinish(updated)
     } else {
-      status = status.copy(
-        group = status.group.copy(players = updatedPlayers),
-        round = status.round.copy(undefended = status.round.undefended.filterNot(_ == undefended),
-          defended = undefended :: status.round.defended,
-          used = used :: status.round.used)
-      )
+      status = status.copy(group = status.group.copy(players = updatedPlayers), round = status.round.copy(undefended = status.round.undefended.filterNot(_ == undefended),
+        defended = undefended :: status.round.defended,
+        used = used :: status.round.used))
     }
-    
+
     notifySubscribers()
   }
   
-  
-  override def byTurn(turn: Turn): Option[Player] = {
+  private def requireStatus(): Unit = {
     require(status != null)
+  }
+  
+  private def requireAttack(): Unit = {
+    requireStatus()
+    require(status.round.turn == Turn.FirstlyAttacking || status.round.turn == Turn.SecondlyAttacking)
+  }
+  
+  private def requireDefend(): Unit = {
+    requireStatus()
+    require(status.round.turn == Turn.Defending)
+  }
+  
+  private def byTurnThrow(turn: Turn): Player = {
+    requireStatus()
     
+    byTurn(turn).get
+  }
+
+  override def byTurn(turn: Turn): Option[Player] = {
+    requireStatus()
+
     status.group.players.find(_.turn == turn)
   }
 }
