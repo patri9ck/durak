@@ -1,7 +1,7 @@
 package view
 
 import controller.Controller
-import model.{Card, Group, Player, Rank, Status, Turn}
+import model.{Card, Rank, Status, Turn}
 import observer.Observer
 
 import scala.collection.mutable.ListBuffer
@@ -12,24 +12,27 @@ class Tui(val controller: Controller) extends Observer {
   controller.add(this)
 
   def update(): Unit = {
+    val player = controller.byTurn(controller.status.round.turn)
+
+    if (player.isEmpty) {
+      println(s"Spieler mit Rolle ${controller.status.round.turn.name} existiert nicht.")
+
+      return;
+    }
+
+    clearScreen()
+
+    println(s"${player.get.name}, Du bist dran mit: ${controller.status.round.turn.name}! Alle anderen wegschauen!")
+
+    countdown(3)
+
     if (controller.status.round.turn == Turn.FirstlyAttacking || controller.status.round.turn == Turn.SecondlyAttacking) {
-      val attacking = controller.byTurn(controller.status.round.turn)
-
-      if (attacking.isEmpty) {
-        return
-      }
-
       getUndefendedDisplay.foreach(println)
       getDefendedDisplay.foreach(println)
       getOwnDisplay.foreach(println)
 
       askForAttack()
-
-      return;
-    }
-
-
-    if (controller.status.round.turn == Turn.Defending) {
+    } else if (controller.status.round.turn == Turn.Defending) {
       getUndefendedDisplay.foreach(println)
       getDefendedDisplay.foreach(println)
       getOwnDisplay.foreach(println)
@@ -40,6 +43,13 @@ class Tui(val controller: Controller) extends Observer {
 
   def start(): Unit = {
     askForDefendingPlayer()
+  }
+
+  def countdown(seconds: Int): Unit = {
+    for (i <- 1 until seconds + 1) {
+      println(s"${i}...")
+      Thread.sleep(1000L)
+    }
   }
 
   def askForDefendingPlayer(): Unit = {
@@ -173,14 +183,12 @@ class Tui(val controller: Controller) extends Observer {
         || controller.status.round.undefended.nonEmpty)
 
       if (card.isEmpty) {
-        clearScreen()
         controller.denied()
 
         return;
       }
 
       if (controller.canAttack(card.get)) {
-        clearScreen()
         controller.attack(card.get)
 
         return
@@ -209,14 +217,12 @@ class Tui(val controller: Controller) extends Observer {
       val used = askForCard("Welche Karte möchtest du dafür nutzen?", defending.get.cards, true)
 
       if (used.isEmpty) {
-        clearScreen()
         controller.pickUp()
 
         return
       }
 
       if (controller.canDefend(used.get, undefended.get)) {
-        clearScreen()
         controller.defend(used.get, undefended.get)
 
         return

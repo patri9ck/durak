@@ -113,7 +113,7 @@ case class BaseController(var status: Status) extends Observable, Controller {
 
   override def denied(): Unit = {
     requireAttack()
-    require(status.round.defended.isEmpty && status.round.undefended.isEmpty)
+    require(status.round.defended.nonEmpty || status.round.undefended.nonEmpty)
 
     val attacking = byTurnThrow(status.round.turn)
     
