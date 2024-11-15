@@ -18,16 +18,16 @@ class Tui(val controller: Controller) extends Observer {
       clearScreen()
       println(s"${player.get.name}, Du bist dran mit: ${controller.status.round.turn.name}! Alle anderen wegschauen!")
       countdown(3)
+      clearScreen()
+
+      getUndefendedDisplay.foreach(println)
+      getDefendedDisplay.foreach(println)
 
       if (controller.status.round.turn == Turn.FirstlyAttacking || controller.status.round.turn == Turn.SecondlyAttacking) {
-        getUndefendedDisplay.foreach(println)
-        getDefendedDisplay.foreach(println)
         getOwnDisplay.foreach(println)
 
         askForAttack()
       } else if (controller.status.round.turn == Turn.Defending) {
-        getUndefendedDisplay.foreach(println)
-        getDefendedDisplay.foreach(println)
         getOwnDisplay.foreach(println)
 
         askForDefend()
@@ -115,7 +115,7 @@ class Tui(val controller: Controller) extends Observer {
     val display = getOrderedCardsDisplay(controller.status.round.undefended)
 
     if (display.isEmpty) {
-      return List()
+      return Nil
     }
 
     "Zu Verteidigen" :: display
@@ -125,7 +125,7 @@ class Tui(val controller: Controller) extends Observer {
     val display = getCardsDisplay(controller.status.round.defended) ++ getCardsDisplay(controller.status.round.used)
 
     if (display.isEmpty) {
-      return List()
+      return Nil
     }
 
     "Verteidigt" :: display
@@ -135,7 +135,7 @@ class Tui(val controller: Controller) extends Observer {
     val player = controller.byTurn(controller.status.round.turn)
 
     if (player.isEmpty) {
-      return List()
+      return Nil
     }
 
     s"${player.get.name}, Deine Karten" :: getOrderedCardsDisplay(player.get.cards)
