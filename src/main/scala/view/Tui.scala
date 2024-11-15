@@ -15,17 +15,14 @@ class Tui(val controller: Controller) extends Observer {
     if (controller.status.round.turn == Turn.FirstlyAttacking || controller.status.round.turn == Turn.SecondlyAttacking) {
       val attacking = controller.byTurn(controller.status.round.turn)
 
-      if (attacking.isEmpty) {
-        return
+      if (attacking.nonEmpty) {
+        getUndefendedDisplay.foreach(println)
+        getDefendedDisplay.foreach(println)
+        getOwnDisplay.foreach(println)
+
+        askForAttack() 
       }
-
-      getUndefendedDisplay.foreach(println)
-      getDefendedDisplay.foreach(println)
-      getOwnDisplay.foreach(println)
-
-      askForAttack()
-
-      return;
+      
     }
 
 
