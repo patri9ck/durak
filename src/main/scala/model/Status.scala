@@ -26,7 +26,7 @@ object Status {
 
     Status(
       Group(players, remainingDeck.toList, trump, amount),
-      Round(Turn.Watching, List(), List(), List(), None, false)
+      Round(Turn.Watching, List(), List(), List(), false, None),
     )
   }
 }
