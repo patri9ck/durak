@@ -14,30 +14,24 @@ class Tui(val controller: Controller) extends Observer {
   def update(): Unit = {
     val player = controller.byTurn(controller.status.round.turn)
 
-    if (player.isEmpty) {
-      println(s"Spieler mit Rolle ${controller.status.round.turn.name} existiert nicht.")
+    if (player.nonEmpty) {
+      clearScreen()
+      println(s"${player.get.name}, Du bist dran mit: ${controller.status.round.turn.name}! Alle anderen wegschauen!")
+      countdown(3)
 
-      return;
-    }
+      if (controller.status.round.turn == Turn.FirstlyAttacking || controller.status.round.turn == Turn.SecondlyAttacking) {
+        getUndefendedDisplay.foreach(println)
+        getDefendedDisplay.foreach(println)
+        getOwnDisplay.foreach(println)
 
-    clearScreen()
+        askForAttack()
+      } else if (controller.status.round.turn == Turn.Defending) {
+        getUndefendedDisplay.foreach(println)
+        getDefendedDisplay.foreach(println)
+        getOwnDisplay.foreach(println)
 
-    println(s"${player.get.name}, Du bist dran mit: ${controller.status.round.turn.name}! Alle anderen wegschauen!")
-
-    countdown(3)
-
-    if (controller.status.round.turn == Turn.FirstlyAttacking || controller.status.round.turn == Turn.SecondlyAttacking) {
-      getUndefendedDisplay.foreach(println)
-      getDefendedDisplay.foreach(println)
-      getOwnDisplay.foreach(println)
-
-      askForAttack()
-    } else if (controller.status.round.turn == Turn.Defending) {
-      getUndefendedDisplay.foreach(println)
-      getDefendedDisplay.foreach(println)
-      getOwnDisplay.foreach(println)
-
-      askForDefend()
+        askForDefend()
+      }
     }
   }
 
