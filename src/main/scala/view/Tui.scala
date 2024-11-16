@@ -45,15 +45,21 @@ class Tui(val controller: Controller) extends Observer {
 
       val name = StdIn.readLine()
 
-      if (name.equalsIgnoreCase("z")) {
+      if (name != null && name.equalsIgnoreCase("z")) {
         controller.chooseDefending()
+        return
       }
 
-      val players = controller.status.group.players.filter(_.name.equalsIgnoreCase(name))
+      if (name != null) {
+        val players = controller.status.group.players.filter(_.name.equalsIgnoreCase(name))
 
-      if (players.nonEmpty) {
-        controller.chooseDefending(players.head)
+        if (players.nonEmpty) {
+          controller.chooseDefending(players.head)
+          return
+        }
       }
+
+      println("Ungültiger Name, bitte erneut eingeben.")
     }
   }
 
@@ -88,9 +94,11 @@ class Tui(val controller: Controller) extends Observer {
 
   def getCardsDisplay(cards: List[Card]): List[String] = {
     val displayedCards = ListBuffer[List[String]]()
+    
 
     for (card <- cards) {
       displayedCards += getCardDisplay(card)
+      print(card)
     }
 
     displayedCards.toList.transpose.map(_.mkString(" "))

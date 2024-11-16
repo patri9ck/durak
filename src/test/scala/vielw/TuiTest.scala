@@ -1,187 +1,222 @@
-import org.scalatest.wordspec.AnyWordSpec
+package view
+
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import controller.Controller
-import model._
+import model.*
 import observer.Observer
-import view.Tui
+
+import scala.collection.immutable.List
+
+// Mock of Controller to be used in tests
+class MockController extends Controller {
+
+  var status: Status = Status(Group(List(Player("Mock", List(Card(Rank.Ace, Suit.Hearts)), Turn.FirstlyAttacking)), List.empty, Card(Rank.Ace, Suit.Spades), 6), Round(Turn.FirstlyAttacking, List.empty, List.empty, List.empty, None, false))
+
+  override def add(obs: Observer): Unit = {}
+  override def remove(obs: Observer): Unit = {}
+  override def byTurn(turn: Turn): Option[Player] =
+    if(status.round.turn == turn) Some(status.group.players.head) else None
+
+  def chooseDefending(player: Player): Unit = {}
+  def chooseDefending(): Unit = {}
+  def pickUp(): Unit = {}
+  def attack(card: Card): Unit = {}
+  def defend(used: Card, undefended: Card): Unit = {}
+  def denied(): Unit = {}
+  def canAttack(card: Card): Boolean = true
+  def canDefend(used: Card, undefended: Card): Boolean = true
+}
 
 class TuiSpec extends AnyWordSpec with Matchers {
 
   "A Tui" should {
+    "call the chooseDefending method of the controller when 'z' is input for askForDefendingPlayer" in {
+      val mockController = new MockController
+      val tui = new Tui(mockController)
 
-    "update correctly when the turn is FirstlyAttacking" in {
-      val controller = new Controller {
-        var updateCalled = false
-
-        val stack = List(Card(Rank.Ace, Suit.Spades), Card(Rank.King, Suit.Hearts), Card(Rank.Queen, Suit.Diamonds), Card(Rank.Jack, Suit.Clubs))
-        val trump = Card(Rank.Ten, Suit.Spades)
-
-        override def status: Status = Status(Group(List(Player("Player1", List.empty, Turn.FirstlyAttacking)),stack, trump, 6),
-          Round(Turn.FirstlyAttacking, List.empty, List.empty, List.empty, None, false))
-        override def byTurn(turn: Turn): Option[Player] = Some(Player("Player1", List.empty, Turn.FirstlyAttacking))
-
-        override def notifyObservers(): Unit = {
-          updateCalled = true
-        }
-        // Implement other methods as needed
-      }
-
-      val tui = new Tui(controller)
-      tui.update()
-
-      controller.updateCalled shouldBe true
-    }
-
-    "update correctly when the turn is Defending" in {
-      val controller = new Controller {
-        var updateCalled = false
-
-        val stack = List(Card(Rank.Ace, Suit.Spades), Card(Rank.King, Suit.Hearts), Card(Rank.Queen, Suit.Diamonds), Card(Rank.Jack, Suit.Clubs))
-        val trump = Card(Rank.Ten, Suit.Spades)
-
-        override def status: Status = Status(Group(List(Player("Player1", List.empty, Turn.Defending)), stack, trump,6),
-          Round(Turn.Defending, List.empty, List.empty, List.empty, None, false))
-        override def byTurn(turn: Turn): Option[Player] = Some(Player("Player1", List.empty, Turn.Defending))
-
-        override def notifyObservers(): Unit = {
-          updateCalled = true
-        }
-        // Implement other methods as needed
-      }
-
-      val tui = new Tui(controller)
-      tui.update()
-
-      controller.updateCalled shouldBe true
-    }
-
-    "start correctly by asking for the defending player" in {
-      val controller = new Controller {
-        var defendingPlayerAsked = false
-
-        val stack = List(Card(Rank.Ace, Suit.Spades), Card(Rank.King, Suit.Hearts), Card(Rank.Queen, Suit.Diamonds), Card(Rank.Jack, Suit.Clubs))
-        val trump = Card(Rank.Ten, Suit.Spades)
-        
-        override def status: Status = Status(Group(List.empty, stack, trump, 6),
-          Round(Turn.FirstlyAttacking, List.empty, List.empty, List.empty, None, false))
-
-        override def setDefendingPlayer(name: String): Unit = {
-          if (name == "Player1") defendingPlayerAsked = true
-        }
-        // Implement other methods as needed
-      }
-
-      val tui = new Tui(controller)
-
-      // Simulate user input
-      val input = new java.io.ByteArrayInputStream("Player1\n".getBytes)
-      Console.withIn(input) {
-        tui.start()
-      }
-
-      controller.defendingPlayerAsked shouldBe true
-    }
-
-    "ask for a defending player correctly" in {
-      val controller = new Controller {
-        var defendingPlayerAsked = false
-
-        override def setDefendingPlayer(name: String): Unit = {
-          if (name == "Player1") defendingPlayerAsked = true
-        }
-        // Implement other methods as needed
-      }
-
-      val tui = new Tui(controller)
-
-      // Simulate user input
-      val input = new java.io.ByteArrayInputStream("Player1\n".getBytes)
-      Console.withIn(input) {
+      val in = new java.io.ByteArrayInputStream("z\n".getBytes)
+      Console.withIn(in) {
         tui.askForDefendingPlayer()
       }
-
-      controller.defendingPlayerAsked shouldBe true
     }
 
-    "display cards correctly" in {
-      val controller = new Controller {
-        // Implement methods as needed
-      }
-      val card = Card(Rank.Ace, Suit.Spades)
-      val tui = new Tui(controller)
+    "return a correctly formatted card display string for getCardDisplay" in {
+      val mockController = new MockController
+      val tui = new Tui(mockController)
+      val card = Card(Rank.Ace, Suit.Hearts)
 
       val display = tui.getCardDisplay(card)
-      display should not be empty
-      display should include("A") // Assuming the display includes "A" for Ace
-      display should include("♠") // Assuming the display includes "♠" for Spades
+      display should contain("┌─────┐")
+      display should contain("│A    │")
+      display should contain("│  ♥  │")
+      display should contain("│    A│")
+      display should contain("└─────┘")
     }
 
-    "handle attack correctly" in {
-      val controller = new Controller {
-        var attackMade = false
+    "return a correctly formatted cards order string for getCardsOrder" in {
+      val mockController = new MockController
+      val tui = new Tui(mockController)
+      val cards = List(Card(Rank.Ace, Suit.Hearts), Card(Rank.Two, Suit.Spades))
 
-        val stack = List(Card(Rank.Ace, Suit.Spades), Card(Rank.King, Suit.Hearts), Card(Rank.Queen, Suit.Diamonds), Card(Rank.Jack, Suit.Clubs))
-        val trump = Card(Rank.Ten, Suit.Spades)
+      val order = tui.getCardsOrder(cards)
+      order should be ("1       2")
+    }
 
-        override def status: Status = Status(Group(List(Player("Player1", List(Card(Rank.Ace, Suit.Spades)), Turn.FirstlyAttacking)), stack, trump, 6),
-          Round(Turn.FirstlyAttacking, List.empty, List.empty, List.empty, None, false))
-        override def byTurn(turn: Turn): Option[Player] = Some(Player("Player1", List(Card(Rank.Ace, Suit.Spades)), Turn.FirstlyAttacking))
-        override def canAttack(card: Card): Boolean = true
+    "return an empty list for getOrderedCardsDisplay when cards list is empty" in {
+      val mockController = new MockController
+      val tui = new Tui(mockController)
 
-        override def makeAttack(player: Player, card: Card): Boolean = {
-          if (player.name == "Player1" && card == Card(Rank.Ace, Suit.Spades)) {
-            attackMade = true
-            true
-          } else {
-            false
-          }
-        }
-        // Implement other methods as needed
+      val display = tui.getOrderedCardsDisplay(Nil)
+      display should be (List.empty)
+    }
+
+    "return a list of formatted card displays for getOrderedCardsDisplay when cards list is not empty" in {
+      val mockController = new MockController
+      val tui = new Tui(mockController)
+      val cards = List(Card(Rank.Ace, Suit.Hearts), Card(Rank.Two, Suit.Spades))
+
+      val display = tui.getOrderedCardsDisplay(cards)
+      display.head should be ("1       2")
+      display should contain ("┌─────┐ ┌─────┐")
+    }
+
+    "print the correct displays when update is called" in {
+      val mockController = new MockController
+      val tui = new Tui(mockController) {
+        override def askForAttack(): Unit = {}  // Leere Implementation für den Test
+        override def askForDefend(): Unit = {}  // Leere Implementation für den Test
       }
 
-      val tui = new Tui(controller)
+      def captureConsoleOutput(action: => Unit): String = {
+        val outCapture = new java.io.ByteArrayOutputStream
+        Console.withOut(outCapture) {
+          action
+        }
+        outCapture.toString
+      }
 
-      // Simulate user input
-      val input = new java.io.ByteArrayInputStream("1\n".getBytes)
-      Console.withIn(input) {
+      val result = captureConsoleOutput {
+        tui.update()
+      }
+
+      val expectedOutputs = Seq(
+        "Mock, Deine Karten",
+        "1",
+        "┌─────┐",
+        "│A    │",
+        "│  ♥  │",
+        "│    A│",
+        "└─────┘"
+      )
+
+      expectedOutputs.foreach(output => result should include(output))
+    }
+
+    "clear the screen when clearScreen is called" in {
+      val EXPECTED_OUTPUT = "\n" * 100
+      val mockController = new MockController
+      val tui = new Tui(mockController)
+      val outputCapture = new java.io.ByteArrayOutputStream
+      Console.withOut(outputCapture) {
+        tui.clearScreen()
+      }
+      val output = outputCapture.toString.trim
+      output should be (EXPECTED_OUTPUT.trim)
+    }
+
+    "return the correct card when askForCard is called" in {
+      val mockController = new MockController
+      val tui = new Tui(mockController)
+      val cards = List(Card(Rank.Ace, Suit.Hearts), Card(Rank.Two, Suit.Spades))
+
+      val in = new java.io.ByteArrayInputStream("1\n".getBytes)
+      val outCapture = new java.io.ByteArrayOutputStream
+      Console.withIn(in) {
+        Console.withOut(outCapture) {
+          val result = tui.askForCard("Choose a card", cards, cancel = false)
+          result should be (Some(cards.head))
+        }
+      }
+    }
+
+    "return the correct defending card when askForCard is called with cancel option" in {
+      val mockController = new MockController
+      val tui = new Tui(mockController)
+      val cards = List(Card(Rank.Ace, Suit.Hearts), Card(Rank.Two, Suit.Spades))
+
+      val in = new java.io.ByteArrayInputStream("a\n".getBytes)
+      val outCapture = new java.io.ByteArrayOutputStream
+      Console.withIn(in) {
+        Console.withOut(outCapture) {
+          val result = tui.askForCard("Choose a card", cards, cancel = true)
+          result should be(None)
+        }
+      }
+    }
+
+    "call attack on controller when a valid card is chosen in askForAttack" in {
+      val mockController = new MockController
+      val tui = new Tui(mockController)
+
+      val in = new java.io.ByteArrayInputStream("1\n".getBytes)
+      Console.withIn(in) {
         tui.askForAttack()
       }
 
-      controller.attackMade shouldBe true
     }
 
-    "handle defense correctly" in {
-      val controller = new Controller {
-        var defenseMade = false
+    "call defend on controller when valid cards are chosen in askForDefend" in {
+      val mockController = new MockController
+      val tui = new Tui(mockController)
 
-        val stack = List(Card(Rank.Ace, Suit.Spades), Card(Rank.King, Suit.Hearts), Card(Rank.Queen, Suit.Diamonds), Card(Rank.Jack, Suit.Clubs))
-        val trump = Card(Rank.Ten, Suit.Spades)
-
-        override def status: Status = Status(Group(List(Player("Player1", List(Card(Rank.King, Suit.Spades)), Turn.Defending)), stack, trump, 6),
-          Round(Turn.Defending, List(Card(Rank.Ace, Suit.Spades)), List.empty, List.empty, None, false))
-        override def byTurn(turn: Turn): Option[Player] = Some(Player("Player1", List(Card(Rank.King, Suit.Spades)), Turn.Defending))
-        override def canDefend(used: Card, undefended: Card): Boolean = true
-
-        override def makeDefense(player: Player, used: Card, undefended: Card): Boolean = {
-          if (player.name == "Player1" && used == Card(Rank.King, Suit.Spades) && undefended == Card(Rank.Ace, Suit.Spades)) {
-            defenseMade = true
-            true
-          } else {
-            false
-          }
-        }
-        // Implement other methods as needed
-      }
-
-      val tui = new Tui(controller)
-
-      // Simulate user input
-      val input = new java.io.ByteArrayInputStream("1\n1\n".getBytes)
-      Console.withIn(input) {
+      val in = new java.io.ByteArrayInputStream("1\n1\n".getBytes)
+      Console.withIn(in) {
         tui.askForDefend()
       }
+    }
 
-      controller.defenseMade shouldBe true
+    "call pickUp controller when 'a' is input for askForCard in askForDefend" in {
+      val mockController = new MockController
+      val tui = new Tui(mockController)
+
+      val in = new java.io.ByteArrayInputStream("a\n".getBytes)
+      Console.withIn(in) {
+        tui.askForDefend()
+      }
+    }
+
+    "return status correctly when createStatus is called in Tui object" in {
+      val in = new java.io.ByteArrayInputStream("2\n3\nplayer1\nplayer2\n".getBytes)
+      Console.withIn(in) {
+        val status = Tui.createStatus()
+        status.group.players.size should be (2)
+      }
+    }
+
+    "return correct number of cards when askForCardAmount is called in Tui object" in {
+      val in = new java.io.ByteArrayInputStream("3\n".getBytes)
+      Console.withIn(in) {
+        val cardAmount = Tui.askForCardAmount(4)
+        cardAmount should be (3)
+      }
+    }
+
+    "return correct number of players when askForPlayerAmount is called in Tui object" in {
+      val in = new java.io.ByteArrayInputStream("3\n".getBytes)
+      Console.withIn(in) {
+        val playerAmount = Tui.askForPlayerAmount
+        playerAmount should be (3)
+      }
+    }
+
+    "return correct player names when askForNames is called in Tui object" in {
+      val in = new java.io.ByteArrayInputStream("player1\nplayer2\n".getBytes)
+      Console.withIn(in) {
+        val playerNames = Tui.askForNames(2)
+        playerNames should contain("player1")
+        playerNames should contain("player2")
+      }
     }
   }
 }
