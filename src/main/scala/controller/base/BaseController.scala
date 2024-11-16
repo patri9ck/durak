@@ -9,6 +9,9 @@ import scala.util.Random
 
 case class BaseController(var status: Status) extends Observable, Controller {
 
+
+
+
   def chooseDefending(players: List[Player], index: Int): List[Player] = {
     require(index >= 0)
     require(index < players.size)
