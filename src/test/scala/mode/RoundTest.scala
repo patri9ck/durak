@@ -14,7 +14,7 @@ class RoundSpec extends AnyWordSpec with Matchers {
       val passed = Some(Player("Player1", List(), Turn.Watching))
       val denied = false
 
-      val round = Round(turn, defended, undefended, used, passed, denied)
+      val round = Round(turn, defended, undefended, used, denied, passed)
 
       round.turn should be(turn)
       round.defended should be(defended)
@@ -25,7 +25,7 @@ class RoundSpec extends AnyWordSpec with Matchers {
     }
 
     "allow updating the turn" in {
-      val round = Round(Turn.FirstlyAttacking, List(), List(), List(), None, false)
+      val round = Round(Turn.FirstlyAttacking, List(), List(), List(), false, None)
       val newTurn = Turn.Defending
 
       val updatedRound = round.copy(turn = newTurn)
@@ -39,7 +39,7 @@ class RoundSpec extends AnyWordSpec with Matchers {
     }
 
     "allow updating the defended cards" in {
-      val round = Round(Turn.FirstlyAttacking, List(), List(), List(), None, false)
+      val round = Round(Turn.FirstlyAttacking, List(), List(), List(), false, None)
       val newDefended = List(Card(Rank.Ace, Suit.Spades))
 
       val updatedRound = round.copy(defended = newDefended)
@@ -53,7 +53,7 @@ class RoundSpec extends AnyWordSpec with Matchers {
     }
 
     "allow updating the undefended cards" in {
-      val round = Round(Turn.FirstlyAttacking, List(), List(), List(), None, false)
+      val round = Round(Turn.FirstlyAttacking, List(), List(), List(), false, None)
       val newUndefended = List(Card(Rank.King, Suit.Hearts))
 
       val updatedRound = round.copy(undefended = newUndefended)
@@ -67,7 +67,7 @@ class RoundSpec extends AnyWordSpec with Matchers {
     }
 
     "allow updating the used cards" in {
-      val round = Round(Turn.FirstlyAttacking, List(), List(), List(), None, false)
+      val round = Round(Turn.FirstlyAttacking, List(), List(), List(), false, None)
       val newUsed = List(Card(Rank.Queen, Suit.Diamonds))
 
       val updatedRound = round.copy(used = newUsed)
@@ -81,7 +81,7 @@ class RoundSpec extends AnyWordSpec with Matchers {
     }
 
     "allow updating the passed player" in {
-      val round = Round(Turn.FirstlyAttacking, List(), List(), List(), None, false)
+      val round = Round(Turn.FirstlyAttacking, List(), List(), List(), false, None)
       val newPassed = Some(Player("Player1", List(), Turn.Watching))
 
       val updatedRound = round.copy(passed = newPassed)
@@ -95,7 +95,7 @@ class RoundSpec extends AnyWordSpec with Matchers {
     }
 
     "allow updating the denied status" in {
-      val round = Round(Turn.FirstlyAttacking, List(), List(), List(), None, false)
+      val round = Round(Turn.FirstlyAttacking, List(), List(), List(), false, None)
       val newDenied = true
 
       val updatedRound = round.copy(denied = newDenied)

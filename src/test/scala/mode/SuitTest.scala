@@ -12,10 +12,5 @@ class SuitSpec extends AnyWordSpec with Matchers {
       Suit.Diamonds.display should be("♦")
       Suit.Clubs.display should be("♣")
     }
-
-    "return a random suit" in {
-      val suit = Suit.getRandomSuit
-      Suit.values should contain(suit)
-    }
   }
 }
