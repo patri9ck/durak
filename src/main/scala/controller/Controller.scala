@@ -1,6 +1,6 @@
 package controller
 
-import model.{Card, Group, Player, Rank, Status, Suit, Turn}
+import model.*
 import observer.Observable
 
 import scala.collection.mutable.ListBuffer
@@ -27,6 +27,6 @@ trait Controller extends Observable {
   def defend(used: Card, undefended: Card): Unit
 
   def byTurn(turn: Turn): Option[Player]
-  
-  def getPlayer: Option[Player] = status.group.players.find(_.turn == status.round.turn)
+
+  def getPlayer: Option[Player]
 }

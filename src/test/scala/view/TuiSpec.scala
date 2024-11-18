@@ -1,36 +1,47 @@
 package view
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 import controller.Controller
 import model.*
 import observer.Observer
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 import scala.collection.immutable.List
 
-// Mock of Controller to be used in tests
-class MockController extends Controller {
-
-  var status: Status = Status(Group(List(Player("Mock", List(Card(Rank.Ace, Suit.Hearts)), Turn.FirstlyAttacking)), List.empty, Card(Rank.Ace, Suit.Spades), 6), Round(Turn.FirstlyAttacking, List.empty, List.empty, List.empty, false, None))
-
-  override def add(obs: Observer): Unit = {}
-  override def remove(obs: Observer): Unit = {}
-  override def byTurn(turn: Turn): Option[Player] =
-    if(status.round.turn == turn) Some(status.group.players.head) else None
-
-  def chooseAttacking(player: Player): Unit = {}
-  def chooseAttacking(): Unit = {}
-  def pickUp(): Unit = {}
-  def attack(card: Card): Unit = {}
-  def defend(used: Card, undefended: Card): Unit = {}
-  def denied(): Unit = {}
-  def canAttack(card: Card): Boolean = true
-  def canDefend(used: Card, undefended: Card): Boolean = true
-}
 
 class TuiSpec extends AnyWordSpec with Matchers {
 
-  "A Tui" should {
+  class MockController extends Controller {
+
+    var status: Status = Status(Group(List(Player("Mock", List(Card(Rank.Ace, Suit.Hearts)), Turn.FirstlyAttacking)), List.empty, Card(Rank.Ace, Suit.Spades), 6), Round(Turn.FirstlyAttacking, List.empty, List.empty, List.empty, false, None))
+
+    override def add(obs: Observer): Unit = {}
+
+    override def remove(obs: Observer): Unit = {}
+
+    override def byTurn(turn: Turn): Option[Player] =
+      if (status.round.turn == turn) Some(status.group.players.head) else None
+
+    override def getPlayer: Option[Player] = Some(status.group.players.head)
+
+    def chooseAttacking(player: Player): Unit = {}
+
+    def chooseAttacking(): Unit = {}
+
+    def pickUp(): Unit = {}
+
+    def attack(card: Card): Unit = {}
+
+    def defend(used: Card, undefended: Card): Unit = {}
+
+    def denied(): Unit = {}
+
+    def canAttack(card: Card): Boolean = true
+
+    def canDefend(used: Card, undefended: Card): Boolean = true
+  }
+
+  "Tui" should {
     "return None when 'z' is input for askForAttackingPlayer" in {
       val players = List(
         Player("Player1", List(), Turn.Watching),
