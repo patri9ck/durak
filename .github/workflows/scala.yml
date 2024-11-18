@@ -18,16 +18,3 @@ jobs:
         run: sbt compile
       - name: run tests
         run: sbt test
-  run_tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build Project and export Coverage
-        env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        run: |
-          export CI_BRANCH="${GITHUB_REF#refs/heads/}"
-          sbt coverageReport coveralls
-
-      
-
