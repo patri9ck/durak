@@ -2,7 +2,6 @@ package controller.base
 
 import controller.Controller
 import model.*
-import model.Turn.{Defending, FirstlyAttacking}
 import observer.Observable
 
 import scala.util.Random
@@ -64,7 +63,7 @@ case class BaseController(var status: Status) extends Controller {
         (playersAcc :+ player, stack)
     }
 
-    status = status.copy(group = (status.group.copy(players = updatedPlayers, stack = updatedStack)))
+    status = status.copy(group = status.group.copy(players = updatedPlayers, stack = updatedStack))
   }
 
   def updatePlayers(old: Player, updated: Player): List[Player] = {
@@ -84,7 +83,7 @@ case class BaseController(var status: Status) extends Controller {
 
   def handleFinish(finished: Player): Boolean = {
     if (!hasFinished(finished)) {
-      return false;
+      return false
     }
   
     val updated = finished.copy(turn = Turn.Watching)

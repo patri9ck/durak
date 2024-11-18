@@ -1,7 +1,5 @@
 package model
 
-import scala.util.Random
-
 enum Rank(val order: Int, val display: String):
   case Two extends Rank(2, "2")
   case Three extends Rank(3, "3")
@@ -19,8 +17,6 @@ enum Rank(val order: Int, val display: String):
 
 object Rank {
   def getBiggestRankLength: Int = Rank.values.map(_.display.length).max
-
-  def getRandomRank: Rank = Rank.values(Random.nextInt(Rank.values.length))
 }
 
 

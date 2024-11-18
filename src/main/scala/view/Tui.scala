@@ -12,8 +12,6 @@ class Tui(val controller: Controller) extends Observer {
   controller.add(this)
 
   def update(): Unit = {
-    println(controller.status.group)
-    println(controller.status.round)
     val player = controller.getPlayer
 
     if (player.nonEmpty) {
@@ -36,7 +34,7 @@ class Tui(val controller: Controller) extends Observer {
         askForAttack(player.get, defended, undefended, () => {
           clearScreen()
           controller.denied()
-        }, (card) => {
+        }, card => {
           if (controller.canAttack(card)) {
             clearScreen()
             controller.attack(card)
@@ -96,7 +94,7 @@ class Tui(val controller: Controller) extends Observer {
 
   def getLookAwayDisplay(player: Player): String = s"${player.name}, Du bist dran. Alle anderen wegschauen!"
 
-  def getCountdownDisplay(seconds: Int): List[String] = (1 to (seconds)).reverse.map(i => s"$i...").toList
+  def getCountdownDisplay(seconds: Int): List[String] = (1 to seconds).reverse.map(i => s"$i...").toList
 
   def getTurnsDisplay(players: List[Player]): List[String] = List(
     "Rollen",
@@ -296,16 +294,15 @@ object Tui {
     val limit = 52 / playerAmount
 
     while (true) {
-      print(s"Wie viele Karten soll jeder Spieler erhalten? (2-${limit}) ")
+      print(s"Wie viele Karten soll jeder Spieler erhalten? (2-$limit) ")
 
       val amount = StdIn.readLine().toIntOption
 
-      if (amount.nonEmpty && amount.get >= 2 && amount.get <= limit) {
+      if (amount.nonEmpty && amount.get >= 2 && amount.get <= limit)
         return amount.get
-      }
     }
-
-    2
+    
+    6
   }
 
   def askForPlayerAmount: Int = {
@@ -318,7 +315,7 @@ object Tui {
         return amount.get
       }
     }
-
+    
     2
   }
 
@@ -326,10 +323,10 @@ object Tui {
     val names = ListBuffer[String]()
 
     for (i <- 1 until amount + 1) {
-      var name = "";
+      var name = ""
 
       while (name.isBlank || names.contains(name)) {
-        print(s"Name von Spieler ${i}: ")
+        print(s"Name von Spieler $i: ")
 
         name = StdIn.readLine()
       }
