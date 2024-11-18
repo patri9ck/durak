@@ -7,7 +7,7 @@ import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
 trait Controller extends Observable {
-  
+
   def status: Status
 
   def chooseAttacking(attacking: Player): Unit
