@@ -46,21 +46,22 @@ case class BaseController(var status: Status) extends Controller {
   }
 
   def drawFromStack(): Unit = {
-    val orderedPlayers = {
-      val startIndex = status.round.passed.map(status.group.players.indexOf).getOrElse(
-        (status.group.players.indexWhere(_.turn == Turn.SecondlyAttacking) + 1) % status.group.players.size
-      )
+    val start = status.round.passed.orElse(byTurn(Turn.FirstlyAttacking)).map(status.group.players.indexOf).get
 
-      status.group.players.drop(startIndex) ++ status.group.players.take(startIndex)
-    }
+    var updatedStack = status.group.stack
+    var updatedPlayers = status.group.players
 
-    val (updatedPlayers, updatedStack) = orderedPlayers.foldLeft((List.empty[Player], status.group.stack)) {
-      case ((playersAcc, stack), player) if player.cards.size < status.group.amount =>
-        val (toDraw, remainingStack) = stack.splitAt(6 - player.cards.size)
+    for (step <- status.group.players.indices) {
+      val index = (start - step + status.group.players.size) % status.group.players.size
+      val player = status.group.players(index)
+      val amount = status.group.amount - player.cards.length
 
-        (playersAcc :+ player.copy(cards = player.cards ++ toDraw), remainingStack)
-      case ((playersAcc, stack), player) =>
-        (playersAcc :+ player, stack)
+      if (player.turn != Turn.Watching && amount > 0) {
+        val (draw, remaining) = updatedStack.splitAt(amount)
+
+        updatedStack = remaining
+        updatedPlayers = updatedPlayers.updated(index, player.copy(cards = player.cards ++ draw))
+      }
     }
 
     status = status.copy(group = status.group.copy(players = updatedPlayers, stack = updatedStack))
@@ -114,7 +115,6 @@ case class BaseController(var status: Status) extends Controller {
 
   override def denied(): Unit = {
     requireAttack()
-    require(status.round.defended.nonEmpty || status.round.undefended.nonEmpty)
 
     val attacking = byTurnThrow(status.round.turn)
 
