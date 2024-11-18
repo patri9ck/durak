@@ -31,19 +31,19 @@ class MockController extends Controller {
 class TuiSpec extends AnyWordSpec with Matchers {
 
   "A Tui" should {
-    "call the chooseDefending method of the controller when 'z' is input for askForDefendingPlayer" in {
+    "return None when 'z' is input for askForAttackingPlayer" in {
       val players = List(
         Player("Player1", List(), Turn.Watching),
         Player("Player2", List(), Turn.Watching),
         Player("Player3", List(), Turn.Watching)
       )
-      
+
       val mockController = new MockController
       val tui = new Tui(mockController)
 
       val in = new java.io.ByteArrayInputStream("z\n".getBytes)
       Console.withIn(in) {
-        tui.askForAttackingPlayer(players) should be(Some)
+        tui.askForAttackingPlayer(players) should be(None)
       }
     }
 
