@@ -10,9 +10,9 @@ trait Controller extends Observable {
   
   def status: Status
 
-  def chooseDefending(defending: Player): Unit
+  def chooseAttacking(attacking: Player): Unit
 
-  def chooseDefending(): Unit
+  def chooseAttacking(): Unit
 
   def canAttack(card: Card): Boolean
 
@@ -27,4 +27,6 @@ trait Controller extends Observable {
   def defend(used: Card, undefended: Card): Unit
 
   def byTurn(turn: Turn): Option[Player]
+  
+  def getPlayer: Option[Player] = status.group.players.find(_.turn == status.round.turn)
 }
