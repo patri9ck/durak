@@ -16,10 +16,5 @@ class RankSpec extends AnyWordSpec with Matchers {
     "return the biggest rank display length" in {
       Rank.getBiggestRankLength should be(2)
     }
-
-    "return a random rank" in {
-      val rank = Rank.getRandomRank
-      Rank.values should contain(rank)
-    }
   }
 }

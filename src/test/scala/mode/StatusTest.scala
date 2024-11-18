@@ -12,7 +12,7 @@ class StatusSpec extends AnyWordSpec with Matchers {
       val trump = Card(Rank.Queen, Suit.Diamonds)
       val amount = 6
       val group = Group(players, stack, trump, amount)
-      val round = Round(Turn.FirstlyAttacking, List(), List(), List(), None, false)
+      val round = Round(Turn.FirstlyAttacking, List(), List(), List(), false, None)
 
       val status = Status(group, round)
 
