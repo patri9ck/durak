@@ -129,7 +129,6 @@ case class BaseController(var status: Status) extends Controller {
       .setStack(updatedStack)
       .setPlayers(updatedPlayers)
       .removePassed()
-      .status
   }
 
   override def getPlayer: Option[Player] = byTurn(status.turn)
@@ -162,7 +161,7 @@ case class BaseController(var status: Status) extends Controller {
       .setPlayers(chooseNextAttacking(updatePlayers(status.players, defending, updated), updated))
       .resetRound
       .status
-    
+
     notifySubscribers()
   }
 
@@ -267,7 +266,7 @@ case class BaseController(var status: Status) extends Controller {
     if (used.suit == status.trump.suit) {
       return undefended.suit != status.trump.suit
     }
-    
+
     false
   }
 }
