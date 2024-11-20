@@ -18,15 +18,15 @@ class Tui(val controller: Controller) extends View {
     if (player.nonEmpty) {
       lookAway(player.get)
 
-      val undefended = controller.status.round.undefended
-      val defended = controller.status.round.defended
-      val used = controller.status.round.used
+      val undefended = controller.status.undefended
+      val defended = controller.status.defended
+      val used = controller.status.used
 
       println()
-      getPlayersDisplay(controller.status.group.players).foreach(println)
+      getPlayersDisplay(controller.status.players).foreach(println)
       println()
-      getStackDisplay(controller.status.group.stack).foreach(println)
-      getTrumpDisplay(controller.status.group.trump).foreach(println)
+      getStackDisplay(controller.status.stack).foreach(println)
+      getTrumpDisplay(controller.status.trump).foreach(println)
       println()
       getRoundCardsDisplay(undefended, defended, used).foreach(println)
       getOwnDisplay(player.get).foreach(println)
@@ -41,7 +41,7 @@ class Tui(val controller: Controller) extends View {
             controller.attack(card)
           }
         })
-      } else if (controller.status.round.turn == Turn.Defending) {
+      } else if (controller.status.turn == Turn.Defending) {
         askForDefend(player.get, used, undefended, () => {
           clearScreen()
           controller.pickUp()
@@ -56,7 +56,7 @@ class Tui(val controller: Controller) extends View {
   }
 
   override def start(): Unit = {
-    val players = controller.status.group.players
+    val players = controller.status.players
 
     println()
     println("Als nächstes werden alle Karten gezeigt!")
@@ -133,7 +133,7 @@ class Tui(val controller: Controller) extends View {
   }
 
   def getUndefendedDisplay(undefended: List[Card]): List[String] = {
-    val display = getOrderedCardsDisplay(controller.status.round.undefended)
+    val display = getOrderedCardsDisplay(controller.status.undefended)
 
     if (display.isEmpty) {
       return Nil
