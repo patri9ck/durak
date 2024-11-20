@@ -1,15 +1,15 @@
 package model
 
-class StatusBuilder(var players: List[Player],
-                    var stack: List[Card],
-                    var trump: Card,
-                    var amount: Int,
-                    var turn: Turn,
-                    var defended: List[Card],
-                    var undefended: List[Card],
-                    var used: List[Card],
-                    var denied: Boolean,
-                    var passed: Option[Player]) {
+class StatusBuilder(private var players: List[Player],
+                    private var stack: List[Card],
+                    private var trump: Card,
+                    private var amount: Int,
+                    private var turn: Turn,
+                    private var defended: List[Card],
+                    private var undefended: List[Card],
+                    private var used: List[Card],
+                    private var denied: Boolean,
+                    private var passed: Option[Player]) {
 
   def setPlayers(players: List[Player]): StatusBuilder = {
     this.players = players
@@ -90,6 +90,26 @@ class StatusBuilder(var players: List[Player],
   def byTurn(turn: Turn): Option[Player] = {
     players.find(_.turn == turn)
   }
+
+  def getPlayers: List[Player] = players
+
+  def getStack: List[Card] = stack
+
+  def getTrump: Card = trump
+
+  def getAmount: Int = amount
+
+  def getTurn: Turn = turn
+
+  def getDefended: List[Card] = defended
+
+  def getUndefended: List[Card] = undefended
+
+  def getUsed: List[Card] = used
+
+  def isDenied: Boolean = denied
+
+  def getPassed: Option[Player] = passed
 
   def status: Status = Status(Group(players, stack, trump, amount), Round(turn, defended, undefended, used, denied, passed))
 }
