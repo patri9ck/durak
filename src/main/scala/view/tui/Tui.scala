@@ -1,17 +1,18 @@
-package view
+package view.tui
 
 import controller.Controller
-import model.{Card, Player, Rank, Status, Turn}
-import observer.Observer
+import controller.base.BaseController
+import model.*
+import view.{View, ViewCreator}
 
 import scala.collection.mutable.ListBuffer
 import scala.io.StdIn
 
-class Tui(val controller: Controller) extends Observer {
+class Tui(val controller: Controller) extends View {
 
   controller.add(this)
 
-  def update(): Unit = {
+  override def update(): Unit = {
     val player = controller.getPlayer
 
     if (player.nonEmpty) {
@@ -22,7 +23,7 @@ class Tui(val controller: Controller) extends Observer {
       val used = controller.status.round.used
 
       println()
-      getTurnsDisplay(controller.status.group.players).foreach(println)
+      getPlayersDisplay(controller.status.group.players).foreach(println)
       println()
       getStackDisplay(controller.status.group.stack).foreach(println)
       getTrumpDisplay(controller.status.group.trump).foreach(println)
@@ -54,7 +55,7 @@ class Tui(val controller: Controller) extends Observer {
     }
   }
 
-  def start(): Unit = {
+  override def start(): Unit = {
     val players = controller.status.group.players
 
     println()
@@ -82,37 +83,17 @@ class Tui(val controller: Controller) extends Observer {
     })
   }
 
-  def getStackDisplay(stack: List[Card]): List[String] = {
-    if (stack.isEmpty) {
-      return Nil
-    }
-
-    "Stapel" :: getCardDisplay(stack.head)
-  }
+  def getStackDisplay(stack: List[Card]): String = s"Stapel: ${stack.length}"
 
   def getTrumpDisplay(trump: Card): List[String] = "Trumpf" :: getCardDisplay(trump)
 
-  def getLookAwayDisplay(player: Player): String = s"${player.name}, Du bist dran. Alle anderen wegschauen!"
+  def getLookAwayDisplay(player: Player): String = s"$player, Du bist dran. Alle anderen wegschauen!"
 
   def getCountdownDisplay(seconds: Int): List[String] = (1 to seconds).reverse.map(i => s"$i...").toList
 
-  def getTurnsDisplay(players: List[Player]): List[String] = List(
-    "Rollen",
-    players.map(player => player.turn.name.head.toString + " " * (player.name.length - 1)).mkString("   "),
-    players.map(player => player.name).mkString("   ")
-  )
+  def getPlayersDisplay(players: List[Player]): List[String] = players.map(player => s"${player.turn}: $player (Karten: ${player.cards.length})")
 
-  def getCardDisplay(card: Card): List[String] = {
-    val biggestLength = Rank.getBiggestRankLength
-
-    List(
-      "┌" + "─" * (biggestLength * 2 + 1) + "┐",
-      "│" + card.rank.display + " " * (2 * biggestLength + 1 - card.rank.display.length) + "│",
-      "│" + " " * biggestLength + card.suit.display + " " * biggestLength + "│",
-      "│" + " " * (2 * biggestLength + 1 - card.rank.display.length) + card.rank.display + "│",
-      "└" + "─" * (biggestLength * 2 + 1) + "┘",
-    )
-  }
+  def getCardDisplay(card: Card): List[String] = card.toString.split("\n").toList
 
   def getRoundCardsDisplay(undefended: List[Card], defended: List[Card], used: List[Card]): List[String] =
     getUndefendedDisplay(undefended) ++ getDefendedDisplay(defended, used)
@@ -172,7 +153,7 @@ class Tui(val controller: Controller) extends Observer {
   }
 
   def getOwnDisplay(player: Player): List[String] = {
-    s"${player.name}, Deine Karten" :: getOrderedCardsDisplay(player.cards)
+    s"$player, Deine Karten" :: getOrderedCardsDisplay(player.cards)
   }
 
   def countdown(seconds: Int): Unit = {
@@ -242,8 +223,6 @@ class Tui(val controller: Controller) extends Observer {
     None
   }
 
-
-
   def askForAttack(attacking: Player, defended: List[Card], undefended: List[Card], canceled: () => Unit, chosen: Card => Unit): Unit = {
     while (true) {
       val card = askForCard("Mit welcher Karte möchtest du angreifen?", attacking.cards, defended.nonEmpty
@@ -282,12 +261,12 @@ class Tui(val controller: Controller) extends Observer {
   }
 }
 
-object Tui {
-  def createStatus(): Status = {
+object Tui extends ViewCreator {
+  override def createView(): View = {
     val playerAmount = askForPlayerAmount
     val cardAmount = askForCardAmount(playerAmount)
 
-    Status.createStatus(cardAmount, askForNames(playerAmount))
+    Tui(BaseController(Status.createStatus(cardAmount, askForNames(playerAmount))))
   }
 
   def askForCardAmount(playerAmount: Int): Int = {
@@ -301,7 +280,7 @@ object Tui {
       if (amount.nonEmpty && amount.get >= 2 && amount.get <= limit)
         return amount.get
     }
-    
+
     6
   }
 
@@ -315,7 +294,7 @@ object Tui {
         return amount.get
       }
     }
-    
+
     2
   }
 

@@ -1,9 +1,8 @@
-import controller.base.BaseController
-import view.Tui
+import view.{ViewCreator, ViewType}
 
 object Durak {
   @main
   def main(): Unit = {
-    Tui(BaseController(Tui.createStatus())).start()
+    ViewCreator.apply(ViewType.Tui).createView().start()
   }
 }
