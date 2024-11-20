@@ -14,6 +14,8 @@ enum Rank(val order: Int, val display: String):
   case Queen extends Rank(12, "Q")
   case King extends Rank(13, "K")
   case Ace extends Rank(14, "A")
+  
+  override def toString: String = display
 
 object Rank {
   def getBiggestRankLength: Int = Rank.values.map(_.display.length).max
