@@ -111,19 +111,19 @@ class StatusBuilder(private var players: List[Player],
 
   def getPassed: Option[Player] = passed
 
-  def status: Status = Status(Group(players, stack, trump, amount), Round(turn, defended, undefended, used, denied, passed))
+  def status: Status = Status(players, stack, trump, amount, turn, defended, undefended, used, denied, passed)
 }
 
 object StatusBuilder {
 
-  def create(status: Status): StatusBuilder = StatusBuilder(status.group.players,
-    status.group.stack,
-    status.group.trump,
-    status.group.amount,
-    status.round.turn,
-    status.round.defended,
-    status.round.undefended,
-    status.round.used,
-    status.round.denied,
-    status.round.passed)
+  def create(status: Status): StatusBuilder = StatusBuilder(status.players,
+    status.stack,
+    status.trump,
+    status.amount,
+    status.turn,
+    status.defended,
+    status.undefended,
+    status.used,
+    status.denied,
+    status.passed)
 }

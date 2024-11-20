@@ -1,12 +1,24 @@
 package model
 
-case class Status(group: Group, round: Round)
+import scala.util.Random
+
+case class Status(players: List[Player], stack: List[Card], trump: Card, amount: Int, turn: Turn, defended: List[Card], undefended: List[Card], used: List[Card], denied: Boolean, passed: Option[Player])
 
 object Status {
   def createStatus(amount: Int, names: List[String]): Status = {
-    Status(
-      Group.createGroup(amount, names),
-      Round.createRound,
-    )
+    val deck = Card.getDeck
+
+    val index = Random.nextInt(deck.size)
+    val trump = deck(index)
+
+    var remaining = deck.patch(index, Nil, 1)
+
+    val players = names.map { name =>
+      val playerCards = remaining.take(amount)
+      remaining = remaining.drop(amount)
+      Player(name, playerCards, Turn.Watching)
+    }
+
+    Status(players, remaining :+ trump, trump, amount, Turn.Watching, List(), List(), List(), false, None)
   }
 }

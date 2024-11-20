@@ -14,16 +14,16 @@ class TuiSpec extends AnyWordSpec with Matchers {
 
   class MockController extends Controller {
 
-    var status: Status = Status(Group(List(Player("Mock", List(Card(Rank.Ace, Suit.Hearts)), Turn.FirstlyAttacking)), List.empty, Card(Rank.Ace, Suit.Spades), 6), Round(Turn.FirstlyAttacking, List.empty, List.empty, List.empty, false, None))
+    var status: Status = Status(List(Player("Mock", List(Card(Rank.Ace, Suit.Hearts)), Turn.FirstlyAttacking)), List.empty, Card(Rank.Ace, Suit.Spades), 6, Turn.FirstlyAttacking, List.empty, List.empty, List.empty, false, None)
 
     override def add(obs: Observer): Unit = {}
 
     override def remove(obs: Observer): Unit = {}
 
     override def byTurn(turn: Turn): Option[Player] =
-      if (status.round.turn == turn) Some(status.group.players.head) else None
+      if (status.turn == turn) Some(status.players.head) else None
 
-    override def getPlayer: Option[Player] = Some(status.group.players.head)
+    override def getPlayer: Option[Player] = Some(status.players.head)
 
     def chooseAttacking(player: Player): Unit = {}
 
