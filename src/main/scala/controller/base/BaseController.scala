@@ -127,15 +127,15 @@ case class BaseController(var status: Status) extends Controller {
   }
 
   def drawFromStack(statusBuilder: StatusBuilder): Unit = {
-    val start = statusBuilder.passed.orElse(statusBuilder.byTurn(Turn.FirstlyAttacking)).map(statusBuilder.players.indexOf).get
+    val start = statusBuilder.getPassed.orElse(statusBuilder.byTurn(Turn.FirstlyAttacking)).map(statusBuilder.getPlayers.indexOf).get
 
-    var updatedStack = statusBuilder.stack
-    var updatedPlayers = statusBuilder.players
+    var updatedStack = statusBuilder.getStack
+    var updatedPlayers = statusBuilder.getPlayers
 
-    for (step <- statusBuilder.players.indices) {
-      val index = (start - step + statusBuilder.players.size) % statusBuilder.players.size
-      val player = statusBuilder.players(index)
-      val amount = statusBuilder.amount - player.cards.length
+    for (step <- statusBuilder.getPlayers.indices) {
+      val index = (start - step + statusBuilder.getPlayers.size) % statusBuilder.getPlayers.size
+      val player = statusBuilder.getPlayers(index)
+      val amount = statusBuilder.getAmount - player.cards.length
 
       if (player.turn != Turn.Watching && amount > 0) {
         val (draw, remaining) = updatedStack.splitAt(amount)
@@ -196,11 +196,11 @@ case class BaseController(var status: Status) extends Controller {
 
   def hasFinished(finished: Player, statusBuilder: StatusBuilder): Boolean = {
     if (finished.turn == Turn.FirstlyAttacking || finished.turn == Turn.SecondlyAttacking) {
-      return statusBuilder.stack.isEmpty && finished.cards.isEmpty
+      return statusBuilder.getStack.isEmpty && finished.cards.isEmpty
     }
 
     if (finished.turn == Turn.Defending) {
-      return statusBuilder.stack.isEmpty && statusBuilder.undefended.isEmpty && finished.cards.isEmpty
+      return statusBuilder.getStack.isEmpty && statusBuilder.getUndefended.isEmpty && finished.cards.isEmpty
     }
 
     true
@@ -209,11 +209,11 @@ case class BaseController(var status: Status) extends Controller {
   def finish(finished: Player, statusBuilder: StatusBuilder): Unit = {
     val updated = finished.copy(turn = Turn.Finished)
     
-    statusBuilder.setPlayers(updatePlayers(statusBuilder.players, finished, updated))
+    statusBuilder.setPlayers(updatePlayers(statusBuilder.getPlayers, finished, updated))
 
     if (finished.turn == Turn.Defending) {
       statusBuilder
-        .setPlayers(chooseNextAttacking(statusBuilder.players, updated))
+        .setPlayers(chooseNextAttacking(statusBuilder.getPlayers, updated))
         .resetRound
     } else if (finished.turn == Turn.FirstlyAttacking && statusBuilder.byTurn(Turn.SecondlyAttacking).isEmpty || finished.turn == Turn.SecondlyAttacking) {
       statusBuilder.setTurn(Turn.Defending)

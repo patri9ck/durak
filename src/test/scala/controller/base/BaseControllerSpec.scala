@@ -141,8 +141,8 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
         controller.drawFromStack(statusBuilder)
 
-        statusBuilder.players.foreach(player => player.cards.length should be(amount))
-        statusBuilder.stack should be(empty)
+        statusBuilder.getPlayers.foreach(player => player.cards.length should be(amount))
+        statusBuilder.getStack should be(empty)
       }
 
       "start with passed if passed is Some and stop if the stack is empty" in {
@@ -164,7 +164,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
         controller.drawFromStack(statusBuilder)
 
-        statusBuilder.players.last.cards(3) should be(stack.head)
+        statusBuilder.getPlayers.last.cards(3) should be(stack.head)
       }
 
       "start with the player that has the turn FirstlyAttacking if passed is None" in {
@@ -183,7 +183,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
         controller.drawFromStack(statusBuilder)
 
-        statusBuilder.players.head.cards(3) should be(stack.head)
+        statusBuilder.getPlayers.head.cards(3) should be(stack.head)
       }
     }
 
@@ -275,7 +275,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
         controller.finish(finished, statusBuilder)
 
-        statusBuilder.players.head.turn should be(Turn.Finished)
+        statusBuilder.getPlayers.head.turn should be(Turn.Finished)
       }
 
       "set the next turn to FirstlyAttacking and reset the defended, undefended and used List if the player was Defending" in {
@@ -289,11 +289,11 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
         controller.finish(defending, statusBuilder)
 
-        statusBuilder.turn should be(Turn.FirstlyAttacking)
-        statusBuilder.players.last.turn should be(Turn.FirstlyAttacking)
-        statusBuilder.defended should be(empty)
-        statusBuilder.undefended should be(empty)
-        statusBuilder.used should be(empty)
+        statusBuilder.getTurn should be(Turn.FirstlyAttacking)
+        statusBuilder.getPlayers.last.turn should be(Turn.FirstlyAttacking)
+        statusBuilder.getDefended should be(empty)
+        statusBuilder.getUndefended should be(empty)
+        statusBuilder.getUsed should be(empty)
       }
 
       "set the next turn to Defending if the player was FirstlyAttacking and there is no SecondlyAttacking player or if the player was SecondlyAttacking" in {
@@ -306,7 +306,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
         controller.finish(attacking, statusBuilder)
 
-        statusBuilder.turn should be(Turn.Defending)
+        statusBuilder.getTurn should be(Turn.Defending)
       }
 
       "set the next turn to SecondlyAttacking if the player was FirstlyAttacking and there is a SecondlyAttacking player" in {
@@ -320,7 +320,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
         controller.finish(attacking, statusBuilder)
 
-        statusBuilder.turn should be(Turn.SecondlyAttacking)
+        statusBuilder.getTurn should be(Turn.SecondlyAttacking)
       }
     }
 
