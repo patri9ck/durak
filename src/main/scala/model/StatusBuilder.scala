@@ -1,15 +1,15 @@
 package model
 
-class StatusBuilder(private var players: List[Player],
-                    private var stack: List[Card],
-                    private var trump: Card,
-                    private var amount: Int,
-                    private var turn: Turn,
-                    private var defended: List[Card],
-                    private var undefended: List[Card],
-                    private var used: List[Card],
-                    private var denied: Boolean,
-                    private var passed: Option[Player]) {
+class StatusBuilder private(private var players: List[Player],
+                            private var stack: List[Card],
+                            private var trump: Card,
+                            private var amount: Int,
+                            private var turn: Turn,
+                            private var defended: List[Card],
+                            private var undefended: List[Card],
+                            private var used: List[Card],
+                            private var denied: Boolean,
+                            private var passed: Option[Player]) {
 
   def setPlayers(players: List[Player]): StatusBuilder = {
     this.players = players
