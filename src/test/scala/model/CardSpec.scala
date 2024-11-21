@@ -21,6 +21,26 @@ class CardSpec extends AnyWordSpec with Matchers {
         card2.beats(card1) should be(false)
       }
     }
-  }
 
+    "toString" should {
+      "return the card's rank and suit" in {
+        val card = Card(Rank.Ace, Suit.Spades)
+ 
+        card.toString should be(
+          """┌─────┐
+            |│A    │
+            |│  ♠  │
+            |│    A│
+            |└─────┘""".stripMargin)
+      }
+    }
+    
+    "getDeck" should {
+      "return a shuffled deck of cards" in {
+        val deck = Card.getDeck
+
+        deck.distinct.size should be(52)
+      }
+    }
+  }
 }
