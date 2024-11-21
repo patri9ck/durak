@@ -1,24 +1,63 @@
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-
-import java.io.{ByteArrayInputStream, OutputStream, PrintStream}
+import view.tui.Tui
+import view.{View, ViewCreator, ViewType}
 
 class DurakSpec extends AnyWordSpec with Matchers {
 
-  "Durak" should {
-    "main()" should {
-      "execute without errors" in {
-        val input = new ByteArrayInputStream("2\n6\nplayer1\nplayer2\nw\nw\nw\nz\n".getBytes)
+  class MockView extends View {
+    var started = false
 
-        Console.withIn(input) {
-          Console.withOut(new PrintStream(OutputStream.nullOutputStream())) {
-            try {
-              Durak.main()
-            } catch {
-              case e: Exception => input.available() should be(0)
-            }
-          }
+    override def start(): Unit = started = true
+
+    override def update(): Unit = {}
+  }
+
+  "Durak" should {
+    "main(String)" should {
+      "should use ViewCreator.apply(ViewType) as default" in {
+        Durak.viewCreator.apply(ViewType.Tui) should be(Tui)
+        Durak.viewCreator.apply(ViewType.Gui) should be(null)
+      }
+
+      "start the view" in {
+        val mockView = MockView()
+
+        Durak.viewCreator = _ => () => mockView
+
+        Durak.main("")
+
+        mockView.started should be(true)
+      }
+
+      "create the Gui if specified" in {
+        val mockView = MockView()
+
+        var outerViewType: ViewType = null
+
+        Durak.viewCreator = innerViewType => {
+          outerViewType = innerViewType
+          () => mockView
         }
+
+        Durak.main("gui")
+
+        outerViewType should be(ViewType.Gui)
+      }
+
+      "create the Tui as default" in {
+        val mockView = MockView()
+
+        var outerViewType: ViewType = null
+
+        Durak.viewCreator = innerViewType => {
+          outerViewType = innerViewType
+          () => mockView
+        }
+
+        Durak.main("")
+
+        outerViewType should be(ViewType.Tui)
       }
     }
   }
