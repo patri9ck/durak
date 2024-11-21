@@ -6,3 +6,5 @@ enum Suit(val display: String):
   case Diamonds extends Suit("♦")
   case Clubs extends Suit("♣")
 
+  override def toString: String = display
+
