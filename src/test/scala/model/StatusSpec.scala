@@ -8,7 +8,6 @@ class StatusSpec extends AnyWordSpec with Matchers {
   "Status" should {
 
     "createStatus(Int, List[String])" should {
-
       "create a status with the correct amount of players and cards" in {
         val names = List("Player1", "Player2")
         val amount = 6

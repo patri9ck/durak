@@ -1,6 +1,5 @@
 package view
 
-import view.gui.Gui
 import view.tui.Tui
 
 trait ViewCreator {
@@ -10,6 +9,6 @@ trait ViewCreator {
 object ViewCreator {
   def apply(viewType: ViewType): ViewCreator = viewType match {
     case ViewType.Tui => Tui
-    case ViewType.Gui => Gui
+    case ViewType.Gui => null
   }
 }
