@@ -21,41 +21,56 @@ class DurakSpec extends AnyWordSpec with Matchers {
       }
 
       "start the view" in {
+        val viewCreator = Durak.viewCreator
         val mockView = MockView()
-
-        Durak.viewCreator = _ => () => mockView
-
-        Durak.main("")
+        
+        try {
+          Durak.viewCreator = _ => () => mockView
+          
+          Durak.main("")
+        } finally {
+          Durak.viewCreator = viewCreator
+        }
 
         mockView.started should be(true)
       }
 
       "create the Gui if specified" in {
+        val viewCreator = Durak.viewCreator
         val mockView = MockView()
 
         var outerViewType: ViewType = null
 
-        Durak.viewCreator = innerViewType => {
-          outerViewType = innerViewType
-          () => mockView
-        }
+        try {
+          Durak.viewCreator = innerViewType => {
+            outerViewType = innerViewType
+            () => mockView
+          }
 
-        Durak.main("gui")
+          Durak.main("gui")
+        } finally {
+          Durak.viewCreator = viewCreator
+        }
 
         outerViewType should be(ViewType.Gui)
       }
 
       "create the Tui as default" in {
+        val viewCreator = Durak.viewCreator
         val mockView = MockView()
 
         var outerViewType: ViewType = null
+        
+        try {
+          Durak.viewCreator = innerViewType => {
+            outerViewType = innerViewType
+            () => mockView
+          }
 
-        Durak.viewCreator = innerViewType => {
-          outerViewType = innerViewType
-          () => mockView
+          Durak.main("")
+        } finally {
+          Durak.viewCreator = viewCreator
         }
-
-        Durak.main("")
 
         outerViewType should be(ViewType.Tui)
       }

@@ -10,11 +10,11 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
     "chooseAttacking(List[Player], Int)" should {
       "set one player to FirstlyAttacking and the other to Defending when there are two players" in {
         val players = List(
-          Player("Player1", List(), Turn.Watching),
-          Player("Player2", List(), Turn.Watching),
+          Player("Player1", Nil, Turn.Watching),
+          Player("Player2", Nil, Turn.Watching),
         )
 
-        val status = Status(players, List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, List(), List(), List(), false, None)
+        val status = Status(players, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         val updatedPlayers = controller.chooseAttacking(players, 0)
@@ -24,14 +24,14 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
       "ignore finished players" in {
         val players = List(
-          Player("Player1", List(), Turn.Watching),
-          Player("Player2", List(), Turn.Finished),
-          Player("Player3", List(), Turn.Watching),
-          Player("Player4", List(), Turn.Watching),
-          Player("Player5", List(), Turn.Watching),
+          Player("Player1", Nil, Turn.Watching),
+          Player("Player2", Nil, Turn.Finished),
+          Player("Player3", Nil, Turn.Watching),
+          Player("Player4", Nil, Turn.Watching),
+          Player("Player5", Nil, Turn.Watching),
         )
 
-        val status = Status(players, List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, List(), List(), List(), false, None)
+        val status = Status(players, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         val updatedPlayers = controller.chooseAttacking(players, 2)
@@ -42,12 +42,12 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
       "set one player to FirstlyAttacking, the player before to Defending and the player before that one to SecondlyAttacking" in {
         val players = List(
-          Player("Player1", List(), Turn.Watching),
-          Player("Player2", List(), Turn.Watching),
-          Player("Player3", List(), Turn.Watching),
+          Player("Player1", Nil, Turn.Watching),
+          Player("Player2", Nil, Turn.Watching),
+          Player("Player3", Nil, Turn.Watching),
         )
 
-        val status = Status(players, List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, List(), List(), List(), false, None)
+        val status = Status(players, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         val updatedPlayers = controller.chooseAttacking(players, 0)
@@ -59,14 +59,14 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
       "set all remaining players to Watching" in {
         val players = List(
-          Player("Player1", List(), Turn.Watching),
-          Player("Player2", List(), Turn.Watching),
-          Player("Player3", List(), Turn.Watching),
-          Player("Player4", List(), Turn.FirstlyAttacking),
-          Player("Player5", List(), Turn.SecondlyAttacking),
+          Player("Player1", Nil, Turn.Watching),
+          Player("Player2", Nil, Turn.Watching),
+          Player("Player3", Nil, Turn.Watching),
+          Player("Player4", Nil, Turn.FirstlyAttacking),
+          Player("Player5", Nil, Turn.SecondlyAttacking),
         )
 
-        val status = Status(players, List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, List(), List(), List(), false, None)
+        val status = Status(players, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         val updatedPlayers = controller.chooseAttacking(players, 2)
@@ -79,12 +79,12 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
     "chooseNextAttacking(List[Player], Player)" should {
       "set the player previous in the list to the one specified to FirstlyAttacking" in {
         val players = List(
-          Player("Player1", List(), Turn.Watching),
-          Player("Player2", List(), Turn.Watching),
-          Player("Player3", List(), Turn.Watching),
+          Player("Player1", Nil, Turn.Watching),
+          Player("Player2", Nil, Turn.Watching),
+          Player("Player3", Nil, Turn.Watching),
         )
 
-        val status = Status(players, List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, List(), List(), List(), false, None)
+        val status = Status(players, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         val updatedPlayers = controller.chooseNextAttacking(players, players(2))
@@ -95,12 +95,12 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
     "chooseAttacking(Player)" should {
       "set the specified player to FirstlyAttacking" in {
         val players = List(
-          Player("Player1", List(), Turn.Watching),
-          Player("Player2", List(), Turn.Watching),
-          Player("Player3", List(), Turn.Watching),
+          Player("Player1", Nil, Turn.Watching),
+          Player("Player2", Nil, Turn.Watching),
+          Player("Player3", Nil, Turn.Watching),
         )
 
-        val status = Status(players, List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, List(), List(), List(), false, None)
+        val status = Status(players, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         controller.chooseAttacking(players(1))
@@ -111,12 +111,12 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
     "chooseAttacking()" should {
       "set a random player to FirstlyAttacking" in {
         val players = List(
-          Player("Player1", List(), Turn.Watching),
-          Player("Player2", List(), Turn.Watching),
-          Player("Player3", List(), Turn.Watching),
+          Player("Player1", Nil, Turn.Watching),
+          Player("Player2", Nil, Turn.Watching),
+          Player("Player3", Nil, Turn.Watching),
         )
 
-        val status = Status(players, List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, List(), List(), List(), false, None)
+        val status = Status(players, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         controller.chooseAttacking()
@@ -133,7 +133,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
           Player("Player2", List(Card(Rank.Two, Suit.Spades), Card(Rank.Five, Suit.Hearts), Card(Rank.Ace, Suit.Diamonds)), Turn.SecondlyAttacking),
         )
 
-        val status = Status(players, stack, Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, List(), List(), List(), false, None)
+        val status = Status(players, stack, Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, Nil, Nil, Nil, false, None)
         val statusBuilder = StatusBuilder.create(status)
         val controller = BaseController(status)
 
@@ -154,7 +154,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
           passed
         )
 
-        val status = Status(players, stack, Card(Rank.Ten, Suit.Diamonds), 6, Turn.Watching, List(), List(), List(), false, Some(passed))
+        val status = Status(players, stack, Card(Rank.Ten, Suit.Diamonds), 6, Turn.Watching, Nil, Nil, Nil, false, Some(passed))
         val statusBuilder = StatusBuilder.create(status)
         val controller = BaseController(status)
 
@@ -171,7 +171,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
           Player("Player2", List(Card(Rank.Two, Suit.Spades), Card(Rank.Five, Suit.Hearts), Card(Rank.Ace, Suit.Diamonds)), Turn.Watching),
         )
 
-        val status = Status(players, stack, Card(Rank.Ten, Suit.Diamonds), 6, Turn.Watching, List(), List(), List(), false, None)
+        val status = Status(players, stack, Card(Rank.Ten, Suit.Diamonds), 6, Turn.Watching, Nil, Nil, Nil, false, None)
         val statusBuilder = StatusBuilder.create(status)
         val controller = BaseController(status)
 
@@ -183,16 +183,16 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
     "updatePlayers(Player, Player)" should {
       "replace the old player with the updated player" in {
-        val old = Player("Player1", List(), Turn.Watching)
-        val updated = Player("Player1", List(), Turn.FirstlyAttacking)
+        val old = Player("Player1", Nil, Turn.Watching)
+        val updated = Player("Player1", Nil, Turn.FirstlyAttacking)
 
         val players = List(
           old,
-          Player("Player2", List(), Turn.Watching),
-          Player("Player3", List(), Turn.Watching),
+          Player("Player2", Nil, Turn.Watching),
+          Player("Player3", Nil, Turn.Watching),
         )
 
-        val status = Status(players, List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, List(), List(), List(), false, None)
+        val status = Status(players, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         val updatedPlayers = controller.updatePlayers(status.players, old, updated)
@@ -203,9 +203,9 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
     "hasFinished(Player, StatusBuilder)" should {
       "return false if the stack is not empty" in {
-        val player = Player("Player1", List(), Turn.Defending)
+        val player = Player("Player1", Nil, Turn.Defending)
 
-        val status = Status(List(player), List(Card(Rank.Three, Suit.Clubs), Card(Rank.Ten, Suit.Spades)), Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, List(), List(), List(), false, None)
+        val status = Status(List(player), List(Card(Rank.Three, Suit.Clubs), Card(Rank.Ten, Suit.Spades)), Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         controller.hasFinished(player, StatusBuilder.create(status)) should be(false)
@@ -214,43 +214,43 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
       "return false if the player still has cards" in {
         val player = Player("Player1", List(Card(Rank.Ace, Suit.Hearts)), Turn.Defending)
 
-        val status = Status(List(player), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, List(), List(), List(), false, None)
+        val status = Status(List(player), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         controller.hasFinished(player, StatusBuilder.create(status)) should be(false)
       }
 
       "return false if the player is Defending and there are undefended cards" in {
-        val player = Player("Player1", List(), Turn.Defending)
+        val player = Player("Player1", Nil, Turn.Defending)
 
-        val status = Status(List(player), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, List(), List(Card(Rank.Ace, Suit.Hearts)), List(), false, None)
+        val status = Status(List(player), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, Nil, List(Card(Rank.Ace, Suit.Hearts)), Nil, false, None)
         val controller = BaseController(status)
 
         controller.hasFinished(player, StatusBuilder.create(status)) should be(false)
       }
 
       "return true if the player is Watching" in {
-        val player = Player("Player1", List(), Turn.Watching)
+        val player = Player("Player1", Nil, Turn.Watching)
 
-        val status = Status(List(player), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, List(), List(), List(), false, None)
+        val status = Status(List(player), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         controller.hasFinished(player, StatusBuilder.create(status)) should be(true)
       }
 
       "return true if the player is either FirstlyAttacking or SecondlyAttacking, has no cards and the stack is empty" in {
-        val player = Player("Player1", List(), Turn.FirstlyAttacking)
+        val player = Player("Player1", Nil, Turn.FirstlyAttacking)
 
-        val status = Status(List(player), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, List(), List(Card(Rank.Ace, Suit.Hearts)), List(), false, None)
+        val status = Status(List(player), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, Nil, List(Card(Rank.Ace, Suit.Hearts)), Nil, false, None)
         val controller = BaseController(status)
 
         controller.hasFinished(player, StatusBuilder.create(status)) should be(true)
       }
 
       "return true if the player is Defending, has no cards, the stack is empty and there are no undefended cards" in {
-        val player = Player("Player1", List(), Turn.Defending)
+        val player = Player("Player1", Nil, Turn.Defending)
 
-        val status = Status(List(player), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, List(), List(), List(), false, None)
+        val status = Status(List(player), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Watching, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         controller.hasFinished(player, StatusBuilder.create(status)) should be(true)
@@ -260,10 +260,10 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
     "finish(Player)" should {
       "set the finished player to Finished" in {
-        val finished = Player("Player1", List(), Turn.Defending)
+        val finished = Player("Player1", Nil, Turn.Defending)
 
         val status = Status(List(finished,
-          Player("Player2", List(), Turn.FirstlyAttacking)), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Hearts)), List(), List(), false, None)
+          Player("Player2", Nil, Turn.FirstlyAttacking)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Hearts)), Nil, Nil, false, None)
         val statusBuilder = StatusBuilder.create(status)
         val controller = BaseController(status)
 
@@ -273,11 +273,11 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
       }
 
       "set the next turn to FirstlyAttacking and reset the defended, undefended and used List if the player was Defending" in {
-        val defending = Player("Player1", List(), Turn.Defending)
+        val defending = Player("Player1", Nil, Turn.Defending)
 
         val status = Status(List(defending,
-          Player("Player2", List(), Turn.FirstlyAttacking),
-          Player("Player3", List(), Turn.SecondlyAttacking)), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Hearts)), List(), List(), false, None)
+          Player("Player2", Nil, Turn.FirstlyAttacking),
+          Player("Player3", Nil, Turn.SecondlyAttacking)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Hearts)), Nil, Nil, false, None)
         val statusBuilder = StatusBuilder.create(status)
         val controller = BaseController(status)
 
@@ -291,10 +291,10 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
       }
 
       "set the next turn to Defending if the player was FirstlyAttacking and there is no SecondlyAttacking player or if the player was SecondlyAttacking" in {
-        val attacking = Player("Player1", List(), Turn.FirstlyAttacking)
+        val attacking = Player("Player1", Nil, Turn.FirstlyAttacking)
 
         val status = Status(List(attacking,
-          Player("Player2", List(), Turn.Defending)), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Hearts)), List(), List(), false, None)
+          Player("Player2", Nil, Turn.Defending)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Hearts)), Nil, Nil, false, None)
         val statusBuilder = StatusBuilder.create(status)
         val controller = BaseController(status)
 
@@ -304,11 +304,11 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
       }
 
       "set the next turn to SecondlyAttacking if the player was FirstlyAttacking and there is a SecondlyAttacking player" in {
-        val attacking = Player("Player1", List(), Turn.FirstlyAttacking)
+        val attacking = Player("Player1", Nil, Turn.FirstlyAttacking)
 
         val status = Status(List(attacking,
-          Player("Player3", List(), Turn.SecondlyAttacking),
-          Player("Player3", List(), Turn.Defending)), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Hearts)), List(), List(), false, None)
+          Player("Player3", Nil, Turn.SecondlyAttacking),
+          Player("Player3", Nil, Turn.Defending)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Hearts)), Nil, Nil, false, None)
         val statusBuilder = StatusBuilder.create(status)
         val controller = BaseController(status)
 
@@ -322,7 +322,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
       "return true if there are no undefended and no defended cards" in {
         val card = Card(Rank.Ace, Suit.Spades)
 
-        val status = Status(List(), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, List(), List(), List(), false, None)
+        val status = Status(Nil, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         controller.canAttack(card) should be(true)
@@ -331,7 +331,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
       "return true if the used cards contain a card with the same rank" in {
         val card = Card(Rank.Ace, Suit.Spades)
 
-        val status = Status(List(), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, List(), List(), List(card), false, None)
+        val status = Status(Nil, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, Nil, Nil, List(card), false, None)
         val controller = BaseController(status)
 
         controller.canAttack(card) should be(true)
@@ -340,7 +340,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
       "return true if the defended cards contain a card with the same rank" in {
         val card = Card(Rank.Ace, Suit.Spades)
 
-        val status = Status(List(), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, List(card), List(), List(), false, None)
+        val status = Status(Nil, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, List(card), Nil, Nil, false, None)
         val controller = BaseController(status)
 
         controller.canAttack(card) should be(true)
@@ -349,7 +349,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
       "return true if the undefended cards contain a card with the same rank" in {
         val card = Card(Rank.Ace, Suit.Spades)
 
-        val status = Status(List(), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, List(), List(card), List(), false, None)
+        val status = Status(Nil, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, Nil, List(card), Nil, false, None)
         val controller = BaseController(status)
 
         controller.canAttack(card) should be(true)
@@ -359,12 +359,12 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
     "denied()" should {
       "set the defending player to the attacking player if all cards are defended and all attacking players denied" in {
         val players = List(
-          Player("Player1", List(), Turn.SecondlyAttacking),
-          Player("Player2", List(), Turn.Defending),
-          Player("Player3", List(), Turn.FirstlyAttacking)
+          Player("Player1", Nil, Turn.SecondlyAttacking),
+          Player("Player2", Nil, Turn.Defending),
+          Player("Player3", Nil, Turn.FirstlyAttacking)
         )
 
-        val status = Status(players, List(), Card(Rank.Ten, Suit.Spades), 6, Turn.SecondlyAttacking, List(), List(), List(), true, None)
+        val status = Status(players, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.SecondlyAttacking, Nil, Nil, Nil, true, None)
         val controller = BaseController(status)
 
         controller.denied()
@@ -374,12 +374,12 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
       "set the turn to Defending if both attacking players denied and there are still undefended cards" in {
         val players = List(
-          Player("Player1", List(), Turn.SecondlyAttacking),
-          Player("Player2", List(), Turn.Defending),
-          Player("Player3", List(), Turn.FirstlyAttacking)
+          Player("Player1", Nil, Turn.SecondlyAttacking),
+          Player("Player2", Nil, Turn.Defending),
+          Player("Player3", Nil, Turn.FirstlyAttacking)
         )
 
-        val status = Status(players, List(), Card(Rank.Ten, Suit.Spades), 6, Turn.SecondlyAttacking, List(), List(Card(Rank.Ace, Suit.Spades)), List(), true, None)
+        val status = Status(players, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.SecondlyAttacking, Nil, List(Card(Rank.Ace, Suit.Spades)), Nil, true, None)
         val controller = BaseController(status)
 
         controller.denied()
@@ -389,12 +389,12 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
       "set the turn to SecondlyAttacking if there are two attacking players and the first one denied" in {
         val players = List(
-          Player("Player1", List(), Turn.SecondlyAttacking),
-          Player("Player2", List(), Turn.Defending),
-          Player("Player3", List(), Turn.FirstlyAttacking)
+          Player("Player1", Nil, Turn.SecondlyAttacking),
+          Player("Player2", Nil, Turn.Defending),
+          Player("Player3", Nil, Turn.FirstlyAttacking)
         )
 
-        val status = Status(players, List(), Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, List(), List(Card(Rank.Ace, Suit.Spades)), List(), false, None)
+        val status = Status(players, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, Nil, List(Card(Rank.Ace, Suit.Spades)), Nil, false, None)
         val controller = BaseController(status)
 
         controller.denied()
@@ -406,7 +406,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
     "pickUp()" should {
       "fill up the defending player's cards with the used, defended and undefended cards" in {
         val status = Status(List(Player("Player1", List(Card(Rank.Seven, Suit.Spades)), Turn.Defending),
-          Player("Player2", List(), Turn.FirstlyAttacking)), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Spades)), List(Card(Rank.King, Suit.Spades), Card(Rank.Queen, Suit.Spades)), List(Card(Rank.Jack, Suit.Spades), Card(Rank.Ten, Suit.Spades)), false, None)
+          Player("Player2", Nil, Turn.FirstlyAttacking)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Spades)), List(Card(Rank.King, Suit.Spades), Card(Rank.Queen, Suit.Spades)), List(Card(Rank.Jack, Suit.Spades), Card(Rank.Ten, Suit.Spades)), false, None)
         val controller = BaseController(status)
 
         controller.pickUp()
@@ -416,7 +416,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
       "set the turn to FirstlyAttacking and reset the defended, undefended and used List" in {
         val status = Status(List(Player("Player1", List(Card(Rank.Seven, Suit.Spades)), Turn.Defending),
-          Player("Player2", List(), Turn.FirstlyAttacking)), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Spades)), List(Card(Rank.King, Suit.Spades), Card(Rank.Queen, Suit.Spades)), List(Card(Rank.Jack, Suit.Spades), Card(Rank.Ten, Suit.Spades)), false, None)
+          Player("Player2", Nil, Turn.FirstlyAttacking)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Spades)), List(Card(Rank.King, Suit.Spades), Card(Rank.Queen, Suit.Spades)), List(Card(Rank.Jack, Suit.Spades), Card(Rank.Ten, Suit.Spades)), false, None)
         val controller = BaseController(status)
 
         controller.pickUp()
@@ -431,7 +431,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
     "attack(Card)" should {
       "remove the card from the attacking player and add it to the undefended cards" in {
         val status = Status(List(Player("Player1", List(Card(Rank.Ace, Suit.Spades), Card(Rank.Seven, Suit.Spades)), Turn.FirstlyAttacking),
-          Player("Player2", List(), Turn.Defending)), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, List(), List(), List(), false, None)
+          Player("Player2", Nil, Turn.Defending)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         controller.attack(Card(Rank.Ace, Suit.Spades))
@@ -442,7 +442,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
       "set the turn to Defending if there is only one attacking player" in {
         val status = Status(List(Player("Player1", List(Card(Rank.Ace, Suit.Spades)), Turn.FirstlyAttacking),
-          Player("Player2", List(), Turn.Defending)), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, List(), List(), List(), false, None)
+          Player("Player2", Nil, Turn.Defending)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         controller.attack(Card(Rank.Ace, Suit.Spades))
@@ -452,7 +452,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
       "set the turn to Defending if the attacking player is SecondlyAttacking" in {
         val status = Status(List(Player("Player1", List(Card(Rank.Ace, Suit.Spades)), Turn.SecondlyAttacking),
-          Player("Player2", List(), Turn.Defending), Player("Player3", List(), Turn.FirstlyAttacking)), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.SecondlyAttacking, List(), List(), List(), false, None)
+          Player("Player2", Nil, Turn.Defending), Player("Player3", Nil, Turn.FirstlyAttacking)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.SecondlyAttacking, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         controller.attack(Card(Rank.Ace, Suit.Spades))
@@ -462,7 +462,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
       "set the turn to SecondlyAttacking if the attacking player is FirstlyAttacking" in {
         val status = Status(List(Player("Player1", List(Card(Rank.Ace, Suit.Spades)), Turn.SecondlyAttacking),
-          Player("Player2", List(), Turn.Defending), Player("Player3", List(), Turn.FirstlyAttacking)), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, List(), List(), List(), false, None)
+          Player("Player2", Nil, Turn.Defending), Player("Player3", Nil, Turn.FirstlyAttacking)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         controller.attack(Card(Rank.Ace, Suit.Spades))
@@ -472,7 +472,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
       "set the attacking player to finished if he finished" in {
         val status = Status(List(Player("Player1", List(Card(Rank.Ace, Suit.Spades)), Turn.FirstlyAttacking),
-          Player("Player2", List(), Turn.Defending)), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, List(), List(), List(), false, None)
+          Player("Player2", Nil, Turn.Defending)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         controller.attack(Card(Rank.Ace, Suit.Spades))
@@ -483,28 +483,28 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
     "canDefend(Card, Card)" should {
       "return true if the first card beats the second" in {
-        val status = Status(List(), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(), List(), List(), false, None)
+        val status = Status(Nil, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         controller.canDefend(Card(Rank.Ace, Suit.Hearts), Card(Rank.King, Suit.Hearts)) should be(true)
       }
 
       "return true if the suit of the first card is the trump suit and the second card is not" in {
-        val status = Status(List(), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(), List(), List(), false, None)
+        val status = Status(Nil, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         controller.canDefend(Card(Rank.Three, Suit.Spades), Card(Rank.King, Suit.Hearts)) should be(true)
       }
 
       "return true if the suit of both the first and the second card is the trump suit and the first card beats the second" in {
-        val status = Status(List(), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(), List(), List(), false, None)
+        val status = Status(Nil, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         controller.canDefend(Card(Rank.Ace, Suit.Spades), Card(Rank.King, Suit.Spades)) should be(true)
       }
 
       "return false if the first card is not a trump and lower than the second" in {
-        val status = Status(List(), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(), List(), List(), false, None)
+        val status = Status(Nil, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         controller.canDefend(Card(Rank.Three, Suit.Hearts), Card(Rank.King, Suit.Hearts)) should be(false)
@@ -514,7 +514,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
     "defend(Card, Card)" should {
       "remove the used card from the defending player and add it to the used cards and take the undefended to the defended" in {
         val status = Status(List(Player("Player1", List(Card(Rank.Ace, Suit.Spades), Card(Rank.Seven, Suit.Spades)), Turn.Defending),
-          Player("Player2", List(), Turn.FirstlyAttacking)), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(), List(Card(Rank.King, Suit.Spades), Card(Rank.Two, Suit.Hearts)), List(), false, None)
+          Player("Player2", Nil, Turn.FirstlyAttacking)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, Nil, List(Card(Rank.King, Suit.Spades), Card(Rank.Two, Suit.Hearts)), Nil, false, None)
         val controller = BaseController(status)
 
         controller.defend(Card(Rank.Ace, Suit.Spades), Card(Rank.King, Suit.Spades))
@@ -527,7 +527,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
       "set the turn to FirstlyAttacking" in {
         val status = Status(List(Player("Player1", List(Card(Rank.Ace, Suit.Spades), Card(Rank.Seven, Suit.Spades)), Turn.Defending),
-          Player("Player2", List(), Turn.FirstlyAttacking)), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(), List(Card(Rank.King, Suit.Spades), Card(Rank.Two, Suit.Hearts)), List(), false, None)
+          Player("Player2", Nil, Turn.FirstlyAttacking)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, Nil, List(Card(Rank.King, Suit.Spades), Card(Rank.Two, Suit.Hearts)), Nil, false, None)
         val controller = BaseController(status)
 
         controller.defend(Card(Rank.Ace, Suit.Spades), Card(Rank.King, Suit.Spades))
@@ -537,7 +537,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
       "set the defending player to finished if he finished" in {
         val status = Status(List(Player("Player1", List(Card(Rank.Ace, Suit.Spades)), Turn.Defending),
-          Player("Player2", List(), Turn.FirstlyAttacking)), List(), Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(), List(Card(Rank.King, Suit.Spades)), List(), false, None)
+          Player("Player2", Nil, Turn.FirstlyAttacking)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, Nil, List(Card(Rank.King, Suit.Spades)), Nil, false, None)
         val controller = BaseController(status)
 
         controller.defend(Card(Rank.Ace, Suit.Spades), Card(Rank.King, Suit.Spades))
@@ -549,11 +549,11 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
     "getPlayer" should {
       "return the player with the current turn" in {
         val players = List(
-          Player("Player1", List(), Turn.FirstlyAttacking),
-          Player("Player2", List(), Turn.Defending),
+          Player("Player1", Nil, Turn.FirstlyAttacking),
+          Player("Player2", Nil, Turn.Defending),
         )
 
-        val status = Status(players, List(), Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, List(), List(), List(), false, None)
+        val status = Status(players, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         controller.getPlayer should be(Some(players.head))
@@ -563,9 +563,9 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
     "byTurn(Turn)" should {
       "find a player by his turn" in {
         val status = Status(List(
-          Player("Player1", List(), Turn.FirstlyAttacking),
-          Player("Player2", List(), Turn.Defending),
-        ), List(), Card(Rank.Ten, Suit.Spades), 3, Turn.FirstlyAttacking, List(), List(), List(), false, None)
+          Player("Player1", Nil, Turn.FirstlyAttacking),
+          Player("Player2", Nil, Turn.Defending),
+        ), Nil, Card(Rank.Ten, Suit.Spades), 3, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
         controller.byTurn(Turn.FirstlyAttacking) should be(Some(status.players.head))
