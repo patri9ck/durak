@@ -19,6 +19,6 @@ object Status {
       Player(name, playerCards, Turn.Watching)
     }
 
-    Status(players, remaining :+ trump, trump, amount, Turn.Watching, List(), List(), List(), false, None)
+    Status(players, remaining :+ trump, trump, amount, Turn.Watching, Nil, Nil, Nil, false, None)
   }
 }

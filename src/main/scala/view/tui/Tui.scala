@@ -11,6 +11,8 @@ import scala.io.StdIn
 class Tui(val controller: Controller) extends View {
 
   controller.add(this)
+  
+  var countdown: () => Unit = countdownSeconds
 
   override def update(): Unit = {
     val player = controller.getPlayer
@@ -33,6 +35,7 @@ class Tui(val controller: Controller) extends View {
 
       if (player.get.turn == Turn.FirstlyAttacking || player.get.turn == Turn.SecondlyAttacking) {
         askForAttack(player.get, defended, undefended, () => {
+          println("aaaaaaa")
           clearScreen()
           controller.denied()
         }, card => {
@@ -58,13 +61,9 @@ class Tui(val controller: Controller) extends View {
   override def start(): Unit = {
     val players = controller.status.players
 
-    println()
     println("Als nächstes werden alle Karten gezeigt!")
-    println()
 
     askForContinue()
-
-    println()
 
     displayPlayerCards(players)
 
@@ -126,7 +125,7 @@ class Tui(val controller: Controller) extends View {
 
   def getOrderedCardsDisplay(cards: List[Card]): List[String] = {
     if (cards.isEmpty) {
-      return List()
+      return Nil
     }
 
     getCardsOrder(cards) :: getCardsDisplay(cards)
@@ -156,8 +155,8 @@ class Tui(val controller: Controller) extends View {
     s"$player, Deine Karten" :: getOrderedCardsDisplay(player.cards)
   }
 
-  def countdown(seconds: Int): Unit = {
-    getCountdownDisplay(seconds).foreach(i => {
+  def countdownSeconds(): Unit = {
+    getCountdownDisplay(3).foreach(i => {
       println(i)
       Thread.sleep(1000)
     })
@@ -165,7 +164,7 @@ class Tui(val controller: Controller) extends View {
 
   def lookAway(player: Player): Unit = {
     println(getLookAwayDisplay(player))
-    countdown(3)
+    countdown()
     clearScreen()
   }
 
@@ -237,6 +236,8 @@ class Tui(val controller: Controller) extends View {
       chosen.apply(card.get)
 
       println("Mit dieser Karte kannst du nicht angreifen.")
+      
+      return
     }
   }
 
@@ -257,6 +258,8 @@ class Tui(val controller: Controller) extends View {
       chosen.apply(usedCard.get, undefendedCard.get)
 
       println("Mit dieser Karte kannst du nicht verteidigen.")
+      
+      return
     }
   }
 }

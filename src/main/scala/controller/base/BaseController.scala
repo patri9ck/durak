@@ -270,8 +270,3 @@ case class BaseController(var status: Status) extends Controller {
     false
   }
 }
-
-
-
-
-
