@@ -35,7 +35,6 @@ class Tui(val controller: Controller) extends View {
 
       if (player.get.turn == Turn.FirstlyAttacking || player.get.turn == Turn.SecondlyAttacking) {
         askForAttack(player.get, defended, undefended, () => {
-          println("aaaaaaa")
           clearScreen()
           controller.denied()
         }, card => {
