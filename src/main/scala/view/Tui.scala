@@ -1,14 +1,14 @@
-package view.tui
+package view
 
 import controller.Controller
 import controller.base.BaseController
 import model.*
-import view.{View, ViewCreator}
+import util.Observer
 
 import scala.collection.mutable.ListBuffer
 import scala.io.StdIn
 
-class Tui(val controller: Controller, val step: Boolean) extends View {
+class Tui(val controller: Controller, val step: Boolean) extends Observer {
 
   controller.add(this)
   
@@ -26,32 +26,52 @@ class Tui(val controller: Controller, val step: Boolean) extends View {
   }
 
   def continue(): Unit = {
-    val player = controller.getPlayer
+    if (controller.status.turn == Turn.Uninitialized) {
+      val playerAmount = askForPlayerAmount
+      val cardAmount = askForCardAmount(playerAmount)
 
-    if (player.nonEmpty) {
-      lookAway(player.get)
+      controller.start(cardAmount, askForNames(playerAmount))
+    } else if (controller.status.turn == Turn.Initialized) {
+      val players = controller.status.players
 
-      val undefended = controller.status.undefended
-      val defended = controller.status.defended
-      val used = controller.status.used
+      println("Als nächstes werden alle Karten gezeigt!")
 
-      getPlayersDisplay(controller.status.players).foreach(println)
-      println(getStackDisplay(controller.status.stack))
-      getTrumpDisplay(controller.status.trump).foreach(println)
-      getRoundCardsDisplay(undefended, defended, used).foreach(println)
-      getOwnDisplay(player.get).foreach(println)
+      askForContinue()
 
-      if (player.get.turn == Turn.FirstlyAttacking || player.get.turn == Turn.SecondlyAttacking) {
-        askForAttack(player.get, defended, undefended, deny, attack)
-      } else if (controller.status.turn == Turn.Defending) {
-        askForDefend(player.get, used, undefended, pickUp, defend)
+      displayPlayerCards(players)
+
+      askForAttackingPlayer(players) match {
+        case Some(player) => controller.chooseAttacking(player)
+        case None => controller.chooseAttacking()
+      }
+    } else {
+      val player = controller.getPlayer
+
+      if (player.nonEmpty) {
+        lookAway(player.get)
+
+        val undefended = controller.status.undefended
+        val defended = controller.status.defended
+        val used = controller.status.used
+
+        getPlayersDisplay(controller.status.players).foreach(println)
+        println(getStackDisplay(controller.status.stack))
+        getTrumpDisplay(controller.status.trump).foreach(println)
+        getRoundCardsDisplay(undefended, defended, used).foreach(println)
+        getOwnDisplay(player.get).foreach(println)
+
+        if (player.get.turn == Turn.FirstlyAttacking || player.get.turn == Turn.SecondlyAttacking) {
+          askForAttack(player.get, defended, undefended, deny, attack)
+        } else if (controller.status.turn == Turn.Defending) {
+          askForDefend(player.get, used, undefended, pickUp, defend)
+        }
       }
     }
   }
 
   def deny(): Unit = {
     clearScreen()
-    controller.denied()
+    controller.deny()
   }
 
   def attack(card: Card): Unit = {
@@ -72,25 +92,10 @@ class Tui(val controller: Controller, val step: Boolean) extends View {
       controller.defend(used, undefended)
     }
   }
-
-  override def start(): Unit = {
-    val players = controller.status.players
-
-    println("Als nächstes werden alle Karten gezeigt!")
-
-    askForContinue()
-
-    displayPlayerCards(players)
-
-    askForAttackingPlayer(players) match {
-      case Some(player) => controller.chooseAttacking(player)
-      case None => controller.chooseAttacking()
-    }
-  }
-
+  
   def askForStep(): Step = {
     while (true) {
-      print("[C]ontinue[U]ndo/[R]edo? ")
+      print("[C]ontinue/[U]ndo/[R]edo? ")
 
       StdIn.readLine().toLowerCase match {
         case "c" => return Step.Continue
@@ -203,6 +208,53 @@ class Tui(val controller: Controller, val step: Boolean) extends View {
     println("\n" * 100)
   }
 
+  def askForCardAmount(playerAmount: Int): Int = {
+    val limit = 52 / playerAmount
+
+    while (true) {
+      print(s"Wie viele Karten soll jeder Spieler erhalten? (2-$limit) ")
+
+      val amount = StdIn.readLine().toIntOption
+
+      if (amount.nonEmpty && amount.get >= 2 && amount.get <= limit)
+        return amount.get
+    }
+
+    6
+  }
+
+  def askForPlayerAmount: Int = {
+    while (true) {
+      print("Wie viele Spieler sollen mitspielen? (Keine Doppelungen, mindestens 2) ")
+
+      val amount = StdIn.readLine().toIntOption
+
+      if (amount.isDefined && amount.get > 1) {
+        return amount.get
+      }
+    }
+
+    2
+  }
+
+  def askForNames(amount: Int): List[String] = {
+    val names = ListBuffer[String]()
+
+    for (i <- 1 until amount + 1) {
+      var name = ""
+
+      while (name.isBlank || names.contains(name)) {
+        print(s"Name von Spieler $i: ")
+
+        name = StdIn.readLine()
+      }
+
+      names += name
+    }
+
+    names.toList
+  }
+
   def askForContinue(): Unit = {
     while (true) {
       print("[W]eitermachen? ")
@@ -292,62 +344,6 @@ class Tui(val controller: Controller, val step: Boolean) extends View {
       
       return
     }
-  }
-}
-
-object Tui extends ViewCreator {
-  override def createView(step: Boolean): View = {
-    val playerAmount = askForPlayerAmount
-    val cardAmount = askForCardAmount(playerAmount)
-
-    Tui(BaseController(Status.createStatus(cardAmount, askForNames(playerAmount))), step)
-  }
-
-  def askForCardAmount(playerAmount: Int): Int = {
-    val limit = 52 / playerAmount
-
-    while (true) {
-      print(s"Wie viele Karten soll jeder Spieler erhalten? (2-$limit) ")
-
-      val amount = StdIn.readLine().toIntOption
-
-      if (amount.nonEmpty && amount.get >= 2 && amount.get <= limit)
-        return amount.get
-    }
-
-    6
-  }
-
-  def askForPlayerAmount: Int = {
-    while (true) {
-      print("Wie viele Spieler sollen mitspielen? (Keine Doppelungen, mindestens 2) ")
-
-      val amount = StdIn.readLine().toIntOption
-
-      if (amount.isDefined && amount.get > 1) {
-        return amount.get
-      }
-    }
-
-    2
-  }
-
-  def askForNames(amount: Int): List[String] = {
-    val names = ListBuffer[String]()
-
-    for (i <- 1 until amount + 1) {
-      var name = ""
-
-      while (name.isBlank || names.contains(name)) {
-        print(s"Name von Spieler $i: ")
-
-        name = StdIn.readLine()
-      }
-
-      names += name
-    }
-
-    names.toList
   }
 }
 

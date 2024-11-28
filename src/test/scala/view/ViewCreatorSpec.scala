@@ -2,7 +2,6 @@ package view
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import view.tui.Tui
 
 class ViewCreatorSpec extends AnyWordSpec with Matchers {
 

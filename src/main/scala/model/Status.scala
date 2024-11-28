@@ -2,10 +2,10 @@ package model
 
 import scala.util.Random
 
-case class Status(players: List[Player], stack: List[Card], trump: Card, amount: Int, turn: Turn, defended: List[Card], undefended: List[Card], used: List[Card], denied: Boolean, passed: Option[Player])
+case class Status(players: List[Player], stack: List[Card], trump: Card, amount: Int, turn: Turn, defended: List[Card], undefended: List[Card], used: List[Card], denied: Boolean, passed: Option[Player]) {
+  def this() = this(Nil, Nil, null, 0, Turn.Uninitialized, Nil, Nil, Nil, false, None)
 
-object Status {
-  def createStatus(amount: Int, names: List[String]): Status = {
+  def initialize(amount: Int, names: List[String]): Status = {
     val deck = Card.getDeck
 
     val index = Random.nextInt(deck.size)
@@ -19,6 +19,6 @@ object Status {
       Player(name, playerCards, Turn.Watching)
     }
 
-    Status(players, remaining :+ trump, trump, amount, Turn.Watching, Nil, Nil, Nil, false, None)
+    copy(players = players, stack = remaining, trump = trump, amount = amount, turn = Turn.Initialized, Nil, Nil, Nil, false, None)
   }
 }

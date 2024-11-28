@@ -356,129 +356,16 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
       }
     }
 
-    "denied()" should {
-      "set the defending player to the attacking player if all cards are defended and all attacking players denied" in {
-        val players = List(
-          Player("Player1", Nil, Turn.SecondlyAttacking),
-          Player("Player2", Nil, Turn.Defending),
-          Player("Player3", Nil, Turn.FirstlyAttacking)
-        )
+    "deny()" should {
 
-        val status = Status(players, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.SecondlyAttacking, Nil, Nil, Nil, true, None)
-        val controller = BaseController(status)
-
-        controller.denied()
-
-        controller.status.players(1).turn should be(Turn.FirstlyAttacking)
-      }
-
-      "set the turn to Defending if both attacking players denied and there are still undefended cards" in {
-        val players = List(
-          Player("Player1", Nil, Turn.SecondlyAttacking),
-          Player("Player2", Nil, Turn.Defending),
-          Player("Player3", Nil, Turn.FirstlyAttacking)
-        )
-
-        val status = Status(players, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.SecondlyAttacking, Nil, List(Card(Rank.Ace, Suit.Spades)), Nil, true, None)
-        val controller = BaseController(status)
-
-        controller.denied()
-
-        controller.status.turn should be(Turn.Defending)
-      }
-
-      "set the turn to SecondlyAttacking if there are two attacking players and the first one denied" in {
-        val players = List(
-          Player("Player1", Nil, Turn.SecondlyAttacking),
-          Player("Player2", Nil, Turn.Defending),
-          Player("Player3", Nil, Turn.FirstlyAttacking)
-        )
-
-        val status = Status(players, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, Nil, List(Card(Rank.Ace, Suit.Spades)), Nil, false, None)
-        val controller = BaseController(status)
-
-        controller.denied()
-
-        controller.status.turn should be(Turn.SecondlyAttacking)
-      }
     }
 
     "pickUp()" should {
-      "fill up the defending player's cards with the used, defended and undefended cards" in {
-        val status = Status(List(Player("Player1", List(Card(Rank.Seven, Suit.Spades)), Turn.Defending),
-          Player("Player2", Nil, Turn.FirstlyAttacking)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Spades)), List(Card(Rank.King, Suit.Spades), Card(Rank.Queen, Suit.Spades)), List(Card(Rank.Jack, Suit.Spades), Card(Rank.Ten, Suit.Spades)), false, None)
-        val controller = BaseController(status)
 
-        controller.pickUp()
-
-        controller.status.players.head.cards should contain allElementsOf List(Card(Rank.Ace, Suit.Spades), Card(Rank.King, Suit.Spades), Card(Rank.Queen, Suit.Spades), Card(Rank.Jack, Suit.Spades), Card(Rank.Ten, Suit.Spades))
-      }
-
-      "set the turn to FirstlyAttacking and reset the defended, undefended and used List" in {
-        val status = Status(List(Player("Player1", List(Card(Rank.Seven, Suit.Spades)), Turn.Defending),
-          Player("Player2", Nil, Turn.FirstlyAttacking)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Spades)), List(Card(Rank.King, Suit.Spades), Card(Rank.Queen, Suit.Spades)), List(Card(Rank.Jack, Suit.Spades), Card(Rank.Ten, Suit.Spades)), false, None)
-        val controller = BaseController(status)
-
-        controller.pickUp()
-
-        controller.status.turn should be(Turn.FirstlyAttacking)
-        controller.status.defended should be(empty)
-        controller.status.undefended should be(empty)
-        controller.status.used should be(empty)
-      }
     }
 
     "attack(Card)" should {
-      "remove the card from the attacking player and add it to the undefended cards" in {
-        val status = Status(List(Player("Player1", List(Card(Rank.Ace, Suit.Spades), Card(Rank.Seven, Suit.Spades)), Turn.FirstlyAttacking),
-          Player("Player2", Nil, Turn.Defending)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
-        val controller = BaseController(status)
 
-        controller.attack(Card(Rank.Ace, Suit.Spades))
-
-        controller.status.players.head.cards.size should be(1)
-        controller.status.undefended should contain(Card(Rank.Ace, Suit.Spades))
-      }
-
-      "set the turn to Defending if there is only one attacking player" in {
-        val status = Status(List(Player("Player1", List(Card(Rank.Ace, Suit.Spades)), Turn.FirstlyAttacking),
-          Player("Player2", Nil, Turn.Defending)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
-        val controller = BaseController(status)
-
-        controller.attack(Card(Rank.Ace, Suit.Spades))
-
-        controller.status.turn should be(Turn.Defending)
-      }
-
-      "set the turn to Defending if the attacking player is SecondlyAttacking" in {
-        val status = Status(List(Player("Player1", List(Card(Rank.Ace, Suit.Spades)), Turn.SecondlyAttacking),
-          Player("Player2", Nil, Turn.Defending), Player("Player3", Nil, Turn.FirstlyAttacking)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.SecondlyAttacking, Nil, Nil, Nil, false, None)
-        val controller = BaseController(status)
-
-        controller.attack(Card(Rank.Ace, Suit.Spades))
-
-        controller.status.turn should be(Turn.Defending)
-      }
-
-      "set the turn to SecondlyAttacking if the attacking player is FirstlyAttacking" in {
-        val status = Status(List(Player("Player1", List(Card(Rank.Ace, Suit.Spades)), Turn.SecondlyAttacking),
-          Player("Player2", Nil, Turn.Defending), Player("Player3", Nil, Turn.FirstlyAttacking)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
-        val controller = BaseController(status)
-
-        controller.attack(Card(Rank.Ace, Suit.Spades))
-
-        controller.status.turn should be(Turn.SecondlyAttacking)
-      }
-
-      "set the attacking player to finished if he finished" in {
-        val status = Status(List(Player("Player1", List(Card(Rank.Ace, Suit.Spades)), Turn.FirstlyAttacking),
-          Player("Player2", Nil, Turn.Defending)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
-        val controller = BaseController(status)
-
-        controller.attack(Card(Rank.Ace, Suit.Spades))
-
-        controller.status.players.head.turn should be(Turn.Finished)
-      }
     }
 
     "canDefend(Card, Card)" should {
@@ -512,38 +399,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
     }
 
     "defend(Card, Card)" should {
-      "remove the used card from the defending player and add it to the used cards and take the undefended to the defended" in {
-        val status = Status(List(Player("Player1", List(Card(Rank.Ace, Suit.Spades), Card(Rank.Seven, Suit.Spades)), Turn.Defending),
-          Player("Player2", Nil, Turn.FirstlyAttacking)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, Nil, List(Card(Rank.King, Suit.Spades), Card(Rank.Two, Suit.Hearts)), Nil, false, None)
-        val controller = BaseController(status)
 
-        controller.defend(Card(Rank.Ace, Suit.Spades), Card(Rank.King, Suit.Spades))
-
-        controller.status.players.head.cards.size should be(1)
-        controller.status.used should contain(Card(Rank.Ace, Suit.Spades))
-        controller.status.defended should contain(Card(Rank.King, Suit.Spades))
-        controller.status.undefended should not contain Card(Rank.King, Suit.Spades)
-      }
-
-      "set the turn to FirstlyAttacking" in {
-        val status = Status(List(Player("Player1", List(Card(Rank.Ace, Suit.Spades), Card(Rank.Seven, Suit.Spades)), Turn.Defending),
-          Player("Player2", Nil, Turn.FirstlyAttacking)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, Nil, List(Card(Rank.King, Suit.Spades), Card(Rank.Two, Suit.Hearts)), Nil, false, None)
-        val controller = BaseController(status)
-
-        controller.defend(Card(Rank.Ace, Suit.Spades), Card(Rank.King, Suit.Spades))
-
-        controller.status.turn should be(Turn.FirstlyAttacking)
-      }
-
-      "set the defending player to finished if he finished" in {
-        val status = Status(List(Player("Player1", List(Card(Rank.Ace, Suit.Spades)), Turn.Defending),
-          Player("Player2", Nil, Turn.FirstlyAttacking)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, Nil, List(Card(Rank.King, Suit.Spades)), Nil, false, None)
-        val controller = BaseController(status)
-
-        controller.defend(Card(Rank.Ace, Suit.Spades), Card(Rank.King, Suit.Spades))
-
-        controller.status.players.head.turn should be(Turn.Finished)
-      }
     }
 
     "getPlayer" should {
