@@ -5,10 +5,8 @@ import model.{StatusBuilder, Turn}
 
 class DenyCommand(controller: BaseController) extends MementoCommand(controller) {
 
-  override def doStep(): Unit = {
-    memento = controller.status
-
-    val attacking = controller.getPlayer.get
+  override def run(): Unit = {
+    val attacking = controller.current.get
 
     val statusBuilder = StatusBuilder(controller.status)
 

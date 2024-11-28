@@ -412,7 +412,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
         val status = Status(players, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
         val controller = BaseController(status)
 
-        controller.getPlayer should be(Some(players.head))
+        controller.current should be(Some(players.head))
       }
     }
 

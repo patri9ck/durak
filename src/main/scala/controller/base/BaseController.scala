@@ -1,7 +1,7 @@
 package controller.base
 
 import controller.Controller
-import controller.base.command.{AttackCommand, ChooseAttackingCommand, DefendCommand, DenyCommand, PickUpCommand, StartCommand}
+import controller.base.command.{AttackCommand, ChooseAttackingCommand, DefendCommand, DenyCommand, PickUpCommand, InitializeCommand}
 import model.*
 import util.{Observable, UndoManager}
 
@@ -84,41 +84,6 @@ class BaseController(var status: Status = new Status) extends Controller {
       .removePassed()
   }
 
-  override def chooseAttacking(): Unit = {
-    chooseAttacking(Random.shuffle(status.players).head)
-  }
-
-  override def chooseAttacking(attacking: Player): Unit = {
-    undoManager.doStep(ChooseAttackingCommand(this, attacking))
-
-    notifySubscribers()
-  }
-  
-  override def start(amount: Int, names: List[String]): Unit = {
-    undoManager.doStep(StartCommand(this, amount, names))
-
-    notifySubscribers()
-  }
-
-  override def deny(): Unit = {
-    undoManager.doStep(DenyCommand(this))
-    
-    notifySubscribers()
-  }
-
-  
-  override def getPlayer: Option[Player] = byTurn(status.turn)
-  
-  override def byTurn(turn: Turn): Option[Player] = {
-    status.players.find(_.turn == turn)
-  }
-
-  override def pickUp(): Unit = {
-    undoManager.doStep(PickUpCommand(this))
-
-    notifySubscribers()
-  }
-
   def hasFinished(finished: Player, statusBuilder: StatusBuilder): Boolean = {
     if (finished.turn == Turn.FirstlyAttacking || finished.turn == Turn.SecondlyAttacking) {
       return statusBuilder.getStack.isEmpty && finished.cards.isEmpty
@@ -129,19 +94,6 @@ class BaseController(var status: Status = new Status) extends Controller {
     }
 
     true
-  }
-
-  override def attack(card: Card): Unit = {
-    undoManager.doStep(AttackCommand(this, card))
-
-    notifySubscribers()
-  }
-
-  override def canAttack(card: Card): Boolean = {
-    status.defended.isEmpty && status.undefended.isEmpty
-      || status.used.exists(_.rank == card.rank)
-      || status.defended.exists(_.rank == card.rank)
-      || status.undefended.exists(_.rank == card.rank)
   }
 
   def finish(finished: Player, statusBuilder: StatusBuilder): Unit = {
@@ -159,6 +111,47 @@ class BaseController(var status: Status = new Status) extends Controller {
       statusBuilder.setTurn(Turn.SecondlyAttacking)
     }
   }
+
+  override def chooseAttacking(): Unit = {
+    chooseAttacking(Random.shuffle(status.players).head)
+  }
+
+  override def chooseAttacking(attacking: Player): Unit = {
+    undoManager.doStep(ChooseAttackingCommand(this, attacking))
+
+    notifySubscribers()
+  }
+
+  override def initialize(amount: Int, names: List[String]): Unit = {
+    undoManager.doStep(InitializeCommand(this, amount, names))
+
+    notifySubscribers()
+  }
+
+  override def deny(): Unit = {
+    undoManager.doStep(DenyCommand(this))
+    
+    notifySubscribers()
+  }
+
+  override def pickUp(): Unit = {
+    undoManager.doStep(PickUpCommand(this))
+
+    notifySubscribers()
+  }
+
+  override def attack(card: Card): Unit = {
+    undoManager.doStep(AttackCommand(this, card))
+
+    notifySubscribers()
+  }
+
+  override def canAttack(card: Card): Boolean = {
+    status.defended.isEmpty && status.undefended.isEmpty
+      || status.used.exists(_.rank == card.rank)
+      || status.defended.exists(_.rank == card.rank)
+      || status.undefended.exists(_.rank == card.rank)
+  }
   
   override def defend(used: Card, undefended: Card): Unit = {
     undoManager.doStep(DefendCommand(this, used, undefended))
@@ -171,12 +164,18 @@ class BaseController(var status: Status = new Status) extends Controller {
       return true
     }
 
-    if (used.suit == status.trump.suit) {
-      return undefended.suit != status.trump.suit
+    if (used.suit == status.trump.get.suit) {
+      return undefended.suit != status.trump.get.suit
     }
 
     false
   }
+
+  override def byTurn(turn: Turn): Option[Player] = {
+    status.players.find(_.turn == turn)
+  }
+
+  override def current: Option[Player] = byTurn(status.turn)
 
   override def undo(): Unit = {
     undoManager.undoStep()

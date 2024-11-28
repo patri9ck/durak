@@ -1,7 +1,6 @@
 package view
 
 import controller.Controller
-import controller.base.BaseController
 import model.*
 import util.Observer
 
@@ -27,45 +26,55 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
 
   def continue(): Unit = {
     if (controller.status.turn == Turn.Uninitialized) {
-      val playerAmount = askForPlayerAmount
-      val cardAmount = askForCardAmount(playerAmount)
-
-      controller.start(cardAmount, askForNames(playerAmount))
+      initialize()
     } else if (controller.status.turn == Turn.Initialized) {
-      val players = controller.status.players
-
-      println("Als nächstes werden alle Karten gezeigt!")
-
-      askForContinue()
-
-      displayPlayerCards(players)
-
-      askForAttackingPlayer(players) match {
-        case Some(player) => controller.chooseAttacking(player)
-        case None => controller.chooseAttacking()
-      }
+      chooseAttacking()
     } else {
-      val player = controller.getPlayer
+      run()
+    }
+  }
+  
+  def initialize(): Unit = {
+    val playerAmount = askForPlayerAmount
+    val cardAmount = askForCardAmount(playerAmount)
 
-      if (player.nonEmpty) {
-        lookAway(player.get)
+    controller.initialize(cardAmount, askForNames(playerAmount))
+  }
+  
+  def chooseAttacking(): Unit = {
+    val players = controller.status.players
 
-        val undefended = controller.status.undefended
-        val defended = controller.status.defended
-        val used = controller.status.used
+    println("Als nächstes werden alle Karten gezeigt!")
 
-        getPlayersDisplay(controller.status.players).foreach(println)
-        println(getStackDisplay(controller.status.stack))
-        getTrumpDisplay(controller.status.trump).foreach(println)
-        getRoundCardsDisplay(undefended, defended, used).foreach(println)
-        getOwnDisplay(player.get).foreach(println)
+    askForContinue()
 
-        if (player.get.turn == Turn.FirstlyAttacking || player.get.turn == Turn.SecondlyAttacking) {
-          askForAttack(player.get, defended, undefended, deny, attack)
-        } else if (controller.status.turn == Turn.Defending) {
-          askForDefend(player.get, used, undefended, pickUp, defend)
-        }
-      }
+    displayPlayerCards(players)
+
+    askForAttackingPlayer(players) match {
+      case Some(player) => controller.chooseAttacking(player)
+      case None => controller.chooseAttacking()
+    }
+  }
+  
+  def run(): Unit = {
+    val player = controller.current
+
+    lookAway(player.get)
+
+    val undefended = controller.status.undefended
+    val defended = controller.status.defended
+    val used = controller.status.used
+
+    getPlayersDisplay(controller.status.players).foreach(println)
+    println(getStackDisplay(controller.status.stack))
+    getTrumpDisplay(controller.status.trump.get).foreach(println)
+    getRoundCardsDisplay(undefended, defended, used).foreach(println)
+    getOwnDisplay(player.get).foreach(println)
+
+    if (player.get.turn == Turn.FirstlyAttacking || player.get.turn == Turn.SecondlyAttacking) {
+      askForAttack(player.get, defended, undefended, deny, attack)
+    } else if (controller.status.turn == Turn.Defending) {
+      askForDefend(player.get, used, undefended, pickUp, defend)
     }
   }
 
@@ -92,21 +101,6 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
       controller.defend(used, undefended)
     }
   }
-  
-  def askForStep(): Step = {
-    while (true) {
-      print("[C]ontinue/[U]ndo/[R]edo? ")
-
-      StdIn.readLine().toLowerCase match {
-        case "c" => return Step.Continue
-        case "u" => return Step.Undo
-        case "r" => return Step.Redo
-        case _ =>
-      }
-    }
-
-    Step.Continue
-  }
 
   def displayPlayerCards(players: List[Player]): Unit = {
     players.foreach(player => {
@@ -115,6 +109,19 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
       askForContinue()
       clearScreen()
     })
+  }
+
+  def countdownSeconds(): Unit = {
+    getCountdownDisplay(3).foreach(i => {
+      println(i)
+      Thread.sleep(1000)
+    })
+  }
+
+  def lookAway(player: Player): Unit = {
+    println(getLookAwayDisplay(player))
+    countdown()
+    clearScreen()
   }
 
   def getStackDisplay(stack: List[Card]): String = s"Stapel: ${stack.length}"
@@ -191,21 +198,23 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
     s"$player, Deine Karten" :: getOrderedCardsDisplay(player.cards)
   }
 
-  def countdownSeconds(): Unit = {
-    getCountdownDisplay(3).foreach(i => {
-      println(i)
-      Thread.sleep(1000)
-    })
-  }
-
-  def lookAway(player: Player): Unit = {
-    println(getLookAwayDisplay(player))
-    countdown()
-    clearScreen()
-  }
-
   def clearScreen(): Unit = {
     println("\n" * 100)
+  }
+
+  def askForStep(): Step = {
+    while (true) {
+      print("[C]ontinue/[U]ndo/[R]edo? ")
+
+      StdIn.readLine().toLowerCase match {
+        case "c" => return Step.Continue
+        case "u" => return Step.Undo
+        case "r" => return Step.Redo
+        case _ =>
+      }
+    }
+
+    Step.Continue
   }
 
   def askForCardAmount(playerAmount: Int): Int = {
@@ -346,4 +355,3 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
     }
   }
 }
-

@@ -2,7 +2,7 @@ package model
 
 class StatusBuilder (private var players: List[Player] = Nil,
                             private var stack: List[Card] = Nil,
-                            private var trump: Card = null,
+                            private var trump: Option[Card] = None,
                             private var amount: Int = 0,
                             private var turn: Turn = Turn.Watching,
                             private var defended: List[Card] = Nil,
@@ -35,7 +35,13 @@ class StatusBuilder (private var players: List[Player] = Nil,
   }
 
   def setTrump(trump: Card): StatusBuilder = {
-    this.trump = trump
+    this.trump = Some(trump)
+
+    this
+  }
+  
+  def removeTrump(): StatusBuilder = {
+    this.trump = None
 
     this
   }
@@ -106,7 +112,7 @@ class StatusBuilder (private var players: List[Player] = Nil,
 
   def getStack: List[Card] = stack
 
-  def getTrump: Card = trump
+  def getTrump: Option[Card] = trump
 
   def getAmount: Int = amount
 
