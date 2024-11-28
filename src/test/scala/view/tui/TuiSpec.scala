@@ -38,185 +38,233 @@ class TuiSpec extends AnyWordSpec with Matchers {
 
   "Tui" should {
 
-    "initialize correctly with start" in {
-      val mockController = new MockController()
-      val tui = new Tui(mockController)
-      tui.countdown = () => {}
+    "start()" should {
+      "initialize correctly" in {
+        val mockController = new MockController()
+        val tui = new Tui(mockController)
+        tui.countdown = () => {}
 
-      Console.withIn(new java.io.StringReader("\nw\nw\nz")) {
-        tui.start()
-      }
+        Console.withIn(new java.io.StringReader("\nw\nw\nz")) {
+          tui.start()
+        }
 
-      mockController.status.players.head.name shouldBe "Mock"
-      mockController.status.players.length shouldBe 1
-    }
-
-    "display player cards with displayPlayerCards" in {
-      val mockController = new MockController()
-      val tui = new Tui(mockController)
-      tui.countdown = () => {}
-
-      Console.withIn(new java.io.StringReader("w\n")) {
-        tui.displayPlayerCards(mockController.status.players)
-      }
-
-      mockController.status.players.head.cards should not be empty
-    }
-
-    "handle attacking player selection with askForAttackingPlayer" in {
-      val mockController = new MockController()
-      val tui = new Tui(mockController)
-      tui.countdown = () => {}
-
-      Console.withIn(new java.io.StringReader("Mock\n")) {
-        val selectedPlayer = tui.askForAttackingPlayer(mockController.status.players)
-        selectedPlayer.isDefined shouldBe true
-        selectedPlayer.get.name shouldBe "Mock"
+        mockController.status.players.head.name shouldBe "Mock"
+        mockController.status.players.length shouldBe 1
       }
     }
 
-    "handle card selection with askForCard" in {
-      val mockController = new MockController()
-      val tui = new Tui(mockController)
-      val cards = mockController.status.players.head.cards
+    "displayPlayerCards(List[Player])" should {
+      "display player cards" in {
+        val mockController = new MockController()
+        val tui = new Tui(mockController)
+        tui.countdown = () => {}
 
-      Console.withIn(new java.io.StringReader("1\n")) {
-        val selectedCard = tui.askForCard("Wähle eine Karte:", cards, cancel = true)
-        selectedCard.isDefined shouldBe true
-        selectedCard.get shouldBe cards.head
+        Console.withIn(new java.io.StringReader("w\n")) {
+          tui.displayPlayerCards(mockController.status.players)
+        }
+
+        mockController.status.players.head.cards should not be empty
       }
     }
 
-    "handle attacking interaction with askForAttack" in {
-      val mockController = new MockController()
-      val tui = new Tui(mockController)
-      val player = mockController.status.players.head
+    "askForAttackingPlayer(List[Player])" should {
+      "handle attacking player selection" in {
+        val mockController = new MockController()
+        val tui = new Tui(mockController)
+        tui.countdown = () => {}
 
-      Console.withIn(new java.io.StringReader("1\n")) {
-        tui.askForAttack(player, Nil, Nil, () => {}, card => {
-          card shouldBe player.cards.head
-        })
+        Console.withIn(new java.io.StringReader("Mock\n")) {
+          val selectedPlayer = tui.askForAttackingPlayer(mockController.status.players)
+          selectedPlayer.isDefined shouldBe true
+          selectedPlayer.get.name shouldBe "Mock"
+        }
       }
     }
 
-    "handle defending interaction with askForDefend" in {
-      val mockController = new MockController()
-      val tui = new Tui(mockController)
-      val defender = mockController.status.players.head
-      val undefendedCards = List(Card(Rank.Two, Suit.Clubs))
+    "askForCard(String, List[Card], Boolean)" should {
+      "handle card selection" in {
+        val mockController = new MockController()
+        val tui = new Tui(mockController)
+        val cards = mockController.status.players.head.cards
 
-      Console.withIn(new java.io.StringReader("1\n1\n")) {
-        tui.askForDefend(defender, Nil, undefendedCards, () => fail("Defend cancelled"), (used, undefended) => {
-          used shouldBe defender.cards.head
-          undefended shouldBe undefendedCards.head
-        })
+        Console.withIn(new java.io.StringReader("1\n")) {
+          val selectedCard = tui.askForCard("Wähle eine Karte:", cards, cancel = true)
+          selectedCard.isDefined shouldBe true
+          selectedCard.get shouldBe cards.head
+        }
       }
     }
 
-    "update game state and handle player turns" in {
-      val mockController = new MockController()
-      val tui = new Tui(mockController)
-      tui.countdown = () => {}
+    "askForAttack(Player, List[Card], List[Card], () => Unit, Card => Unit)" should {
+      "handle attacking interaction" in {
+        val mockController = new MockController()
+        val tui = new Tui(mockController)
+        val player = mockController.status.players.head
 
-      Console.withIn(new java.io.StringReader("1\n")) {
-        tui.update()
-      }
-
-      //mockController.status.stack should contain(mockController.status.players.head.cards.head)
-    }
-
-    "clear screen when called" in {
-      val mockController = new MockController()
-      val tui = new Tui(mockController)
-
-      noException should be thrownBy tui.clearScreen()
-    }
-
-    "ask for continuation and proceed" in {
-      val mockController = new MockController()
-      val tui = new Tui(mockController)
-      tui.countdown = () => {}
-
-      Console.withIn(new java.io.StringReader("w\n")) {
-        tui.askForContinue()
+        Console.withIn(new java.io.StringReader("1\n")) {
+          tui.askForAttack(player, Nil, Nil, () => {}, card => {
+            card shouldBe player.cards.head
+          })
+        }
       }
     }
 
-    "count down correctly during lookAway" in {
-      val mockController = new MockController()
-      val tui = new Tui(mockController)
-      tui.countdown = () => {}
-      val player = mockController.status.players.head
+    "askForDefend(Player, List[Card], List[Card], () => Unit, (Card, Card) => Unit)" should {
+      "handle defending interaction" in {
+        val mockController = new MockController()
+        val tui = new Tui(mockController)
+        val defender = mockController.status.players.head
+        val undefendedCards = List(Card(Rank.Two, Suit.Clubs))
+
+        Console.withIn(new java.io.StringReader("1\n1\n")) {
+          tui.askForDefend(defender, Nil, undefendedCards, () => fail("Defend cancelled"), (used, undefended) => {
+            used shouldBe defender.cards.head
+            undefended shouldBe undefendedCards.head
+          })
+        }
+      }
     }
 
-    "display stack size with getStackDisplay" in {
-      val mockController = new MockController()
-      val tui = new Tui(mockController)
-      tui.countdown = () => {}
+    "update()" should {
+      "update game state and handle player turns" in {
+        val mockController = new MockController()
+        val tui = new Tui(mockController)
+        tui.countdown = () => {}
 
-      tui.getStackDisplay(mockController.status.stack) shouldBe "Stapel: 0"
+        Console.withIn(new java.io.StringReader("1\n")) {
+          tui.update()
+        }
+
+        //mockController.status.stack should contain(mockController.status.players.head.cards.head)
+      }
     }
 
-    "display trump card with getTrumpDisplay" in {
-      val mockController = new MockController()
-      val tui = new Tui(mockController)
-      val trumpCard = mockController.status.trump
+    "clearScreen()" should {
+      "clear screen when called" in {
+        val mockController = new MockController()
+        val tui = new Tui(mockController)
 
-      tui.getTrumpDisplay(trumpCard) should contain(s"Trumpf")
-      //tui.getTrumpDisplay(trumpCard).mkString should include(trumpCard.toString)
+        noException should be thrownBy tui.clearScreen()
+      }
     }
 
-    "display players with getPlayersDisplay" in {
-      val mockController = new MockController()
-      val tui = new Tui(mockController)
+    "askForContinue()" should {
+      "ask for continuation and proceed" in {
+        val mockController = new MockController()
+        val tui = new Tui(mockController)
+        tui.countdown = () => {}
 
-      val display = tui.getPlayersDisplay(mockController.status.players)
-      display.head should include(mockController.status.players.head.name)
+        Console.withIn(new java.io.StringReader("w\n")) {
+          tui.askForContinue()
+        }
+      }
     }
 
-    "display cards correctly with getCardDisplay" in {
-      val mockController = new MockController()
-      val tui = new Tui(mockController)
-      val card = Card(Rank.Ace, Suit.Spades)
-
-      val display = tui.getCardDisplay(card)
+    "lookAway(Player)" should {
+      "count down correctly during lookAway" in {
+        val mockController = new MockController()
+        val tui = new Tui(mockController)
+        tui.countdown = () => {}
+        val player = mockController.status.players.head
+      }
     }
 
-    "display ordered cards with getOrderedCardsDisplay" in {
-      val mockController = new MockController()
-      val tui = new Tui(mockController)
-      val cards = mockController.status.players.head.cards
+    "getStackDisplay(List[Card])" should {
+      "display stack size" in {
+        val tui = new Tui(MockController())
 
-      val display = tui.getOrderedCardsDisplay(cards)
-      display.head should include("1")
+        val display = tui.getStackDisplay(List(Card(Rank.Three, Suit.Spades), Card(Rank.King, Suit.Diamonds)))
+
+        display should be("Stapel: 2")
+      }
     }
 
-    "display undefended cards with getUndefendedDisplay" in {
-      val mockController = new MockController()
-      val tui = new Tui(mockController)
-      mockController.status = mockController.status.copy(undefended = List(Card(Rank.Two, Suit.Hearts)))
+    "getTrumpDisplay(Card)" should {
+      "display trump card" in {
+        val tui = new Tui(MockController())
 
-      val display = tui.getUndefendedDisplay(mockController.status.undefended)
-      display should contain("Zu Verteidigen")
+        val display = tui.getTrumpDisplay(Card(Rank.Ace, Suit.Spades))
+
+        display.head should be("Trumpf")
+        display(1) should be("┌─────┐")
+        display(2) should be("│A    │")
+        display(3) should be("│  ♠  │")
+        display(4) should be("│    A│")
+        display(5) should be("└─────┘")
+      }
     }
 
-    "display defended cards with getDefendedDisplay" in {
-      val mockController = new MockController()
-      val tui = new Tui(mockController)
-      mockController.status = mockController.status.copy(defended = List(Card(Rank.Three, Suit.Diamonds)))
+    "getPlayersDisplay(List[Player])" should {
+      "display players" in {
+        val tui = new Tui(MockController())
 
-      val display = tui.getDefendedDisplay(mockController.status.defended, mockController.status.used)
-      display should contain("Verteidigt")
+        val display = tui.getPlayersDisplay(List(Player("Player1", List(Card(Rank.Two, Suit.Hearts)), Turn.FirstlyAttacking),
+            Player("Player2", List(Card(Rank.King, Suit.Clubs), Card(Rank.Three, Suit.Diamonds)), Turn.Defending)))
+
+        display.head should be("Primär Angreifen: Player1 (Karten: 1)")
+        display.last should be("Verteidigen: Player2 (Karten: 2)")
+      }
     }
 
-    "display own cards with getOwnDisplay" in {
-      val mockController = new MockController()
-      val tui = new Tui(mockController)
-      val player = mockController.status.players.head
+    "getCardDisplay(Card)" should {
+      "display cards correctly" in {
+        val mockController = new MockController()
+        val tui = new Tui(mockController)
+        val card = Card(Rank.Ace, Suit.Spades)
 
-      val display = tui.getOwnDisplay(player)
-      display.head should include(player.name)
+        val display = tui.getCardDisplay(card)
+      }
+    }
+
+    "getOrderedCardsDisplay(List[Card])" should {
+      "display ordered cards" in {
+        val mockController = new MockController()
+        val tui = new Tui(mockController)
+        val cards = mockController.status.players.head.cards
+
+        val display = tui.getOrderedCardsDisplay(cards)
+        display.head should include("1")
+      }
+    }
+
+    "getUndefendedDisplay(List[Card])" should {
+      "display undefended cards" in {
+        val tui = new Tui(MockController())
+
+        val display = tui.getUndefendedDisplay(List(Card(Rank.Ace, Suit.Hearts), Card(Rank.Two, Suit.Clubs)))
+
+        display.head should be("Zu Verteidigen")
+        display(1) should be("1       2")
+        display(2) should be("┌─────┐ ┌─────┐")
+        display(3) should be("│A    │ │2    │")
+        display(4) should be("│  ♥  │ │  ♣  │")
+        display(5) should be("│    A│ │    2│")
+        display(6) should be("└─────┘ └─────┘")
+
+      }
+    }
+
+    "getDefendedDisplay(List[Card], List[Card])" should {
+      "display defended cards" in {
+        val mockController = new MockController()
+        val tui = new Tui(mockController)
+        val defended = mockController.status.defended
+        val used = mockController.status.used
+
+        val display = tui.getDefendedDisplay(defended, used)
+        display should contain("Verteidigt")
+      }
+    }
+
+    "getOwnDisplay(Player)" should {
+      "display own cards" in {
+        val mockController = new MockController()
+        val tui = new Tui(mockController)
+        val player = mockController.status.players.head
+
+        val display = tui.getOwnDisplay(player)
+        display.head should include(player.name)
+      }
     }
   }
-
 }
