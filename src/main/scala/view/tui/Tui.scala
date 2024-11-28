@@ -126,12 +126,13 @@ class Tui(val controller: Controller) extends View {
     if (cards.isEmpty) {
       return Nil
     }
+    
 
     getCardsOrder(cards) :: getCardsDisplay(cards)
   }
 
   def getUndefendedDisplay(undefended: List[Card]): List[String] = {
-    val display = getOrderedCardsDisplay(controller.status.undefended)
+    val display = getOrderedCardsDisplay(undefended)
 
     if (display.isEmpty) {
       return Nil
