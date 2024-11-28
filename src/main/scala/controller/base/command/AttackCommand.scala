@@ -1,12 +1,9 @@
 package controller.base.command
 
 import controller.base.BaseController
-import model.{Card, Status, StatusBuilder, Turn}
-import util.Command
+import model.{Card, StatusBuilder, Turn}
 
-class AttackCommand(controller: BaseController, card: Card) extends Command {
-
-  private var memento: Status = controller.status
+class AttackCommand(controller: BaseController, card: Card) extends MementoCommand(controller) {
 
   override def doStep(): Unit = {
     require(controller.status.turn == Turn.FirstlyAttacking || controller.status.turn == Turn.SecondlyAttacking)
@@ -33,21 +30,5 @@ class AttackCommand(controller: BaseController, card: Card) extends Command {
     }
 
     controller.status = statusBuilder.status
-  }
-
-  override def undoStep(): Unit = {
-    val memento = controller.status
-
-    controller.status = this.memento
-
-    this.memento = memento
-  }
-
-  override def redoStep(): Unit = {
-    val memento = controller.status
-
-    controller.status = this.memento
-
-    this.memento = memento
   }
 }

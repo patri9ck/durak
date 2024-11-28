@@ -3,7 +3,7 @@ package view
 import view.tui.Tui
 
 trait ViewCreator {
-  def createView(): View
+  def createView(step: Boolean): View
 }
 
 object ViewCreator {

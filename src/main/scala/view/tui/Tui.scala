@@ -8,13 +8,24 @@ import view.{View, ViewCreator}
 import scala.collection.mutable.ListBuffer
 import scala.io.StdIn
 
-class Tui(val controller: Controller) extends View {
+class Tui(val controller: Controller, val step: Boolean) extends View {
 
   controller.add(this)
   
   var countdown: () => Unit = countdownSeconds
 
   override def update(): Unit = {
+    if (step) {
+      askForStep() match
+        case Step.Continue => continue()
+        case Step.Undo => controller.undo()
+        case Step.Redo => controller.redo()
+    } else {
+      continue()
+    }
+  }
+
+  def continue(): Unit = {
     val player = controller.getPlayer
 
     if (player.nonEmpty) {
@@ -24,36 +35,41 @@ class Tui(val controller: Controller) extends View {
       val defended = controller.status.defended
       val used = controller.status.used
 
-      println()
       getPlayersDisplay(controller.status.players).foreach(println)
-      println()
-      getStackDisplay(controller.status.stack).foreach(println)
+      println(getStackDisplay(controller.status.stack))
       getTrumpDisplay(controller.status.trump).foreach(println)
-      println()
       getRoundCardsDisplay(undefended, defended, used).foreach(println)
       getOwnDisplay(player.get).foreach(println)
 
       if (player.get.turn == Turn.FirstlyAttacking || player.get.turn == Turn.SecondlyAttacking) {
-        askForAttack(player.get, defended, undefended, () => {
-          clearScreen()
-          controller.denied()
-        }, card => {
-          if (controller.canAttack(card)) {
-            clearScreen()
-            controller.attack(card)
-          }
-        })
+        askForAttack(player.get, defended, undefended, deny, attack)
       } else if (controller.status.turn == Turn.Defending) {
-        askForDefend(player.get, used, undefended, () => {
-          clearScreen()
-          controller.pickUp()
-        }, (used, undefended) => {
-          if (controller.canDefend(used, undefended)) {
-            clearScreen()
-            controller.defend(used, undefended)
-          }
-        })
+        askForDefend(player.get, used, undefended, pickUp, defend)
       }
+    }
+  }
+
+  def deny(): Unit = {
+    clearScreen()
+    controller.denied()
+  }
+
+  def attack(card: Card): Unit = {
+    if (controller.canAttack(card)) {
+      clearScreen()
+      controller.attack(card)
+    }
+  }
+
+  def pickUp(): Unit = {
+    clearScreen()
+    controller.pickUp()
+  }
+
+  def defend(used: Card, undefended: Card): Unit = {
+    if (controller.canDefend(used, undefended)) {
+      clearScreen()
+      controller.defend(used, undefended)
     }
   }
 
@@ -70,6 +86,21 @@ class Tui(val controller: Controller) extends View {
       case Some(player) => controller.chooseAttacking(player)
       case None => controller.chooseAttacking()
     }
+  }
+
+  def askForStep(): Step = {
+    while (true) {
+      print("[C]ontinue[U]ndo/[R]edo? ")
+
+      StdIn.readLine().toLowerCase match {
+        case "c" => return Step.Continue
+        case "u" => return Step.Undo
+        case "r" => return Step.Redo
+        case _ =>
+      }
+    }
+
+    Step.Continue
   }
 
   def displayPlayerCards(players: List[Player]): Unit = {
@@ -265,11 +296,11 @@ class Tui(val controller: Controller) extends View {
 }
 
 object Tui extends ViewCreator {
-  override def createView(): View = {
+  override def createView(step: Boolean): View = {
     val playerAmount = askForPlayerAmount
     val cardAmount = askForCardAmount(playerAmount)
 
-    Tui(BaseController(Status.createStatus(cardAmount, askForNames(playerAmount))))
+    Tui(BaseController(Status.createStatus(cardAmount, askForNames(playerAmount))), step)
   }
 
   def askForCardAmount(playerAmount: Int): Int = {
