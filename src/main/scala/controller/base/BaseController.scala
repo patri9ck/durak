@@ -1,14 +1,14 @@
 package controller.base
 
 import controller.Controller
-import controller.base.command.{AttackCommand, DefendCommand, DenyCommand, PickUpCommand}
+import controller.base.command.{AttackCommand, ChooseAttackingCommand, DefendCommand, DenyCommand, PickUpCommand, StartCommand}
 import model.*
 import util.{Observable, UndoManager}
 
 import scala.annotation.tailrec
 import scala.util.Random
 
-case class BaseController(var status: Status) extends Controller {
+class BaseController(var status: Status = new Status) extends Controller {
 
   private val undoManager = UndoManager()
 
@@ -49,27 +49,6 @@ case class BaseController(var status: Status) extends Controller {
   def chooseNextAttacking(players: List[Player], previous: Player): List[Player] =
     chooseAttacking(players, (players.indexOf(previous) - 1 + players.size) % players.size)
 
-  override def chooseAttacking(): Unit = {
-    require(status.players.nonEmpty)
-
-    chooseAttacking(Random.shuffle(status.players).head)
-  }
-
-  override def chooseAttacking(attacking: Player): Unit = {
-    status = StatusBuilder.create(status)
-      .setPlayers(chooseAttacking(status.players, status.players.indexWhere(_ == attacking)))
-      .setTurn(Turn.FirstlyAttacking)
-      .status
-
-    notifySubscribers()
-  }
-
-  override def denied(): Unit = {
-    undoManager.doStep(DenyCommand(this))
-    
-    notifySubscribers()
-  }
-
   def updatePlayers(players: List[Player], old: Player, updated: Player): List[Player] = {
     players.map { player =>
       if (old == player) {
@@ -105,18 +84,33 @@ case class BaseController(var status: Status) extends Controller {
       .removePassed()
   }
 
+  override def chooseAttacking(): Unit = {
+    chooseAttacking(Random.shuffle(status.players).head)
+  }
+
+  override def chooseAttacking(attacking: Player): Unit = {
+    undoManager.doStep(ChooseAttackingCommand(this, attacking))
+
+    notifySubscribers()
+  }
+  
+  override def start(amount: Int, names: List[String]): Unit = {
+    undoManager.doStep(StartCommand(this, amount, names))
+
+    notifySubscribers()
+  }
+
+  override def deny(): Unit = {
+    undoManager.doStep(DenyCommand(this))
+    
+    notifySubscribers()
+  }
+
+  
   override def getPlayer: Option[Player] = byTurn(status.turn)
   
   override def byTurn(turn: Turn): Option[Player] = {
     status.players.find(_.turn == turn)
-  }
-
-  private def requireTurn(turn: Turn): Unit = {
-    require(byTurn(turn).nonEmpty)
-  }
-
-  private def requireAttack(): Unit = {
-    require(status.turn == Turn.FirstlyAttacking || status.turn == Turn.SecondlyAttacking)
   }
 
   override def pickUp(): Unit = {

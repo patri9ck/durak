@@ -4,6 +4,7 @@ import controller.Controller
 import model.{Card, Player, Rank, Status, Suit, Turn}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import view.Tui
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, PrintStream}
 import scala.io.StdIn
@@ -29,7 +30,7 @@ class TuiSpec extends AnyWordSpec with Matchers {
 
     override def defend(used: Card, undefended: Card): Unit = {}
 
-    override def denied(): Unit = {}
+    override def deny(): Unit = {}
 
     override def canAttack(card: Card): Boolean = true
 

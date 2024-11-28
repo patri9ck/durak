@@ -1,19 +1,30 @@
 package model
 
-class StatusBuilder private(private var players: List[Player],
-                            private var stack: List[Card],
-                            private var trump: Card,
-                            private var amount: Int,
-                            private var turn: Turn,
-                            private var defended: List[Card],
-                            private var undefended: List[Card],
-                            private var used: List[Card],
-                            private var denied: Boolean,
-                            private var passed: Option[Player]) {
+class StatusBuilder (private var players: List[Player] = Nil,
+                            private var stack: List[Card] = Nil,
+                            private var trump: Card = null,
+                            private var amount: Int = 0,
+                            private var turn: Turn = Turn.Watching,
+                            private var defended: List[Card] = Nil,
+                            private var undefended: List[Card] = Nil,
+                            private var used: List[Card] = Nil,
+                            private var denied: Boolean = false,
+                            private var passed: Option[Player] = None) {
+  
+  def this(status: Status) = this(status.players,
+    status.stack,
+    status.trump,
+    status.amount,
+    status.turn,
+    status.defended,
+    status.undefended,
+    status.used,
+    status.denied,
+    status.passed)
 
   def setPlayers(players: List[Player]): StatusBuilder = {
     this.players = players
-
+  
     this
   }
 
@@ -112,18 +123,4 @@ class StatusBuilder private(private var players: List[Player],
   def getPassed: Option[Player] = passed
 
   def status: Status = Status(players, stack, trump, amount, turn, defended, undefended, used, denied, passed)
-}
-
-object StatusBuilder {
-
-  def create(status: Status): StatusBuilder = StatusBuilder(status.players,
-    status.stack,
-    status.trump,
-    status.amount,
-    status.turn,
-    status.defended,
-    status.undefended,
-    status.used,
-    status.denied,
-    status.passed)
 }

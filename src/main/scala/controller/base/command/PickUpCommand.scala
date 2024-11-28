@@ -10,7 +10,7 @@ class PickUpCommand(controller: BaseController) extends MementoCommand(controlle
 
     val defending = controller.getPlayer.get
 
-    val statusBuilder = StatusBuilder.create(controller.status)
+    val statusBuilder = StatusBuilder(controller.status)
 
     controller.drawFromStack(statusBuilder)
 

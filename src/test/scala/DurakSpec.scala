@@ -1,7 +1,6 @@
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import view.tui.Tui
-import view.{View, ViewCreator, ViewType}
+import view.{Tui, ViewCreator}
 
 class DurakSpec extends AnyWordSpec with Matchers {
 

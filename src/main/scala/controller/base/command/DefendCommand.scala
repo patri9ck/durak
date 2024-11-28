@@ -12,7 +12,7 @@ class DefendCommand(controller: BaseController, used: Card, undefended: Card) ex
 
     val updated = defending.copy(cards = defending.cards.filterNot(_ == used))
 
-    val statusBuilder = StatusBuilder.create(controller.status)
+    val statusBuilder = StatusBuilder(controller.status)
       .setPlayers(controller.updatePlayers(controller.status.players, defending, updated))
       .setUndefended(controller.status.undefended.filterNot(_ == undefended))
       .setDefended(undefended :: controller.status.defended)

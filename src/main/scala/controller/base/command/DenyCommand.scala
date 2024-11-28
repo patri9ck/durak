@@ -10,7 +10,7 @@ class DenyCommand(controller: BaseController) extends MementoCommand(controller)
 
     val attacking = controller.getPlayer.get
 
-    val statusBuilder = StatusBuilder.create(controller.status)
+    val statusBuilder = StatusBuilder(controller.status)
 
     if (controller.status.denied || controller.byTurn(Turn.SecondlyAttacking).isEmpty) {
       if (controller.status.undefended.isEmpty) {
