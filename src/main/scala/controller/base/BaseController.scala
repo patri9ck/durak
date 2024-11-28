@@ -13,9 +13,6 @@ case class BaseController(var status: Status) extends Controller {
   private val undoManager = UndoManager()
 
   def chooseAttacking(players: List[Player], index: Int): List[Player] = {
-    require(index >= 0)
-    require(index < players.size)
-
     players.zipWithIndex.map { case (player, idx) =>
       if (player.turn == Turn.Finished) {
         player
@@ -48,10 +45,9 @@ case class BaseController(var status: Status) extends Controller {
       }
     }
   }
-  
-  def chooseNextAttacking(players: List[Player], previous: Player): List[Player] = {
+
+  def chooseNextAttacking(players: List[Player], previous: Player): List[Player] =
     chooseAttacking(players, (players.indexOf(previous) - 1 + players.size) % players.size)
-  }
 
   override def chooseAttacking(): Unit = {
     require(status.players.nonEmpty)
@@ -69,9 +65,6 @@ case class BaseController(var status: Status) extends Controller {
   }
 
   override def denied(): Unit = {
-    requireAttack()
-    requireTurn(Turn.FirstlyAttacking)
-    
     undoManager.doStep(DenyCommand(this))
     
     notifySubscribers()
