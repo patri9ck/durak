@@ -1,13 +1,16 @@
 package controller.base
 
 import controller.Controller
+import controller.base.command.{AttackCommand, DefendCommand, DenyCommand, PickUpCommand}
 import model.*
-import observer.Observable
+import util.{Observable, UndoManager}
 
 import scala.annotation.tailrec
 import scala.util.Random
 
 case class BaseController(var status: Status) extends Controller {
+
+  private val undoManager = UndoManager()
 
   def chooseAttacking(players: List[Player], index: Int): List[Player] = {
     require(index >= 0)
@@ -68,30 +71,8 @@ case class BaseController(var status: Status) extends Controller {
   override def denied(): Unit = {
     requireAttack()
     requireTurn(Turn.FirstlyAttacking)
-
-    val attacking = getPlayer.get
-
-    val statusBuilder = StatusBuilder.create(status)
-
-    if (status.denied || byTurn(Turn.SecondlyAttacking).isEmpty) {
-      if (status.undefended.isEmpty) {
-        drawFromStack(statusBuilder)
-
-        statusBuilder
-          .setPlayers(chooseNextAttacking(status.players, byTurn(Turn.FirstlyAttacking).get))
-          .setTurn(Turn.FirstlyAttacking)
-          .resetRound
-      } else {
-        statusBuilder
-          .setTurn(Turn.Defending)
-      }
-    } else {
-      statusBuilder
-        .setTurn(Turn.SecondlyAttacking)
-        .setDenied(true)
-    }
-
-    status = statusBuilder.status
+    
+    undoManager.doStep(DenyCommand(this))
     
     notifySubscribers()
   }
@@ -146,21 +127,7 @@ case class BaseController(var status: Status) extends Controller {
   }
 
   override def pickUp(): Unit = {
-    requireDefend()
-    requireTurn(status.turn)
-
-    val defending = getPlayer.get
-
-    val statusBuilder = StatusBuilder.create(status)
-
-    drawFromStack(statusBuilder)
-
-    val updated = defending.copy(cards = defending.cards ++ status.used ++ status.defended ++ status.undefended)
-
-    status = statusBuilder
-      .setPlayers(chooseNextAttacking(updatePlayers(status.players, defending, updated), updated))
-      .resetRound
-      .status
+    undoManager.doStep(PickUpCommand(this))
 
     notifySubscribers()
   }
@@ -176,36 +143,9 @@ case class BaseController(var status: Status) extends Controller {
 
     true
   }
-  
-  private def requireDefend(): Unit = {
-    require(status.turn == Turn.Defending)
-  }
 
   override def attack(card: Card): Unit = {
-    requireAttack()
-    requireTurn(status.turn)
-    require(canAttack(card))
-
-    val attacking = getPlayer.get
-
-    val updated = attacking.copy(cards = attacking.cards.filterNot(_ == card))
-
-    val statusBuilder = StatusBuilder.create(status)
-      .setPlayers(updatePlayers(status.players, attacking, updated))
-      .setUndefended(card :: status.undefended)
-      .setDenied(false)
-
-    if (updated.turn == Turn.FirstlyAttacking && byTurn(Turn.SecondlyAttacking).isEmpty || updated.turn == Turn.SecondlyAttacking) {
-      statusBuilder.setTurn(Turn.Defending)
-    } else {
-      statusBuilder.setTurn(Turn.SecondlyAttacking)
-    }
-
-    if (hasFinished(updated, statusBuilder)) {
-      finish(updated, statusBuilder)
-    }
-
-    status = statusBuilder.status
+    undoManager.doStep(AttackCommand(this, card))
 
     notifySubscribers()
   }
@@ -234,26 +174,7 @@ case class BaseController(var status: Status) extends Controller {
   }
   
   override def defend(used: Card, undefended: Card): Unit = {
-    requireDefend()
-    requireTurn(Turn.Defending)
-    require(canDefend(used, undefended))
-
-    val defending = byTurn(Turn.Defending).get
-
-    val updated = defending.copy(cards = defending.cards.filterNot(_ == used))
-
-    val statusBuilder = StatusBuilder.create(status)
-      .setPlayers(updatePlayers(status.players, defending, updated))
-      .setUndefended(status.undefended.filterNot(_ == undefended))
-      .setDefended(undefended :: status.defended)
-      .setUsed(used :: status.used)
-      .setTurn(Turn.FirstlyAttacking)
-
-    if (hasFinished(updated, statusBuilder)) {
-      finish(updated, statusBuilder)
-    }
-
-    status = statusBuilder.status
+    undoManager.doStep(DefendCommand(this, used, undefended))
 
     notifySubscribers()
   }
@@ -268,5 +189,17 @@ case class BaseController(var status: Status) extends Controller {
     }
 
     false
+  }
+
+  override def undo(): Unit = {
+    undoManager.undoStep()
+
+    notifySubscribers()
+  }
+
+  override def redo(): Unit = {
+    undoManager.redoStep()
+
+    notifySubscribers()
   }
 }

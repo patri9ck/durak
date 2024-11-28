@@ -1,6 +1,6 @@
 package view
 
-import observer.Observer
+import util.Observer
 
 trait View extends Observer {
   def start(): Unit

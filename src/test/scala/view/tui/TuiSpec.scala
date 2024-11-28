@@ -19,21 +19,25 @@ class TuiSpec extends AnyWordSpec with Matchers {
 
     override def getPlayer: Option[Player] = Some(status.players.head)
 
-    def chooseAttacking(player: Player): Unit = {}
+    override def chooseAttacking(player: Player): Unit = {}
 
-    def chooseAttacking(): Unit = {}
+    override def chooseAttacking(): Unit = {}
 
-    def pickUp(): Unit = {}
+    override def pickUp(): Unit = {}
 
-    def attack(card: Card): Unit = {}
+    override def attack(card: Card): Unit = {}
 
-    def defend(used: Card, undefended: Card): Unit = {}
+    override def defend(used: Card, undefended: Card): Unit = {}
 
-    def denied(): Unit = {}
+    override def denied(): Unit = {}
 
-    def canAttack(card: Card): Boolean = true
+    override def canAttack(card: Card): Boolean = true
 
-    def canDefend(used: Card, undefended: Card): Boolean = true
+    override def canDefend(used: Card, undefended: Card): Boolean = true
+    
+    override def undo(): Unit = {}
+
+    override def redo(): Unit = {}
   }
 
   "Tui" should {
