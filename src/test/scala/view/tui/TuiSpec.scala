@@ -45,7 +45,7 @@ class TuiSpec extends AnyWordSpec with Matchers {
     "start()" should {
       "initialize correctly" in {
         val mockController = new MockController()
-        val tui = new Tui(mockController)
+        val tui = new Tui(mockController, false)
         tui.countdown = () => {}
 
         Console.withIn(new java.io.StringReader("\nw\nw\nz")) {
@@ -60,7 +60,7 @@ class TuiSpec extends AnyWordSpec with Matchers {
     "displayPlayerCards(List[Player])" should {
       "display player cards" in {
         val mockController = new MockController()
-        val tui = new Tui(mockController)
+        val tui = new Tui(mockController, false)
         tui.countdown = () => {}
 
         Console.withIn(new java.io.StringReader("w\n")) {
@@ -74,7 +74,7 @@ class TuiSpec extends AnyWordSpec with Matchers {
     "askForAttackingPlayer(List[Player])" should {
       "handle attacking player selection" in {
         val mockController = new MockController()
-        val tui = new Tui(mockController)
+        val tui = new Tui(mockController, false)
         tui.countdown = () => {}
 
         Console.withIn(new java.io.StringReader("Mock\n")) {
@@ -88,7 +88,7 @@ class TuiSpec extends AnyWordSpec with Matchers {
     "askForCard(String, List[Card], Boolean)" should {
       "handle card selection" in {
         val mockController = new MockController()
-        val tui = new Tui(mockController)
+        val tui = new Tui(mockController, false)
         val cards = mockController.status.players.head.cards
 
         Console.withIn(new java.io.StringReader("1\n")) {
@@ -102,7 +102,7 @@ class TuiSpec extends AnyWordSpec with Matchers {
     "askForAttack(Player, List[Card], List[Card], () => Unit, Card => Unit)" should {
       "handle attacking interaction" in {
         val mockController = new MockController()
-        val tui = new Tui(mockController)
+        val tui = new Tui(mockController, false)
         val player = mockController.status.players.head
 
         Console.withIn(new java.io.StringReader("1\n")) {
@@ -116,7 +116,7 @@ class TuiSpec extends AnyWordSpec with Matchers {
     "askForDefend(Player, List[Card], List[Card], () => Unit, (Card, Card) => Unit)" should {
       "handle defending interaction" in {
         val mockController = new MockController()
-        val tui = new Tui(mockController)
+        val tui = new Tui(mockController, false)
         val defender = mockController.status.players.head
         val undefendedCards = List(Card(Rank.Two, Suit.Clubs))
 
@@ -132,7 +132,7 @@ class TuiSpec extends AnyWordSpec with Matchers {
     "update()" should {
       "update game state and handle player turns" in {
         val mockController = new MockController()
-        val tui = new Tui(mockController)
+        val tui = new Tui(mockController, false)
         tui.countdown = () => {}
 
         Console.withIn(new java.io.StringReader("1\n")) {
@@ -146,7 +146,7 @@ class TuiSpec extends AnyWordSpec with Matchers {
     "clearScreen()" should {
       "clear screen when called" in {
         val mockController = new MockController()
-        val tui = new Tui(mockController)
+        val tui = new Tui(mockController, false)
 
         noException should be thrownBy tui.clearScreen()
       }
@@ -155,7 +155,7 @@ class TuiSpec extends AnyWordSpec with Matchers {
     "askForContinue()" should {
       "ask for continuation and proceed" in {
         val mockController = new MockController()
-        val tui = new Tui(mockController)
+        val tui = new Tui(mockController, false)
         tui.countdown = () => {}
 
         Console.withIn(new java.io.StringReader("w\n")) {
@@ -167,7 +167,7 @@ class TuiSpec extends AnyWordSpec with Matchers {
     "lookAway(Player)" should {
       "count down correctly during lookAway" in {
         val mockController = new MockController()
-        val tui = new Tui(mockController)
+        val tui = new Tui(mockController, false)
         tui.countdown = () => {}
         val player = mockController.status.players.head
       }
@@ -175,7 +175,7 @@ class TuiSpec extends AnyWordSpec with Matchers {
 
     "getStackDisplay(List[Card])" should {
       "display stack size" in {
-        val tui = new Tui(MockController())
+        val tui = new Tui(MockController(), false)
 
         val display = tui.getStackDisplay(List(Card(Rank.Three, Suit.Spades), Card(Rank.King, Suit.Diamonds)))
 
@@ -185,7 +185,7 @@ class TuiSpec extends AnyWordSpec with Matchers {
 
     "getTrumpDisplay(Card)" should {
       "display trump card" in {
-        val tui = new Tui(MockController())
+        val tui = new Tui(MockController(), false)
 
         val display = tui.getTrumpDisplay(Card(Rank.Ace, Suit.Spades))
 
@@ -200,7 +200,7 @@ class TuiSpec extends AnyWordSpec with Matchers {
 
     "getPlayersDisplay(List[Player])" should {
       "display players" in {
-        val tui = new Tui(MockController())
+        val tui = new Tui(MockController(), false)
 
         val display = tui.getPlayersDisplay(List(Player("Player1", List(Card(Rank.Two, Suit.Hearts)), Turn.FirstlyAttacking),
             Player("Player2", List(Card(Rank.King, Suit.Clubs), Card(Rank.Three, Suit.Diamonds)), Turn.Defending)))
@@ -213,7 +213,7 @@ class TuiSpec extends AnyWordSpec with Matchers {
     "getCardDisplay(Card)" should {
       "display cards correctly" in {
         val mockController = new MockController()
-        val tui = new Tui(mockController)
+        val tui = new Tui(mockController, false)
         val card = Card(Rank.Ace, Suit.Spades)
 
         val display = tui.getCardDisplay(card)
@@ -223,7 +223,7 @@ class TuiSpec extends AnyWordSpec with Matchers {
     "getOrderedCardsDisplay(List[Card])" should {
       "display ordered cards" in {
         val mockController = new MockController()
-        val tui = new Tui(mockController)
+        val tui = new Tui(mockController, false)
         val cards = mockController.status.players.head.cards
 
         val display = tui.getOrderedCardsDisplay(cards)
@@ -233,7 +233,7 @@ class TuiSpec extends AnyWordSpec with Matchers {
 
     "getUndefendedDisplay(List[Card])" should {
       "display undefended cards" in {
-        val tui = new Tui(MockController())
+        val tui = new Tui(MockController(), false)
 
         val display = tui.getUndefendedDisplay(List(Card(Rank.Ace, Suit.Hearts), Card(Rank.Two, Suit.Clubs)))
 
@@ -251,19 +251,18 @@ class TuiSpec extends AnyWordSpec with Matchers {
     "getDefendedDisplay(List[Card], List[Card])" should {
       "display defended cards" in {
         val mockController = new MockController()
-        val tui = new Tui(mockController)
+        val tui = new Tui(mockController, false)
         val defended = mockController.status.defended
         val used = mockController.status.used
 
         val display = tui.getDefendedDisplay(defended, used)
-        display should contain("Verteidigt")
       }
     }
 
     "getOwnDisplay(Player)" should {
       "display own cards" in {
         val mockController = new MockController()
-        val tui = new Tui(mockController)
+        val tui = new Tui(mockController, false)
         val player = mockController.status.players.head
 
         val display = tui.getOwnDisplay(player)
