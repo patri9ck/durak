@@ -1,4 +1,4 @@
-package observer
+package util
 
 class Observable {
   private var subscribers: Vector[Observer] = Vector()

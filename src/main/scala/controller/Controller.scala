@@ -1,7 +1,7 @@
 package controller
 
 import model.*
-import observer.Observable
+import util.Observable
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
@@ -29,4 +29,8 @@ trait Controller extends Observable {
   def byTurn(turn: Turn): Option[Player]
 
   def getPlayer: Option[Player]
+
+  def undo(): Unit
+
+  def redo(): Unit
 }
