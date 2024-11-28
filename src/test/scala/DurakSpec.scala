@@ -25,9 +25,9 @@ class DurakSpec extends AnyWordSpec with Matchers {
         val mockView = MockView()
         
         try {
-          Durak.viewCreator = _ => () => mockView
+          Durak.viewCreator = _ => (step) => mockView
           
-          Durak.main("")
+          Durak.main("", false)
         } finally {
           Durak.viewCreator = viewCreator
         }
@@ -44,10 +44,10 @@ class DurakSpec extends AnyWordSpec with Matchers {
         try {
           Durak.viewCreator = innerViewType => {
             outerViewType = innerViewType
-            () => mockView
+            (step) => mockView
           }
 
-          Durak.main("gui")
+          Durak.main("gui", false)
         } finally {
           Durak.viewCreator = viewCreator
         }
@@ -64,10 +64,10 @@ class DurakSpec extends AnyWordSpec with Matchers {
         try {
           Durak.viewCreator = innerViewType => {
             outerViewType = innerViewType
-            () => mockView
+            (step) => mockView
           }
 
-          Durak.main("")
+          Durak.main("", false)
         } finally {
           Durak.viewCreator = viewCreator
         }
