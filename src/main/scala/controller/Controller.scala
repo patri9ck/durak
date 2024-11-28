@@ -10,7 +10,7 @@ trait Controller extends Observable {
 
   def status: Status
   
-  def start(amount: Int, names: List[String]): Unit
+  def initialize(amount: Int, names: List[String]): Unit
 
   def chooseAttacking(attacking: Player): Unit
 
@@ -22,15 +22,15 @@ trait Controller extends Observable {
 
   def attack(card: Card): Unit
 
-  def defend(used: Card, undefended: Card): Unit
-
   def canAttack(card: Card): Boolean
+
+  def defend(used: Card, undefended: Card): Unit
   
   def canDefend(used: Card, undefended: Card): Boolean
 
   def byTurn(turn: Turn): Option[Player]
 
-  def getPlayer: Option[Player]
+  def current: Option[Player]
 
   def undo(): Unit
 

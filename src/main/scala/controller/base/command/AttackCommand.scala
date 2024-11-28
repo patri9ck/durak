@@ -5,10 +5,8 @@ import model.{Card, StatusBuilder, Turn}
 
 class AttackCommand(controller: BaseController, card: Card) extends MementoCommand(controller) {
 
-  override def doStep(): Unit = {
-    memento = controller.status
-
-    val attacking = controller.getPlayer.get
+  override def run(): Unit = {
+    val attacking = controller.current.get
 
     val updated = attacking.copy(cards = attacking.cards.filterNot(_ == card))
 

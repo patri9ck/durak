@@ -18,7 +18,7 @@ class TuiSpec extends AnyWordSpec with Matchers {
     override def byTurn(turn: Turn): Option[Player] =
       if (status.turn == turn) Some(status.players.head) else None
 
-    override def getPlayer: Option[Player] = Some(status.players.head)
+    override def current: Option[Player] = Some(status.players.head)
 
     override def chooseAttacking(player: Player): Unit = {}
 

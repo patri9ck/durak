@@ -5,10 +5,8 @@ import model.{StatusBuilder, Turn}
 
 class PickUpCommand(controller: BaseController) extends MementoCommand(controller) {
 
-  override def doStep(): Unit = {
-    memento = controller.status
-
-    val defending = controller.getPlayer.get
+  override def run(): Unit = {
+    val defending = controller.current.get
 
     val statusBuilder = StatusBuilder(controller.status)
 
