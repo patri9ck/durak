@@ -35,7 +35,7 @@ class StatusSpec extends AnyWordSpec with Matchers {
 
         val status = new Status().initialize(amount, names)
 
-        status.turn should be(Turn.Watching)
+        status.turn should be(Turn.Initialized)
         status.defended should be(empty)
         status.undefended should be(empty)
         status.used should be(empty)
