@@ -15,7 +15,7 @@ class DenyCommandSpec extends AnyWordSpec with Matchers {
           Player("Player3", Nil, Turn.FirstlyAttacking)
         )
 
-        val status = Status(players, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.SecondlyAttacking, Nil, Nil, Nil, true, None)
+        val status = Status(players, Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.SecondlyAttacking, Nil, Nil, Nil, true, None)
         val controller = BaseController(status)
 
         DenyCommand(controller).doStep()
@@ -30,7 +30,7 @@ class DenyCommandSpec extends AnyWordSpec with Matchers {
           Player("Player3", Nil, Turn.FirstlyAttacking)
         )
 
-        val status = Status(players, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.SecondlyAttacking, Nil, List(Card(Rank.Ace, Suit.Spades)), Nil, true, None)
+        val status = Status(players, Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.SecondlyAttacking, Nil, List(Card(Rank.Ace, Suit.Spades)), Nil, true, None)
         val controller = BaseController(status)
 
         DenyCommand(controller).doStep()
@@ -45,7 +45,7 @@ class DenyCommandSpec extends AnyWordSpec with Matchers {
           Player("Player3", Nil, Turn.FirstlyAttacking)
         )
 
-        val status = Status(players, Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.FirstlyAttacking, Nil, List(Card(Rank.Ace, Suit.Spades)), Nil, false, None)
+        val status = Status(players, Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.FirstlyAttacking, Nil, List(Card(Rank.Ace, Suit.Spades)), Nil, false, None)
         val controller = BaseController(status)
 
         DenyCommand(controller).doStep()

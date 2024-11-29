@@ -7,12 +7,12 @@ class StatusSpec extends AnyWordSpec with Matchers {
 
   "Status" should {
 
-    "createStatus(Int, List[String])" should {
-      "create a status with the correct amount of players and cards" in {
+    "initialize(Int, List[String])" should {
+      "initialize a status with the correct amount of players and cards" in {
         val names = List("Player1", "Player2")
         val amount = 6
-
-        val status = Status.createStatus(amount, names)
+        
+        val status = new Status().initialize(amount, names)
 
         status.players should have length names.length
         all(status.players.map(_.cards)) should have length amount
@@ -23,17 +23,17 @@ class StatusSpec extends AnyWordSpec with Matchers {
         val names = List("Player1", "Player2")
         val amount = 6
 
-        val status = Status.createStatus(amount, names)
+        val status = new Status().initialize(amount, names)
 
-        Rank.values should contain(status.trump.rank)
-        Suit.values should contain(status.trump.suit)
+        Rank.values should contain(status.trump.get.rank)
+        Suit.values should contain(status.trump.get.suit)
       }
 
       "initialize the round with the correct turn and empty lists" in {
         val names = List("Player1", "Player2")
         val amount = 6
 
-        val status = Status.createStatus(amount, names)
+        val status = new Status().initialize(amount, names)
 
         status.turn should be(Turn.Watching)
         status.defended should be(empty)
