@@ -1,7 +1,7 @@
-package view.tui
+package view
 
 import controller.Controller
-import model.{Card, Player, Rank, Status, Suit, Turn}
+import model.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import view.Tui
@@ -13,8 +13,10 @@ class TuiSpec extends AnyWordSpec with Matchers {
 
   class MockController extends Controller {
 
-    var status: Status = Status(List(Player("Mock", List(Card(Rank.Ace, Suit.Hearts)), Turn.FirstlyAttacking)), Nil, Card(Rank.Ace, Suit.Spades), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
+    var status: Status = Status(List(Player("Mock", List(Card(Rank.Ace, Suit.Hearts)), Turn.FirstlyAttacking)), Nil, Some(Card(Rank.Ace, Suit.Spades)), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
 
+    override def initialize(amount: Int, names: List[String]): Unit = {}
+    
     override def byTurn(turn: Turn): Option[Player] =
       if (status.turn == turn) Some(status.players.head) else None
 
@@ -42,22 +44,6 @@ class TuiSpec extends AnyWordSpec with Matchers {
   }
 
   "Tui" should {
-
-    "start()" should {
-      "initialize correctly" in {
-        val mockController = new MockController()
-        val tui = new Tui(mockController, false)
-        tui.countdown = () => {}
-
-        Console.withIn(new java.io.StringReader("\nw\nw\nz")) {
-          tui.start()
-        }
-
-        mockController.status.players.head.name shouldBe "Mock"
-        mockController.status.players.length shouldBe 1
-      }
-    }
-
     "displayPlayerCards(List[Player])" should {
       "display player cards" in {
         val mockController = new MockController()

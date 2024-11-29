@@ -10,7 +10,7 @@ class PickUpCommandSpec extends AnyWordSpec with Matchers {
     "doStep()" should {
       "fill up the defending player's cards with the used, defended and undefended cards" in {
         val status = Status(List(Player("Player1", List(Card(Rank.Seven, Suit.Spades)), Turn.Defending),
-          Player("Player2", Nil, Turn.FirstlyAttacking)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Spades)), List(Card(Rank.King, Suit.Spades), Card(Rank.Queen, Suit.Spades)), List(Card(Rank.Jack, Suit.Spades), Card(Rank.Ten, Suit.Spades)), false, None)
+          Player("Player2", Nil, Turn.FirstlyAttacking)), Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Spades)), List(Card(Rank.King, Suit.Spades), Card(Rank.Queen, Suit.Spades)), List(Card(Rank.Jack, Suit.Spades), Card(Rank.Ten, Suit.Spades)), false, None)
         val controller = BaseController(status)
 
         PickUpCommand(controller).doStep()
@@ -20,7 +20,7 @@ class PickUpCommandSpec extends AnyWordSpec with Matchers {
 
       "set the turn to FirstlyAttacking and reset the defended, undefended and used List" in {
         val status = Status(List(Player("Player1", List(Card(Rank.Seven, Suit.Spades)), Turn.Defending),
-          Player("Player2", Nil, Turn.FirstlyAttacking)), Nil, Card(Rank.Ten, Suit.Spades), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Spades)), List(Card(Rank.King, Suit.Spades), Card(Rank.Queen, Suit.Spades)), List(Card(Rank.Jack, Suit.Spades), Card(Rank.Ten, Suit.Spades)), false, None)
+          Player("Player2", Nil, Turn.FirstlyAttacking)), Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Spades)), List(Card(Rank.King, Suit.Spades), Card(Rank.Queen, Suit.Spades)), List(Card(Rank.Jack, Suit.Spades), Card(Rank.Ten, Suit.Spades)), false, None)
         val controller = BaseController(status)
 
         PickUpCommand(controller).doStep()

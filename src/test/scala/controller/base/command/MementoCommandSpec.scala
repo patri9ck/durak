@@ -5,6 +5,10 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class MementoCommandSpec extends AnyWordSpec with Matchers {
   "MementoCommand" should {
+    "doStep()" should {
+      
+    }
+    
     "undoStep()" should {
       
     }
