@@ -33,7 +33,7 @@ class StatusBuilderSpec extends AnyWordSpec with Matchers {
         val statusBuilder = StatusBuilder(List(), List(), Some(Card(Rank.Two, Suit.Diamonds)), 6, Turn.Watching, List(), List(), List(), false, None)
 
         statusBuilder.setTrump(trump) should be(statusBuilder)
-        statusBuilder.getTrump should be(trump)
+        statusBuilder.getTrump should be(Some(trump))
       }
     }
 
