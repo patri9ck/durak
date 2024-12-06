@@ -1,7 +1,7 @@
 import controller.base.BaseController
-import view.Tui
+import view.Gui
+import view.tui.Tui
 
-import scala.io.StdIn
 import scala.util.CommandLineParser
 
 object Durak {
@@ -9,13 +9,8 @@ object Durak {
   def main(step: Boolean): Unit = {
     val controller = BaseController()
 
-    val tui = Tui(controller, step)
-
-    tui.update()
-
-    while (true) {
-      tui.addLine(StdIn.readLine())
-    }
+    Tui(controller, step).start()
+    Gui(controller, step).main(Array.empty)
   }
 }
 

@@ -4,7 +4,7 @@ import controller.Controller
 import model.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import view.Tui
+import view.tui.Tui
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, PrintStream}
 import scala.io.StdIn
