@@ -4,8 +4,10 @@ import controller.Controller
 import model.*
 import util.Observer
 
+import scala.collection.concurrent.TrieMap
 import scala.collection.mutable.ListBuffer
-import scala.io.StdIn
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Promise}
 
 class Tui(val controller: Controller, val step: Boolean) extends Observer {
 
@@ -13,15 +15,37 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
   
   var countdown: () => Unit = countdownSeconds
 
+  private val threads = TrieMap[Thread, Promise[String]]()
+
   override def update(): Unit = {
-    if (step) {
-      askForStep() match
-        case Step.Continue => continue()
-        case Step.Undo => controller.undo()
-        case Step.Redo => controller.redo()
-    } else {
-      continue()
-    }
+    Thread(() => {
+      threads.values.foreach(promise => promise.tryFailure(InterruptedException()))
+      threads.clear()
+
+      if (step) {
+        askForStep() match
+          case Step.Continue => continue()
+          case Step.Undo => controller.undo()
+          case Step.Redo => controller.redo()
+      } else {
+        continue()
+      }
+    }).start()
+  }
+  
+  def addLine(line: String): Unit = {
+    threads.values.foreach(promise => promise.success(line))
+    threads.clear()
+  }
+
+  def readLine(prompt: String): String = {
+    val promise = Promise[String]()
+
+    threads.put(Thread.currentThread(), promise)
+    
+    print(prompt)
+
+    Await.result(promise.future, Duration.Inf)
   }
 
   def continue(): Unit = {
@@ -204,9 +228,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
 
   def askForStep(): Step = {
     while (true) {
-      print("[C]ontinue/[U]ndo/[R]edo? ")
-
-      StdIn.readLine().toLowerCase match {
+      readLine("[C]ontinue/[U]ndo/[R]edo? ").toLowerCase match {
         case "c" => return Step.Continue
         case "u" => return Step.Undo
         case "r" => return Step.Redo
@@ -221,9 +243,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
     val limit = 52 / playerAmount
 
     while (true) {
-      print(s"Wie viele Karten soll jeder Spieler erhalten? (2-$limit) ")
-
-      val amount = StdIn.readLine().toIntOption
+      val amount = readLine(s"Wie viele Karten soll jeder Spieler erhalten? (2-$limit) ").toIntOption
 
       if (amount.nonEmpty && amount.get >= 2 && amount.get <= limit)
         return amount.get
@@ -234,9 +254,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
 
   def askForPlayerAmount: Int = {
     while (true) {
-      print("Wie viele Spieler sollen mitspielen? (Keine Doppelungen, mindestens 2) ")
-
-      val amount = StdIn.readLine().toIntOption
+      val amount = readLine("Wie viele Spieler sollen mitspielen? (Keine Doppelungen, mindestens 2) ").toIntOption
 
       if (amount.isDefined && amount.get > 1) {
         return amount.get
@@ -253,9 +271,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
       var name = ""
 
       while (name.isBlank || names.contains(name)) {
-        print(s"Name von Spieler $i: ")
-
-        name = StdIn.readLine()
+        name = readLine(s"Name von Spieler $i: ")
       }
 
       names += name
@@ -266,9 +282,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
 
   def askForContinue(): Unit = {
     while (true) {
-      print("[W]eitermachen? ")
-
-      if (StdIn.readLine().equalsIgnoreCase("w")) {
+      if (readLine("[W]eitermachen? ").equalsIgnoreCase("w")) {
         return
       }
     }
@@ -276,9 +290,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
 
   def askForAttackingPlayer(players: List[Player]): Option[Player] = {
     while (true) {
-      print(s"Welcher Spieler soll angreifen? (Name/[Z]ufällig) ")
-
-      val name = StdIn.readLine()
+      val name = readLine(s"Welcher Spieler soll angreifen? (Name/[Z]ufällig) ")
 
       if (name.equalsIgnoreCase("z")) {
         return None
@@ -296,9 +308,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
 
   def askForCard(prompt: String, cards: List[Card], cancel: Boolean): Option[Card] = {
     while (true) {
-      print(s"$prompt (" + 1 + "-" + cards.length + s"${if (cancel) "/[A]bbrechen" else ""}) ")
-
-      val answer = StdIn.readLine()
+      val answer = readLine(s"$prompt (" + 1 + "-" + cards.length + s"${if (cancel) "/[A]bbrechen" else ""}) ")
 
       if (cancel && answer.equalsIgnoreCase("a")) {
         return None
