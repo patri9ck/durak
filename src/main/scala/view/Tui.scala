@@ -11,16 +11,16 @@ import scala.swing.Reactor
 class Tui(val controller: Controller, val step: Boolean) extends Reactor {
 
   var countdown: () => Unit = countdownSeconds
-  
+
   listenTo(controller)
 
   reactions += {
     case event: StatusEvent => print()
   }
-  
+
   def process(input: String): Unit = {
     if (step) {
-      
+
     }
   }
 
@@ -34,7 +34,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Reactor {
       continue()
     }
   }
-  
+
   def start(): Unit = {
     continue()
   }
@@ -48,14 +48,14 @@ class Tui(val controller: Controller, val step: Boolean) extends Reactor {
       ask()
     }
   }
-  
+
   def initialize(): Unit = {
     val playerAmount = askForPlayerAmount
     val cardAmount = askForCardAmount(playerAmount)
 
     controller.initialize(cardAmount, askForNames(playerAmount))
   }
-  
+
   def chooseAttacking(): Unit = {
     val players = controller.status.players
 
@@ -70,7 +70,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Reactor {
       case None => controller.chooseAttacking()
     }
   }
-  
+
   def ask(): Unit = {
     require(controller.current.isDefined)
 
