@@ -6,6 +6,9 @@ import model.{StatusBuilder, Turn}
 class PickUpCommand(controller: BaseController) extends MementoCommand(controller) {
 
   override def run(): Unit = {
+    require(controller.status.turn == Turn.Defending)
+    require(controller.current.isDefined)
+    
     val defending = controller.current.get
 
     val statusBuilder = StatusBuilder(controller.status)

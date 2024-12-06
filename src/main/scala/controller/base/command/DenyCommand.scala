@@ -6,6 +6,10 @@ import model.{StatusBuilder, Turn}
 class DenyCommand(controller: BaseController) extends MementoCommand(controller) {
 
   override def run(): Unit = {
+    require(controller.status.turn == Turn.FirstlyAttacking || controller.status.turn == Turn.SecondlyAttacking)
+    require(controller.current.isDefined)
+    require(controller.byTurn(Turn.FirstlyAttacking).isDefined)
+
     val attacking = controller.current.get
 
     val statusBuilder = StatusBuilder(controller.status)

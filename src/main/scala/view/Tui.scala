@@ -1,19 +1,30 @@
 package view
 
-import controller.Controller
-import model.*
-import util.Observer
+import controller.{Controller, StatusEvent}
+import model.{Card, Player, Rank, Step, Turn}
 
+import java.util.concurrent.{ExecutorService, Executors}
 import scala.collection.mutable.ListBuffer
 import scala.io.StdIn
+import scala.swing.Reactor
 
-class Tui(val controller: Controller, val step: Boolean) extends Observer {
+class Tui(val controller: Controller, val step: Boolean) extends Reactor {
 
-  controller.add(this)
-  
   var countdown: () => Unit = countdownSeconds
+  
+  listenTo(controller)
 
-  override def update(): Unit = {
+  reactions += {
+    case event: StatusEvent => print()
+  }
+  
+  def process(input: String): Unit = {
+    if (step) {
+      
+    }
+  }
+
+  def print(): Unit = {
     if (step) {
       askForStep() match
         case Step.Continue => continue()
@@ -23,6 +34,10 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
       continue()
     }
   }
+  
+  def start(): Unit = {
+    continue()
+  }
 
   def continue(): Unit = {
     if (controller.status.turn == Turn.Uninitialized) {
@@ -30,7 +45,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
     } else if (controller.status.turn == Turn.Initialized) {
       chooseAttacking()
     } else {
-      run()
+      ask()
     }
   }
   
@@ -56,10 +71,12 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
     }
   }
   
-  def run(): Unit = {
-    val player = controller.current
+  def ask(): Unit = {
+    require(controller.current.isDefined)
 
-    lookAway(player.get)
+    val current = controller.current.get
+
+    lookAway(current)
 
     val undefended = controller.status.undefended
     val defended = controller.status.defended
@@ -69,12 +86,12 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
     println(getStackDisplay(controller.status.stack))
     getTrumpDisplay(controller.status.trump.get).foreach(println)
     getRoundCardsDisplay(undefended, defended, used).foreach(println)
-    getOwnDisplay(player.get).foreach(println)
+    getOwnDisplay(current).foreach(println)
 
-    if (player.get.turn == Turn.FirstlyAttacking || player.get.turn == Turn.SecondlyAttacking) {
-      askForAttack(player.get, defended, undefended, deny, attack)
+    if (current.turn == Turn.FirstlyAttacking || current.turn == Turn.SecondlyAttacking) {
+      askForAttack(current, defended, undefended, deny, attack)
     } else if (controller.status.turn == Turn.Defending) {
-      askForDefend(player.get, used, undefended, pickUp, defend)
+      askForDefend(current, used, undefended, pickUp, defend)
     }
   }
 
@@ -169,7 +186,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
     if (cards.isEmpty) {
       return Nil
     }
-    
+
 
     getCardsOrder(cards) :: getCardsDisplay(cards)
   }
@@ -204,9 +221,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
 
   def askForStep(): Step = {
     while (true) {
-      print("[C]ontinue/[U]ndo/[R]edo? ")
-
-      StdIn.readLine().toLowerCase match {
+      StdIn.readLine("[C]ontinue/[U]ndo/[R]edo? ").toLowerCase match {
         case "c" => return Step.Continue
         case "u" => return Step.Undo
         case "r" => return Step.Redo
@@ -221,9 +236,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
     val limit = 52 / playerAmount
 
     while (true) {
-      print(s"Wie viele Karten soll jeder Spieler erhalten? (2-$limit) ")
-
-      val amount = StdIn.readLine().toIntOption
+      val amount = StdIn.readLine(s"Wie viele Karten soll jeder Spieler erhalten? (2-$limit) ").toIntOption
 
       if (amount.nonEmpty && amount.get >= 2 && amount.get <= limit)
         return amount.get
@@ -234,9 +247,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
 
   def askForPlayerAmount: Int = {
     while (true) {
-      print("Wie viele Spieler sollen mitspielen? (Keine Doppelungen, mindestens 2) ")
-
-      val amount = StdIn.readLine().toIntOption
+      val amount = StdIn.readLine("Wie viele Spieler sollen mitspielen? (Keine Doppelungen, mindestens 2) ").toIntOption
 
       if (amount.isDefined && amount.get > 1) {
         return amount.get
@@ -253,9 +264,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
       var name = ""
 
       while (name.isBlank || names.contains(name)) {
-        print(s"Name von Spieler $i: ")
-
-        name = StdIn.readLine()
+        name = StdIn.readLine(s"Name von Spieler $i: ")
       }
 
       names += name
@@ -266,9 +275,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
 
   def askForContinue(): Unit = {
     while (true) {
-      print("[W]eitermachen? ")
-
-      if (StdIn.readLine().equalsIgnoreCase("w")) {
+      if (StdIn.readLine("[W]eitermachen? ").equalsIgnoreCase("w")) {
         return
       }
     }
@@ -276,9 +283,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
 
   def askForAttackingPlayer(players: List[Player]): Option[Player] = {
     while (true) {
-      print(s"Welcher Spieler soll angreifen? (Name/[Z]ufällig) ")
-
-      val name = StdIn.readLine()
+      val name = StdIn.readLine(s"Welcher Spieler soll angreifen? (Name/[Z]ufällig)")
 
       if (name.equalsIgnoreCase("z")) {
         return None
@@ -296,9 +301,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
 
   def askForCard(prompt: String, cards: List[Card], cancel: Boolean): Option[Card] = {
     while (true) {
-      print(s"$prompt (" + 1 + "-" + cards.length + s"${if (cancel) "/[A]bbrechen" else ""}) ")
-
-      val answer = StdIn.readLine()
+      val answer = StdIn.readLine(s"$prompt (" + 1 + "-" + cards.length + s"${if (cancel) "/[A]bbrechen" else ""}) ")
 
       if (cancel && answer.equalsIgnoreCase("a")) {
         return None
@@ -328,7 +331,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
       chosen.apply(card.get)
 
       println("Mit dieser Karte kannst du nicht angreifen.")
-      
+
       return
     }
   }
@@ -350,7 +353,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
       chosen.apply(usedCard.get, undefendedCard.get)
 
       println("Mit dieser Karte kannst du nicht verteidigen.")
-      
+
       return
     }
   }

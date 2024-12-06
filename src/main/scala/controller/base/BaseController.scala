@@ -1,18 +1,21 @@
 package controller.base
 
-import controller.Controller
-import controller.base.command.{AttackCommand, ChooseAttackingCommand, DefendCommand, DenyCommand, PickUpCommand, InitializeCommand}
+import controller.{Controller, StatusEvent}
+import controller.base.command.{AttackCommand, ChooseAttackingCommand, DefendCommand, DenyCommand, InitializeCommand, PickUpCommand}
 import model.*
-import util.{Observable, UndoManager}
+import util.UndoManager
 
 import scala.annotation.tailrec
+import scala.swing.Publisher
 import scala.util.Random
 
-class BaseController(var status: Status = new Status) extends Controller {
+class BaseController(@volatile var status: Status = new Status) extends Controller {
 
   private val undoManager = UndoManager()
 
   def chooseAttacking(players: List[Player], index: Int): List[Player] = {
+    require(index >= 0 && index < players.length)
+    
     players.zipWithIndex.map { case (player, idx) =>
       if (player.turn == Turn.Finished) {
         player
@@ -60,6 +63,8 @@ class BaseController(var status: Status = new Status) extends Controller {
   }
 
   def drawFromStack(statusBuilder: StatusBuilder): Unit = {
+    require(statusBuilder.getPassed.isDefined || statusBuilder.byTurn(Turn.FirstlyAttacking).isDefined)
+    
     val start = statusBuilder.getPassed.orElse(statusBuilder.byTurn(Turn.FirstlyAttacking)).map(statusBuilder.getPlayers.indexOf).get
 
     var updatedStack = statusBuilder.getStack
@@ -112,38 +117,38 @@ class BaseController(var status: Status = new Status) extends Controller {
     }
   }
 
-  override def chooseAttacking(): Unit = {
+  override def chooseAttacking(): Unit = synchronized {
     chooseAttacking(Random.shuffle(status.players).head)
   }
 
-  override def chooseAttacking(attacking: Player): Unit = {
+  override def chooseAttacking(attacking: Player): Unit = synchronized {
     undoManager.doStep(ChooseAttackingCommand(this, attacking))
 
-    notifySubscribers()
+    publish(StatusEvent())
   }
 
-  override def initialize(amount: Int, names: List[String]): Unit = {
+  override def initialize(amount: Int, names: List[String]): Unit = synchronized {
     undoManager.doStep(InitializeCommand(this, amount, names))
-
-    notifySubscribers()
+    
+    publish(StatusEvent())
   }
 
-  override def deny(): Unit = {
+  override def deny(): Unit = synchronized {
     undoManager.doStep(DenyCommand(this))
     
-    notifySubscribers()
+    publish(StatusEvent())
   }
 
-  override def pickUp(): Unit = {
+  override def pickUp(): Unit = synchronized {
     undoManager.doStep(PickUpCommand(this))
 
-    notifySubscribers()
+    publish(StatusEvent())
   }
 
-  override def attack(card: Card): Unit = {
+  override def attack(card: Card): Unit = synchronized {
     undoManager.doStep(AttackCommand(this, card))
 
-    notifySubscribers()
+    publish(StatusEvent())
   }
 
   override def canAttack(card: Card): Boolean = {
@@ -153,13 +158,15 @@ class BaseController(var status: Status = new Status) extends Controller {
       || status.undefended.exists(_.rank == card.rank)
   }
   
-  override def defend(used: Card, undefended: Card): Unit = {
+  override def defend(used: Card, undefended: Card): Unit = synchronized {
     undoManager.doStep(DefendCommand(this, used, undefended))
 
-    notifySubscribers()
+    publish(StatusEvent())
   }
   
   override def canDefend(used: Card, undefended: Card): Boolean = {
+   require(status.trump.isDefined)
+   
     if (used.beats(undefended)) {
       return true
     }
@@ -177,15 +184,15 @@ class BaseController(var status: Status = new Status) extends Controller {
 
   override def current: Option[Player] = byTurn(status.turn)
 
-  override def undo(): Unit = {
+  override def undo(): Unit = synchronized {
     undoManager.undoStep()
 
-    notifySubscribers()
+    publish(StatusEvent())
   }
 
-  override def redo(): Unit = {
+  override def redo(): Unit = synchronized {
     undoManager.redoStep()
 
-    notifySubscribers()
+    publish(StatusEvent())
   }
 }

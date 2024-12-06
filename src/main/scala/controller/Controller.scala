@@ -1,12 +1,12 @@
 package controller
 
-import model.*
-import util.Observable
+import model.{Card, Player, Status, Turn}
 
 import scala.collection.mutable.ListBuffer
+import scala.swing.Publisher
 import scala.util.Random
 
-trait Controller extends Observable {
+trait Controller extends Publisher {
 
   def status: Status
   

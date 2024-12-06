@@ -6,6 +6,9 @@ import model.{Card, StatusBuilder, Turn}
 class DefendCommand(controller: BaseController, used: Card, undefended: Card) extends MementoCommand(controller) {
 
   override def run(): Unit = {
+    require(controller.status.turn == Turn.Defending)
+    require(controller.byTurn(Turn.Defending).isDefined)
+    
     val defending = controller.byTurn(Turn.Defending).get
 
     val updated = defending.copy(cards = defending.cards.filterNot(_ == used))

@@ -1,5 +1,6 @@
 package model
 
+import java.net.URI
 import scala.util.Random
 
 case class Card(rank: Rank, suit: Suit) {
@@ -20,6 +21,8 @@ case class Card(rank: Rank, suit: Suit) {
       + "│" + " " * (2 * biggestLength + 1 - rank.display.length) + rank + "│\n"
       + "└" + "─" * (biggestLength * 2 + 1) + "┘"
   }
+  
+  def getPath: URI = getClass.getResource("/cards/" + rank.char + suit.char + ".svg").toURI
 }
 
 object Card {

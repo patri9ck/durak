@@ -6,6 +6,9 @@ import model.{Card, StatusBuilder, Turn}
 class AttackCommand(controller: BaseController, card: Card) extends MementoCommand(controller) {
 
   override def run(): Unit = {
+    require(controller.status.turn == Turn.FirstlyAttacking || controller.status.turn == Turn.SecondlyAttacking)
+    require(controller.current.isDefined)
+    
     val attacking = controller.current.get
 
     val updated = attacking.copy(cards = attacking.cards.filterNot(_ == card))

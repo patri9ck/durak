@@ -28,6 +28,7 @@ class UndoManager {
       case Nil =>
       case head :: stack => {
         head.redoStep()
+        
         redoStack = stack
         undoStack = head :: undoStack
       }
