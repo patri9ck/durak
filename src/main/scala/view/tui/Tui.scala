@@ -6,7 +6,7 @@ import util.Observer
 
 import scala.collection.mutable.ListBuffer
 
-class Tui(val controller: Controller, val step: Boolean) extends Observer {
+class Tui(val controller: Controller, val controllable: Boolean) extends Observer {
 
   controller.add(this)
   
@@ -16,7 +16,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
 
   override def update(): Unit = {
     threadManager.run(() => {
-      if (step) {
+      if (controllable) {
         askForStep() match
           case Step.Continue => continue()
           case Step.Undo => controller.undo()
@@ -30,7 +30,7 @@ class Tui(val controller: Controller, val step: Boolean) extends Observer {
   def start(): Unit = {
     LineReader(threadManager).start()
     
-    update()
+    threadManager.run(() => continue())
   }
 
   def continue(): Unit = {
