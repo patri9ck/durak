@@ -22,7 +22,7 @@ case class Card(rank: Rank, suit: Suit) {
       + "└" + "─" * (biggestLength * 2 + 1) + "┘"
   }
 
-  def getPath: URI = getClass.getResource("/cards/" + rank.char + suit.char + ".svg").toURI
+  def getPath: String = getClass.getResource("/cards/" + rank.char + suit.char + ".png").toString
 }
 
 object Card {

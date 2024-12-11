@@ -12,8 +12,11 @@ lazy val root = (project in file("."))
 
 coverageExcludedPackages := ".*prototype.*"
 
+libraryDependencies += "org.apache.xmlgraphics" % "batik-all" % "1.18"
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.18"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.18" % "test"
+
+coverageEnabled := true
 libraryDependencies += "org.scalafx" %% "scalafx" % "22.0.0-R33"
 libraryDependencies ++= {
   // Determine OS version of JavaFX binaries
