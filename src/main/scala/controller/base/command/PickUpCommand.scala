@@ -1,14 +1,15 @@
 package controller.base.command
 
 import controller.base.BaseController
-import model.{StatusBuilder, Turn}
+import model.Turn
+import model.status.{MutableStatusBuilder, StatusBuilder}
 
 class PickUpCommand(controller: BaseController) extends MementoCommand(controller) {
 
-  override def run(): Unit = {
+  override def execute(): Unit = {
     val defending = controller.current.get
 
-    val statusBuilder = StatusBuilder(controller.status)
+    val statusBuilder = MutableStatusBuilder(controller.status)
 
     controller.drawFromStack(statusBuilder)
 

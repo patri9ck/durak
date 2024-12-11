@@ -50,5 +50,4 @@ class MultiRunner extends Thread with Runner {
       }
     }
   }
-
 }
