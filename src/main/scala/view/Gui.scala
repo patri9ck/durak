@@ -11,7 +11,7 @@ import util.Observer
 
 import java.nio.file.{Files, Paths}
 
-class Gui(val controller: Controller, val controllable: Boolean) extends JFXApp3, Observer {
+class Gui(val controller: Controller) extends JFXApp3, Observer {
   
   controller.add(this)
   
@@ -28,20 +28,7 @@ class Gui(val controller: Controller, val controllable: Boolean) extends JFXApp3
         val borderPane: BorderPane = new BorderPane() {
           center = getCardSvg(Card(model.Rank.Ace, model.Suit.Spades))
         }
-
-        if (controllable) {
-          borderPane.top = new ToolBar {
-            items = List(
-              new Button("Undo") {
-                onAction = _ => controller.undo()
-              },
-              new Button("Redo") {
-                onAction = _ => controller.redo()
-              }
-            )
-          }
-        }
-
+        
         root = borderPane
       }
     }
