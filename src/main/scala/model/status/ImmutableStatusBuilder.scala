@@ -25,44 +25,44 @@ class ImmutableStatusBuilder(val players: List[Player] = Nil,
     status.denied,
     status.passed)
 
-  override def setPlayers(players: List[Player]): ImmutableStatusBuilder =
-    new ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, passed)
+  override def setPlayers(players: List[Player]): StatusBuilder =
+    ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, passed)
 
-  override def setStack(stack: List[Card]): ImmutableStatusBuilder =
-    new ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, passed)
+  override def setStack(stack: List[Card]): StatusBuilder =
+    ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, passed)
 
-  override def setTrump(trump: Card): ImmutableStatusBuilder =
-    new ImmutableStatusBuilder(players, stack, Some(trump), amount, turn, defended, undefended, used, denied, passed)
+  override def setTrump(trump: Card): StatusBuilder =
+    ImmutableStatusBuilder(players, stack, Some(trump), amount, turn, defended, undefended, used, denied, passed)
 
-  override def removeTrump(): ImmutableStatusBuilder =
-    new ImmutableStatusBuilder(players, stack, None, amount, turn, defended, undefended, used, denied, passed)
+  override def removeTrump(): StatusBuilder =
+    ImmutableStatusBuilder(players, stack, None, amount, turn, defended, undefended, used, denied, passed)
 
-  override def setAmount(amount: Int): ImmutableStatusBuilder =
-    new ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, passed)
+  override def setAmount(amount: Int): StatusBuilder =
+    ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, passed)
 
-  override def setTurn(turn: Turn): ImmutableStatusBuilder =
-    new ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, passed)
+  override def setTurn(turn: Turn): StatusBuilder =
+    ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, passed)
 
-  override def setDefended(defended: List[Card]): ImmutableStatusBuilder =
-    new ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, passed)
+  override def setDefended(defended: List[Card]): StatusBuilder =
+    ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, passed)
 
-  override def setUndefended(undefended: List[Card]): ImmutableStatusBuilder =
-    new ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, passed)
+  override def setUndefended(undefended: List[Card]): StatusBuilder =
+    ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, passed)
 
-  override def setUsed(used: List[Card]): ImmutableStatusBuilder =
-    new ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, passed)
+  override def setUsed(used: List[Card]): StatusBuilder =
+    ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, passed)
 
-  override def resetRound: ImmutableStatusBuilder =
-    new ImmutableStatusBuilder(players, stack, trump, amount, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
+  override def resetRound: StatusBuilder =
+    ImmutableStatusBuilder(players, stack, trump, amount, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
 
-  override def setDenied(denied: Boolean): ImmutableStatusBuilder =
-    new ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, passed)
+  override def setDenied(denied: Boolean): StatusBuilder =
+    ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, passed)
 
-  override def setPassed(passed: Player): ImmutableStatusBuilder =
-    new ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, Some(passed))
+  override def setPassed(passed: Player): StatusBuilder =
+    ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, Some(passed))
 
-  override def removePassed(): ImmutableStatusBuilder =
-    new ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, None)
+  override def removePassed(): StatusBuilder =
+    ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, None)
 
   override def byTurn(turn: Turn): Option[Player] = players.find(_.turn == turn)
 
