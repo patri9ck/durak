@@ -6,11 +6,11 @@ import scala.util.CommandLineParser
 
 object Durak {
   @main
-  def main(controllable: Boolean): Unit = {
+  def main(): Unit = {
     val controller = BaseController()
 
-    Tui(controller, controllable).start()
-    Gui(controller, controllable).main(Array.empty)
+    Tui(controller, false).start()
+    Gui(controller, false).main(Array.empty)
   }
 }
 
