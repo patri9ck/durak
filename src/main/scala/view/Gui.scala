@@ -7,10 +7,19 @@ import scalafx.scene.Scene
 import scalafx.scene.control.{Button, ToolBar}
 import scalafx.scene.layout.BorderPane
 import scalafx.scene.shape.SVGPath
+import util.Observer
 
 import java.nio.file.{Files, Paths}
 
-class Gui(val controller: Controller, val step: Boolean) extends JFXApp3 {
+class Gui(val controller: Controller, val controllable: Boolean) extends JFXApp3, Observer {
+  
+  controller.add(this)
+  
+  override def update(): Unit = {
+    Platform.runLater(() => {
+      continue()
+    })
+  }
 
   override def start(): Unit = {
     stage = new JFXApp3.PrimaryStage {
@@ -20,7 +29,7 @@ class Gui(val controller: Controller, val step: Boolean) extends JFXApp3 {
           center = getCardSvg(Card(model.Rank.Ace, model.Suit.Spades))
         }
 
-        if (step) {
+        if (controllable) {
           borderPane.top = new ToolBar {
             items = List(
               new Button("Undo") {

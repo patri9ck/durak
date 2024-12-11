@@ -1,40 +1,49 @@
 package view.tui
 
 import java.util.concurrent.ExecutionException
-import scala.collection.concurrent.TrieMap
+import scala.collection.immutable.Map
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Promise}
 
 class ThreadManager {
 
-  private val threads = TrieMap[Thread, Promise[String]]()
+  private var threads: Map[Thread, Option[Promise[String]]] = Map.empty
 
-  def run(run: () => Unit): Unit = {
-    Thread(() => {
-      threads.values.foreach(promise => promise.tryFailure(InterruptedException()))
-      threads.keys.foreach(thread => thread.interrupt())
-      threads.clear()
+  def run(run: () => Unit): Thread = {
+    val thread = new Thread(() => {
+      this.synchronized {
+        threads.values.filter(promise => promise.isDefined).map(promise => promise.get).foreach(promise => promise.tryFailure(new InterruptedException()))
+        threads.keys.foreach(thread => thread.interrupt())
+        threads = Map(Thread.currentThread() -> None)
+      }
 
       try {
         run()
       } catch {
         case _: InterruptedException | _: ExecutionException =>
       }
-    }).start()
+    })
+    
+    thread.start()
+    thread
   }
 
   def addLine(line: String): Unit = {
-    threads.values.foreach(promise => promise.success(line))
+    this.synchronized {
+      threads.values.filter(promise => promise.isDefined).map(promise => promise.get).foreach(promise => promise.success(line))
+    }
   }
 
   def readLine(prompt: String): String = {
     if (Thread.currentThread().isInterrupted) {
-      throw InterruptedException()
+      throw new InterruptedException()
     }
 
     val promise = Promise[String]()
 
-    threads.put(Thread.currentThread(), promise)
+    this.synchronized {
+      threads += (Thread.currentThread() -> Some(promise))
+    }
 
     println(prompt)
 

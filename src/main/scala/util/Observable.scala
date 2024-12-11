@@ -1,7 +1,8 @@
 package util
 
 class Observable {
-  private var subscribers: Vector[Observer] = Vector()
+  
+  private var subscribers: List[Observer] = List()
   
   def add(observer: Observer): Unit = subscribers = subscribers:+observer
   
