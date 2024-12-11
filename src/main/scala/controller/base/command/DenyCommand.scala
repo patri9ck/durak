@@ -1,14 +1,15 @@
 package controller.base.command
 
 import controller.base.BaseController
-import model.{StatusBuilder, Turn}
+import model.Turn
+import model.status.{MutableStatusBuilder, StatusBuilder}
 
 class DenyCommand(controller: BaseController) extends MementoCommand(controller) {
 
-  override def run(): Unit = {
+  override def execute(): Unit = {
     val attacking = controller.current.get
 
-    val statusBuilder = StatusBuilder(controller.status)
+    val statusBuilder = MutableStatusBuilder(controller.status)
 
     if (controller.status.denied || controller.byTurn(Turn.SecondlyAttacking).isEmpty) {
       if (controller.status.undefended.isEmpty) {

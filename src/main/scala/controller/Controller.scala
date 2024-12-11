@@ -1,6 +1,7 @@
 package controller
 
 import model.*
+import model.status.Status
 import util.Observable
 
 import scala.collection.mutable.ListBuffer

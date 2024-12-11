@@ -1,19 +1,19 @@
 package controller.base.command
 
 import controller.base.BaseController
-import model.Status
+import model.status.Status
 import util.Command
 
 trait MementoCommand(val controller: BaseController) extends Command {
 
   private var memento: Status = controller.status
   
-  def run(): Unit
+  def execute(): Unit
   
   override def doStep(): Unit = {
     memento = controller.status
 
-    run()
+    execute()
   }
 
   override def undoStep(): Unit = {
