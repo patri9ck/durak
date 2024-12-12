@@ -4,7 +4,7 @@ import controller.Controller
 import model.status.Status
 import model.{Card, Player, Turn}
 
-class MockController(val status: Status = new Status()) extends Controller {
+class MockController(val status: Status = new Status) extends Controller {
 
   override def initialize(amount: Int, names: List[String]): Unit = {}
 

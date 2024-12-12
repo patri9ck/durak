@@ -2,6 +2,7 @@ package view
 
 import controller.Controller
 import model.*
+import model.status.Status
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import view.tui.Tui
@@ -13,7 +14,7 @@ class TuiSpec extends AnyWordSpec with Matchers {
 
   class MockController extends Controller {
 
-    var status: Status = Status(List(Player("Mock", List(Card(Rank.Ace, Suit.Hearts)), Turn.FirstlyAttacking)), Nil, Some(Card(Rank.Ace, Suit.Spades)), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
+    var status: Status = status.Status(List(Player("Mock", List(Card(Rank.Ace, Suit.Hearts)), Turn.FirstlyAttacking)), Nil, Some(Card(Rank.Ace, Suit.Spades)), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
 
     override def initialize(amount: Int, names: List[String]): Unit = {}
     

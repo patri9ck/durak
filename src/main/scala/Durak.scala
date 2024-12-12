@@ -1,5 +1,5 @@
 import controller.base.BaseController
-import view.Gui
+import view.gui.Gui
 import view.tui.Tui
 
 import scala.util.CommandLineParser

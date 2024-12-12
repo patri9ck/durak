@@ -2,7 +2,7 @@ package controller.base.command
 
 import controller.base.BaseController
 import model.Turn
-import model.status.{MutableStatusBuilder, StatusBuilder}
+import model.status.MutableStatusBuilder
 
 class DenyCommand(controller: BaseController) extends MementoCommand(controller) {
 
@@ -11,7 +11,7 @@ class DenyCommand(controller: BaseController) extends MementoCommand(controller)
 
     val statusBuilder = MutableStatusBuilder(controller.status)
 
-    if (controller.status.denied || controller.byTurn(Turn.SecondlyAttacking).isEmpty) {
+    if ((controller.status.denied || controller.byTurn(Turn.SecondlyAttacking).isEmpty) && controller.status.undefended.isEmpty) {
       if (controller.status.undefended.isEmpty) {
         controller.drawFromStack(statusBuilder)
 
@@ -23,10 +23,13 @@ class DenyCommand(controller: BaseController) extends MementoCommand(controller)
         statusBuilder
           .setTurn(Turn.Defending)
       }
-    } else {
+    } else if (controller.status.turn == Turn.FirstlyAttacking) {
       statusBuilder
         .setTurn(Turn.SecondlyAttacking)
         .setDenied(true)
+    } else {
+      statusBuilder
+        .setTurn(Turn.Defending)
     }
 
     controller.status = statusBuilder.status

@@ -7,11 +7,9 @@ import view.tui.runner.{MultiRunner, Runner}
 
 import scala.collection.mutable.ListBuffer
 
-class Tui(val controller: Controller, val runner: Runner, val seconds: Int = 3, val lines: Int = 100) extends Observer {
+class Tui(val controller: Controller, val runner: Runner, val seconds: Int = 3, val lines: Int = 100, var controllable: Boolean = false) extends Observer {
 
   controller.add(this)
-
-  private var controllable: Boolean = false
 
   def this(controller: Controller) = {
     this(controller, MultiRunner())
