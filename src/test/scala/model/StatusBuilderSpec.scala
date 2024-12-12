@@ -1,6 +1,7 @@
 package model
 
 import model.Turn.Watching
+import model.status.StatusBuilder
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

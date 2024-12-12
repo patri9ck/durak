@@ -1,8 +1,9 @@
 package controller.base
 
 import controller.Controller
-import controller.base.command.{AttackCommand, ChooseAttackingCommand, DefendCommand, DenyCommand, PickUpCommand, InitializeCommand}
+import controller.base.command.{AttackCommand, ChooseAttackingCommand, DefendCommand, DenyCommand, InitializeCommand, PickUpCommand}
 import model.*
+import model.status.{Status, StatusBuilder}
 import util.{Observable, UndoManager}
 
 import scala.annotation.tailrec

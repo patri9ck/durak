@@ -1,4 +1,6 @@
-package model
+package model.status
+
+import model.{Card, Player, Turn}
 
 import scala.util.Random
 
