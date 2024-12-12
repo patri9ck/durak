@@ -13,12 +13,13 @@ import scalafx.scene.image.{Image, ImageView}
 import org.apache.batik.transcoder.{TranscoderInput, TranscoderOutput}
 import java.nio.file.{Files, Paths}
 
-class Gui(val controller: Controller, val controllable: Boolean) extends JFXApp3, Observer {
+class Gui(val controller: Controller) extends JFXApp3, Observer {
 
   controller.add(this)
 
   private var startMenuScene: VBox = _
   private var gameScene: BorderPane = _
+  private var controllable = false
 
   override def update(): Unit = {
     Platform.runLater(() => {
