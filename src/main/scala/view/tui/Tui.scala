@@ -3,19 +3,24 @@ package view.tui
 import controller.Controller
 import model.*
 import util.Observer
+import view.tui.runner.{MultiRunner, Runner}
 
 import scala.collection.mutable.ListBuffer
 
-class Tui(val controller: Controller, val controllable: Boolean) extends Observer {
+class Tui(val controller: Controller, val runner: Runner, val seconds: Int = 3, val lines: Int = 100) extends Observer {
 
   controller.add(this)
-  
-  var countdown: () => Unit = countdownSeconds
 
-  private val threadManager = ThreadManager()
+  private var controllable: Boolean = false
+
+  def this(controller: Controller) = {
+    this(controller, MultiRunner())
+
+    runner.asInstanceOf[MultiRunner].start()
+  }
 
   override def update(): Unit = {
-    threadManager.run(() => {
+    runner.run(() => {
       if (controllable) {
         askForStep() match
           case Step.Continue => continue()
@@ -28,87 +33,86 @@ class Tui(val controller: Controller, val controllable: Boolean) extends Observe
   }
   
   def start(): Unit = {
-    LineReader(threadManager).start()
-    
-    threadManager.run(() => continue())
+    runner.run(() => {
+      println("Willkommen zu Durak!")
+      
+      controllable = askForControllable()
+      
+      continue()
+    })
   }
 
   def continue(): Unit = {
     if (controller.status.turn == Turn.Uninitialized) {
-      initialize()
+      val playerAmount = askForPlayerAmount
+
+      controller.initialize(askForCardAmount(playerAmount), askForNames(playerAmount))
     } else if (controller.status.turn == Turn.Initialized) {
-      chooseAttacking()
+      val players = controller.status.players
+
+      println("Als nächstes werden alle Karten gezeigt!")
+
+      askForContinue()
+
+      displayPlayerCards(players)
+
+      askForAttackingPlayer(players) match {
+        case Some(player) => controller.chooseAttacking(player)
+        case None => controller.chooseAttacking()
+      }
     } else {
-      run()
-    }
-  }
-  
-  def initialize(): Unit = {
-    val playerAmount = askForPlayerAmount
-    val cardAmount = askForCardAmount(playerAmount)
+      val current = controller.current.get
 
-    controller.initialize(cardAmount, askForNames(playerAmount))
-  }
-  
-  def chooseAttacking(): Unit = {
-    val players = controller.status.players
+      lookAway(current)
 
-    println("Als nächstes werden alle Karten gezeigt!")
+      val undefended = controller.status.undefended
+      val defended = controller.status.defended
+      val used = controller.status.used
 
-    askForContinue()
+      getPlayersDisplay(controller.status.players).foreach(println)
+      println(getStackDisplay(controller.status.stack))
+      getTrumpDisplay(controller.status.trump.get).foreach(println)
+      getRoundCardsDisplay(undefended, defended, used).foreach(println)
+      getOwnDisplay(current).foreach(println)
 
-    displayPlayerCards(players)
-
-    askForAttackingPlayer(players) match {
-      case Some(player) => controller.chooseAttacking(player)
-      case None => controller.chooseAttacking()
-    }
-  }
-  
-  def run(): Unit = {
-    val player = controller.current
-
-    lookAway(player.get)
-
-    val undefended = controller.status.undefended
-    val defended = controller.status.defended
-    val used = controller.status.used
-
-    getPlayersDisplay(controller.status.players).foreach(println)
-    println(getStackDisplay(controller.status.stack))
-    getTrumpDisplay(controller.status.trump.get).foreach(println)
-    getRoundCardsDisplay(undefended, defended, used).foreach(println)
-    getOwnDisplay(player.get).foreach(println)
-
-    if (player.get.turn == Turn.FirstlyAttacking || player.get.turn == Turn.SecondlyAttacking) {
-      askForAttack(player.get, defended, undefended, deny, attack)
-    } else if (controller.status.turn == Turn.Defending) {
-      askForDefend(player.get, used, undefended, pickUp, defend)
+      if (current.turn == Turn.FirstlyAttacking || current.turn == Turn.SecondlyAttacking) {
+        askForAttack(current, defended, undefended, deny, attack)
+      } else if (controller.status.turn == Turn.Defending) {
+        askForDefend(current, used, undefended, pickUp, defend)
+      }
     }
   }
 
   def deny(): Unit = {
-    clearScreen()
+    println(getClearDisplay)
     controller.deny()
   }
 
-  def attack(card: Card): Unit = {
+  def attack(card: Card): Boolean = {
     if (controller.canAttack(card)) {
-      clearScreen()
+      println(getClearDisplay)
       controller.attack(card)
+
+      return true
     }
+
+    false
   }
 
   def pickUp(): Unit = {
-    clearScreen()
+    println(getClearDisplay)
     controller.pickUp()
   }
 
-  def defend(used: Card, undefended: Card): Unit = {
+  def defend(used: Card, undefended: Card): Boolean = {
     if (controller.canDefend(used, undefended)) {
-      clearScreen()
+      println(getClearDisplay)
       controller.defend(used, undefended)
+
+      return true
     }
+
+    false
   }
 
   def displayPlayerCards(players: List[Player]): Unit = {
@@ -116,12 +120,12 @@ class Tui(val controller: Controller, val controllable: Boolean) extends Observe
       lookAway(player)
       getOwnDisplay(player).foreach(println)
       askForContinue()
-      clearScreen()
+      println(getClearDisplay)
     })
   }
 
-  def countdownSeconds(): Unit = {
-    getCountdownDisplay(3).foreach(i => {
+  def countdown(): Unit = {
+    getCountdownDisplay(seconds).foreach(i => {
       println(i)
       Thread.sleep(1000)
     })
@@ -130,8 +134,10 @@ class Tui(val controller: Controller, val controllable: Boolean) extends Observe
   def lookAway(player: Player): Unit = {
     println(getLookAwayDisplay(player))
     countdown()
-    clearScreen()
+    println(getClearDisplay)
   }
+  
+  def getClearDisplay: String = "\n" * lines
 
   def getStackDisplay(stack: List[Card]): String = s"Stapel: ${stack.length}"
 
@@ -207,16 +213,24 @@ class Tui(val controller: Controller, val controllable: Boolean) extends Observe
     s"$player, Deine Karten" :: getOrderedCardsDisplay(player.cards)
   }
 
-  def clearScreen(): Unit = {
-    println("\n" * 100)
+  def askForControllable(): Boolean = {
+    while (true) {
+      runner.readLine("Soll das Spiel steuerbar sein? (J/N) ").toLowerCase match {
+        case "j" => return true
+        case "n" => return false
+        case _ =>
+      }
+    }
+
+    false
   }
 
   def askForStep(): Step = {
     while (true) {
-      threadManager.readLine("[C]ontinue/[U]ndo/[R]edo? ").toLowerCase match {
-        case "c" => return Step.Continue
-        case "u" => return Step.Undo
-        case "r" => return Step.Redo
+      runner.readLine("[F]ortfahren/[R]ückgängig machen/[W]iederherstellen? ").toLowerCase match {
+        case "f" => return Step.Continue
+        case "r" => return Step.Undo
+        case "w" => return Step.Redo
         case _ =>
       }
     }
@@ -228,7 +242,7 @@ class Tui(val controller: Controller, val controllable: Boolean) extends Observe
     val limit = 52 / playerAmount
 
     while (true) {
-      val amount = threadManager.readLine(s"Wie viele Karten soll jeder Spieler erhalten? (2-$limit) ").toIntOption
+      val amount = runner.readLine(s"Wie viele Karten soll jeder Spieler erhalten? (2-$limit) ").toIntOption
 
       if (amount.nonEmpty && amount.get >= 2 && amount.get <= limit)
         return amount.get
@@ -239,7 +253,7 @@ class Tui(val controller: Controller, val controllable: Boolean) extends Observe
 
   def askForPlayerAmount: Int = {
     while (true) {
-      val amount = threadManager.readLine("Wie viele Spieler sollen mitspielen? (Keine Doppelungen, mindestens 2) ").toIntOption
+      val amount = runner.readLine("Wie viele Spieler sollen mitspielen? (Keine Doppelungen, mindestens 2) ").toIntOption
 
       if (amount.isDefined && amount.get > 1) {
         return amount.get
@@ -256,7 +270,7 @@ class Tui(val controller: Controller, val controllable: Boolean) extends Observe
       var name = ""
 
       while (name.isBlank || names.contains(name)) {
-        name = threadManager.readLine(s"Name von Spieler $i: ")
+        name = runner.readLine(s"Name von Spieler $i: ")
       }
 
       names += name
@@ -267,7 +281,7 @@ class Tui(val controller: Controller, val controllable: Boolean) extends Observe
 
   def askForContinue(): Unit = {
     while (true) {
-      if (threadManager.readLine("[W]eitermachen? ").equalsIgnoreCase("w")) {
+      if (runner.readLine("Weitermachen? (J) ").equalsIgnoreCase("j")) {
         return
       }
     }
@@ -275,7 +289,7 @@ class Tui(val controller: Controller, val controllable: Boolean) extends Observe
 
   def askForAttackingPlayer(players: List[Player]): Option[Player] = {
     while (true) {
-      val name = threadManager.readLine(s"Welcher Spieler soll angreifen? (Name/[Z]ufällig) ")
+      val name = runner.readLine(s"Welcher Spieler soll angreifen? (Name/[Z]ufällig) ")
 
       if (name.equalsIgnoreCase("z")) {
         return None
@@ -293,7 +307,7 @@ class Tui(val controller: Controller, val controllable: Boolean) extends Observe
 
   def askForCard(prompt: String, cards: List[Card], cancel: Boolean): Option[Card] = {
     while (true) {
-      val answer = threadManager.readLine(s"$prompt (" + 1 + "-" + cards.length + s"${if (cancel) "/[A]bbrechen" else ""}) ")
+      val answer = runner.readLine(s"$prompt (" + 1 + "-" + cards.length + s"${if (cancel) "/[A]bbrechen" else ""}) ")
 
       if (cancel && answer.equalsIgnoreCase("a")) {
         return None
@@ -309,7 +323,7 @@ class Tui(val controller: Controller, val controllable: Boolean) extends Observe
     None
   }
 
-  def askForAttack(attacking: Player, defended: List[Card], undefended: List[Card], canceled: () => Unit, chosen: Card => Unit): Unit = {
+  def askForAttack(attacking: Player, defended: List[Card], undefended: List[Card], canceled: () => Unit, chosen: Card => Boolean): Unit = {
     while (true) {
       val card = askForCard("Mit welcher Karte möchtest du angreifen?", attacking.cards, defended.nonEmpty
         || undefended.nonEmpty)
@@ -320,33 +334,37 @@ class Tui(val controller: Controller, val controllable: Boolean) extends Observe
         return
       }
 
-      chosen.apply(card.get)
+      if (chosen.apply(card.get)) {
+        return;
+      }
 
       println("Mit dieser Karte kannst du nicht angreifen.")
-      
-      return
     }
   }
 
-  def askForDefend(defending: Player, used: List[Card], undefended: List[Card], canceled: () => Unit, chosen: (Card, Card) => Unit): Unit = {
+  def askForDefend(defending: Player, used: List[Card], undefended: List[Card], canceled: () => Unit, chosen: (Card, Card) => Boolean): Unit = {
     while (true) {
       val undefendedCard = askForCard("Welche Karte möchtest du verteidigen?", undefended, true)
 
       if (undefendedCard.isEmpty) {
         canceled.apply()
+
+        return;
       }
 
       val usedCard = askForCard("Welche Karte möchtest du dafür nutzen?", defending.cards, true)
 
       if (usedCard.isEmpty) {
         canceled.apply()
+
+        return;
       }
 
-      chosen.apply(usedCard.get, undefendedCard.get)
+      if (chosen.apply(usedCard.get, undefendedCard.get)) {
+        return;
+      }
 
       println("Mit dieser Karte kannst du nicht verteidigen.")
-      
-      return
     }
   }
 }

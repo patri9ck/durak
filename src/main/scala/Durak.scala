@@ -9,8 +9,8 @@ object Durak {
   def main(): Unit = {
     val controller = BaseController()
 
-    Tui(controller, false).start()
-    Gui(controller, false).main(Array.empty)
+    Tui(controller).start()
+    Gui(controller).main(Array.empty)
   }
 }
 

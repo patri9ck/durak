@@ -1,7 +1,8 @@
 package controller.base.command
 
 import controller.base.BaseController
-import model.{Card, Player, Rank, Status, Suit, Turn}
+import model.status.Status
+import model.{Card, Player, Rank, Suit, Turn}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -15,7 +16,7 @@ class DenyCommandSpec extends AnyWordSpec with Matchers {
           Player("Player3", Nil, Turn.FirstlyAttacking)
         )
 
-        val status = Status(players, Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.SecondlyAttacking, Nil, Nil, Nil, true, None)
+        val status = model.status.Status(players, Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.SecondlyAttacking, Nil, Nil, Nil, true, None)
         val controller = BaseController(status)
 
         DenyCommand(controller).doStep()
@@ -30,7 +31,7 @@ class DenyCommandSpec extends AnyWordSpec with Matchers {
           Player("Player3", Nil, Turn.FirstlyAttacking)
         )
 
-        val status = Status(players, Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.SecondlyAttacking, Nil, List(Card(Rank.Ace, Suit.Spades)), Nil, true, None)
+        val status = model.status.Status(players, Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.SecondlyAttacking, Nil, List(Card(Rank.Ace, Suit.Spades)), Nil, true, None)
         val controller = BaseController(status)
 
         DenyCommand(controller).doStep()
@@ -45,7 +46,7 @@ class DenyCommandSpec extends AnyWordSpec with Matchers {
           Player("Player3", Nil, Turn.FirstlyAttacking)
         )
 
-        val status = Status(players, Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.FirstlyAttacking, Nil, List(Card(Rank.Ace, Suit.Spades)), Nil, false, None)
+        val status = model.status.Status(players, Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.FirstlyAttacking, Nil, List(Card(Rank.Ace, Suit.Spades)), Nil, false, None)
         val controller = BaseController(status)
 
         DenyCommand(controller).doStep()

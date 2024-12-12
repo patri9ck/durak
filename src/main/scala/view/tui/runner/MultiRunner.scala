@@ -1,16 +1,16 @@
-package view.tui
+package view.tui.runner
 
 import java.util.concurrent.ExecutionException
-import scala.collection.immutable.Map
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Promise}
+import scala.io.StdIn
 
-class ThreadManager {
+class MultiRunner extends Thread with Runner {
 
   private var threads: Map[Thread, Option[Promise[String]]] = Map.empty
 
-  def run(run: () => Unit): Thread = {
-    val thread = new Thread(() => {
+  override def run(run: () => Unit): Unit = {
+    Thread(() => {
       this.synchronized {
         threads.values.filter(promise => promise.isDefined).map(promise => promise.get).foreach(promise => promise.tryFailure(new InterruptedException()))
         threads.keys.foreach(thread => thread.interrupt())
@@ -22,19 +22,10 @@ class ThreadManager {
       } catch {
         case _: InterruptedException | _: ExecutionException =>
       }
-    })
-    
-    thread.start()
-    thread
+    }).start()
   }
 
-  def addLine(line: String): Unit = {
-    this.synchronized {
-      threads.values.filter(promise => promise.isDefined).map(promise => promise.get).foreach(promise => promise.success(line))
-    }
-  }
-
-  def readLine(prompt: String): String = {
+  override def readLine(prompt: String): String = {
     if (Thread.currentThread().isInterrupted) {
       throw new InterruptedException()
     }
@@ -45,8 +36,18 @@ class ThreadManager {
       threads += (Thread.currentThread() -> Some(promise))
     }
 
-    println(prompt)
+    print(prompt)
 
     Await.result(promise.future, Duration.Inf)
+  }
+
+  override def run(): Unit = {
+    while (true) {
+      val line = StdIn.readLine()
+
+      this.synchronized {
+        threads.values.filter(promise => promise.isDefined).map(promise => promise.get).foreach(promise => promise.success(line))
+      }
+    }
   }
 }
