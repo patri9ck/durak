@@ -23,6 +23,8 @@ case class Card(rank: Rank, suit: Suit) {
   }
 
   def getPath: String = getClass.getResource("/cards/" + rank.char + suit.char + ".png").toString
+
+  def toSelectableCard: SelectableCard = SelectableCard(this)
 }
 
 object Card {
@@ -30,4 +32,6 @@ object Card {
     suit <- Suit.values
     rank <- Rank.values
   } yield Card(rank, suit)).toList
+
+  def toSelectableCards(cards: List[Card]): List[SelectableCard] = cards.map(_.toSelectableCard)
 }

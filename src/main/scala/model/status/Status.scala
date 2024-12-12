@@ -4,8 +4,16 @@ import model.{Card, Player, Turn}
 
 import scala.util.Random
 
-case class Status(players: List[Player], stack: List[Card], trump: Option[Card], amount: Int, turn: Turn, defended: List[Card], undefended: List[Card], used: List[Card], denied: Boolean, passed: Option[Player]) {
-  def this() = this(Nil, Nil, None, 0, Turn.Uninitialized, Nil, Nil, Nil, false, None)
+case class Status(players: List[Player] = Nil,
+                  stack: List[Card] = Nil,
+                  trump: Option[Card] = None,
+                  amount: Int = 0,
+                  turn: Turn = Turn.Uninitialized,
+                  defended: List[Card] = Nil,
+                  undefended: List[Card] = Nil,
+                  used: List[Card] = Nil,
+                  denied: Boolean = false,
+                  passed: Option[Player] = None) {
 
   def initialize(amount: Int, names: List[String]): Status = {
     val deck = Card.getDeck
