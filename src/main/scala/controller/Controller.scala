@@ -10,12 +10,10 @@ import scala.util.Random
 trait Controller extends Observable {
 
   def status: Status
-  
+
   def initialize(amount: Int, names: List[String]): Unit
 
-  def chooseAttacking(attacking: Player): Unit
-
-  def chooseAttacking(): Unit
+  def initialize(amount: Int, names: List[String], attacking: String): Unit
 
   def deny(): Unit
 

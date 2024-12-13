@@ -6,7 +6,6 @@ enum Turn(val name: String) {
   case SecondlyAttacking extends Turn("Sekundär Angreifen")
   case Watching extends Turn("Zuschauen")
   case Finished extends Turn("Fertig")
-  case Initialized extends Turn("Initialisiert")
   case Uninitialized extends Turn("Uninitialisiert")
 
   override def toString: String = name

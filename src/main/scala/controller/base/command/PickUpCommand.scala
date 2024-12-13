@@ -11,12 +11,14 @@ class PickUpCommand(controller: BaseController) extends MementoCommand(controlle
 
     val statusBuilder = MutableStatusBuilder(controller.status)
 
-    controller.drawFromStack(statusBuilder)
-
     val updated = defending.copy(cards = defending.cards ++ controller.status.used ++ controller.status.defended ++ controller.status.undefended)
 
+    statusBuilder.setPlayers(controller.updatePlayers(statusBuilder.getPlayers, defending, updated))
+
+    controller.drawFromStack(statusBuilder)
+
     controller.status = statusBuilder
-      .setPlayers(controller.chooseNextAttacking(controller.updatePlayers(controller.status.players, defending, updated), updated))
+      .setPlayers(controller.chooseNextAttacking(statusBuilder.getPlayers, updated))
       .resetRound
       .status
   }

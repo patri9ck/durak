@@ -8,9 +8,7 @@ class MockController(val status: Status = new Status) extends Controller {
 
   override def initialize(amount: Int, names: List[String]): Unit = {}
 
-  override def chooseAttacking(attacking: Player): Unit = {}
-
-  override def chooseAttacking(): Unit = {}
+  override def initialize(amount: Int, names: List[String], attacking: String): Unit = {}
 
   override def deny(): Unit = {}
 
