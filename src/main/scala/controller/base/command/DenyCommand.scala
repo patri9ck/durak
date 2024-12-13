@@ -16,7 +16,7 @@ class DenyCommand(controller: BaseController) extends MementoCommand(controller)
         controller.drawFromStack(statusBuilder)
 
         statusBuilder
-          .setPlayers(controller.chooseNextAttacking(controller.status.players, controller.byTurn(Turn.FirstlyAttacking).get))
+          .setPlayers(controller.chooseNextAttacking(statusBuilder.getPlayers, statusBuilder.byTurn(Turn.FirstlyAttacking).get))
           .setTurn(Turn.FirstlyAttacking)
           .resetRound
       } else {
