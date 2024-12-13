@@ -43,20 +43,12 @@ class Tui(val controller: Controller, val runner: Runner, val seconds: Int = 3, 
   def continue(): Unit = {
     if (controller.status.turn == Turn.Uninitialized) {
       val playerAmount = askForPlayerAmount
-
-      controller.initialize(askForCardAmount(playerAmount), askForNames(playerAmount))
-    } else if (controller.status.turn == Turn.Initialized) {
-      val players = controller.status.players
-
-      println("Als nächstes werden alle Karten gezeigt!")
-
-      askForContinue()
-
-      displayPlayerCards(players)
-
-      askForAttackingPlayer(players) match {
-        case Some(player) => controller.chooseAttacking(player)
-        case None => controller.chooseAttacking()
+      val cardAmount = askForCardAmount(playerAmount)
+      val names = askForNames(playerAmount)
+      
+      askForAttacking(names) match {
+        case Some(name) => controller.initialize(cardAmount, names, name)
+        case None => controller.initialize(cardAmount, names)
       }
     } else {
       val current = controller.current.get
@@ -111,15 +103,6 @@ class Tui(val controller: Controller, val runner: Runner, val seconds: Int = 3, 
     }
 
     false
-  }
-
-  def displayPlayerCards(players: List[Player]): Unit = {
-    players.foreach(player => {
-      lookAway(player)
-      getOwnDisplay(player).foreach(println)
-      askForContinue()
-      println(getClearDisplay)
-    })
   }
 
   def countdown(): Unit = {
@@ -285,18 +268,18 @@ class Tui(val controller: Controller, val runner: Runner, val seconds: Int = 3, 
     }
   }
 
-  def askForAttackingPlayer(players: List[Player]): Option[Player] = {
+  def askForAttacking(names: List[String]): Option[String] = {
     while (true) {
-      val name = runner.readLine(s"Welcher Spieler soll angreifen? (Name/[Z]ufällig) ")
+      val attacking = runner.readLine(s"Welcher Spieler soll angreifen? (Name/[Z]ufällig) ")
 
-      if (name.equalsIgnoreCase("z")) {
+      if (attacking.equalsIgnoreCase("z")) {
         return None
       }
 
-      val filteredPlayers = players.filter(_.name.equalsIgnoreCase(name))
+      val filteredNames = names.filter(_.equalsIgnoreCase(attacking))
 
-      if (filteredPlayers.nonEmpty) {
-        return Some(filteredPlayers.head)
+      if (filteredNames.nonEmpty) {
+        return Some(filteredNames.head)
       }
     }
 

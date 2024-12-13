@@ -1,7 +1,7 @@
 package controller.base
 
 import controller.Controller
-import controller.base.command.{AttackCommand, ChooseAttackingCommand, DefendCommand, DenyCommand, InitializeCommand, PickUpCommand}
+import controller.base.command.{AttackCommand, DefendCommand, DenyCommand, InitializeCommand, PickUpCommand}
 import model.*
 import model.status.{Status, StatusBuilder}
 import util.{Observable, UndoManager}
@@ -113,18 +113,13 @@ class BaseController(var status: Status = new Status) extends Controller {
     }
   }
 
-  override def chooseAttacking(): Unit = {
-    chooseAttacking(Random.shuffle(status.players).head)
-  }
-
-  override def chooseAttacking(attacking: Player): Unit = {
-    undoManager.doStep(ChooseAttackingCommand(this, attacking))
-
-    notifySubscribers()
-  }
-
+  
   override def initialize(amount: Int, names: List[String]): Unit = {
-    undoManager.doStep(InitializeCommand(this, amount, names))
+    initialize(amount, names, Random.shuffle(names).head)
+  }
+
+  override def initialize(amount: Int, names: List[String], attacking: String): Unit = {
+    undoManager.doStep(InitializeCommand(this, amount, names, attacking))
 
     notifySubscribers()
   }

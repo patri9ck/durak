@@ -13,22 +13,4 @@ case class Status(players: List[Player] = Nil,
                   undefended: List[Card] = Nil,
                   used: List[Card] = Nil,
                   denied: Boolean = false,
-                  passed: Option[Player] = None) {
-
-  def initialize(amount: Int, names: List[String]): Status = {
-    val deck = Card.getDeck
-
-    val index = Random.nextInt(deck.size)
-    val trump = deck(index)
-
-    var remaining = deck.patch(index, Nil, 1)
-
-    val players = names.map { name =>
-      val playerCards = remaining.take(amount)
-      remaining = remaining.drop(amount)
-      Player(name, playerCards, Turn.Watching)
-    }
-
-    copy(players = players, stack = remaining, trump = Some(trump), amount = amount, turn = Turn.Initialized)
-  }
-}
+                  passed: Option[Player] = None)

@@ -66,7 +66,7 @@ class TuiSpec extends AnyWordSpec with Matchers {
         tui.countdown = () => {}
 
         Console.withIn(new java.io.StringReader("Mock\n")) {
-          val selectedPlayer = tui.askForAttackingPlayer(mockController.status.players)
+          val selectedPlayer = tui.askForAttacking(mockController.status.players)
           selectedPlayer.isDefined shouldBe true
           selectedPlayer.get.name shouldBe "Mock"
         }

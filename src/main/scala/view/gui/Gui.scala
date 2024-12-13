@@ -3,6 +3,7 @@ package view.gui
 import controller.Controller
 import model.*
 import scalafx.application.{JFXApp3, Platform}
+import scalafx.collections.ObservableBuffer
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.Scene
 import scalafx.scene.control.*
@@ -18,8 +19,6 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
     Platform.runLater(() =>
       if (controller.status.turn == Turn.Uninitialized) {
         initialize()
-      } else if (controller.status.turn == Turn.Initialized) {
-        begin()
       } else {
         continue()
       }
@@ -58,7 +57,18 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
       }
     )
 
-    nameTextFields.foreach(nameTextField => namesVBox.children.add(nameTextField))
+    val attackingComboBox = new ComboBox[String](List("Zufällig")) {
+      value = "Zufällig"
+      prefWidth = 200
+    }
+
+    nameTextFields.foreach { nameTextField =>
+      namesVBox.children.add(nameTextField)
+      nameTextField.text.onChange { (_, _, _) =>
+        attackingComboBox.items = ObservableBuffer("Zufällig") ++ nameTextFields.map(_.text.value).filter(_.nonEmpty)
+        attackingComboBox.value = "Zufällig"
+      }
+    }
 
     playerAmountComboBox.delegate.setOnAction(_ => {
       nameTextFields = List[TextField]()
@@ -73,6 +83,21 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
         namesVBox.children.add(nameTextField)
       }
     })
+
+    val errorLabel = new Label
+
+    val errorVBox = new VBox {
+      alignment = Pos.Center
+
+      children = List(
+        new Region {
+          prefHeight = 20
+        },
+        errorLabel
+      )
+
+      visible = false
+    }
 
     stage.scene = new Scene {
       root = new VBox {
@@ -105,43 +130,27 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
             onAction = _ => {
               val names = nameTextFields.map(nameTextField => nameTextField.text.value)
 
-              if (names.distinct.size == nameTextFields.size) {
-                controller.initialize(cardAmounts.indexOf(cardAmountComboBox.value.value) + 1, names)
+              if (names.distinct.size != nameTextFields.size) {
+                errorLabel.text = "Die Namen müssen einzigartig sein."
+                errorVBox.visible = true
+              } else if (names.exists(_.isBlank)) {
+                errorLabel.text = "Es müssen alle Namen gesetzt sein sein."
+                errorVBox.visible = true
+
               } else {
-                new Alert(Alert.AlertType.Error) {
-                  title = "Fehler"
-                  headerText = "Fehlerhafte Eingabe"
-                  contentText = "Die Spielernamen müssen eindeutig sein."
-                }.showAndWait()
+                if (attackingComboBox.value.value == "Zufällig") {
+                  controller.initialize(cardAmounts.indexOf(cardAmountComboBox.value.value) + 1, names)
+                } else {
+                  controller.initialize(cardAmounts.indexOf(cardAmountComboBox.value.value) + 1, names, attackingComboBox.value.value)
+                }
               }
             }
-          }
-        )
-      }
-    }
-  }
-
-  def begin(): Unit = {
-    val namesComboBox = new ComboBox[String](controller.status.players.map(_.name)) {
-      value = controller.status.players.head.name
-    }
-
-    stage.scene = new Scene {
-      root = new VBox {
-        spacing = 10
-        alignment = Pos.Center
-        style = "-fx-background-color: slategrey;"
-        children = List(
-          new Label("Wer soll anfangen?") {
-            style = "-fx-font-size: 16pt; -fx-font-weight: bold;"
           },
-          namesComboBox,
-          new Button("Starten") {
-            style = "-fx-background-color: #FCFCFD; -fx-border-radius: 4px; -fxbox-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px,rgba(45, 35, 66, 0.3) 0 7px 13px -3px,#D6D6E7 0 -3px 0 inset; -fx-color: #FCFCFD; -fx-font-size: 16pt; -fx-font-weight: bold;"
-            onAction = _ => {
-              controller.chooseAttacking(controller.status.players.find(_.name == namesComboBox.value.value).get)
-            }
-          }
+          new Region {
+            prefHeight = 20
+          },
+          attackingComboBox,
+          errorVBox
         )
       }
     }
@@ -157,23 +166,14 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
     stage.scene = new Scene {
       root = new BorderPane() {
         center = if (turn == Turn.FirstlyAttacking || turn == Turn.SecondlyAttacking) {
-          attackingVBox(own, used, undefended, defended, () => {
-
-          }, card => {
-            true
-          })
+          attackingVBox(own, used, undefended, defended, deny, attack)
         } else if (turn == Turn.Defending) {
-          defendingVBox(own, used, undefended, defended, () => {
-
-          }, (used, undefended) => {
-            true
-          })
+          defendingVBox(own, used, undefended, defended, pickUp, defend)
         } else {
           VBox()
         }
 
-        right = roundVBox()
-
+        right = roundVBox(controller.status.trump.get, controller.status.stack, controller.status.players)
 
         if (controllable) {
           top = new ToolBar {
@@ -192,36 +192,62 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
     }
   }
 
+  def deny(): Unit = {
+    controller.deny()
+  }
+
+  def attack(card: Card): Boolean = {
+    if (controller.canAttack(card)) {
+      controller.attack(card)
+
+      return true
+    }
+
+    false
+  }
+
+  def pickUp(): Unit = {
+    controller.pickUp()
+  }
+
+  def defend(used: Card, undefended: Card): Boolean = {
+    if (controller.canDefend(used, undefended)) {
+      controller.defend(used, undefended)
+
+      return true
+    }
+
+    false
+  }
+
   def cardsHBox(cards: List[SelectableCard], selectable: Boolean): HBox = {
     var selectedImageView: Option[ImageView] = None
     var selectedCard: Option[SelectableCard] = None
 
-    val pngCards = cards.map { card =>
-      val imageView = new ImageView(new Image(card.card.getPath)) {
-        fitHeight = 150
-        preserveRatio = true
-      }
-
-      if (selectable) {
-        imageView.onMouseClicked = _ => {
-          selectedImageView.foreach(imageView => imageView.fitHeight = 150)
-          selectedCard.foreach(card => card.selected = false)
-
-          imageView.fitHeight = 135
-
-          selectedImageView = Some(imageView)
-          selectedCard = Some(card)
-          selectedCard.foreach(card => card.selected = true)
-        }
-      }
-
-      imageView
-    }
-
     new HBox {
       spacing = 10
       alignment = Pos.Center
-      children = pngCards
+      children = cards.map { card =>
+        val imageView = new ImageView(new Image(card.card.getPath)) {
+          fitHeight = 150
+          preserveRatio = true
+        }
+
+        if (selectable) {
+          imageView.onMouseClicked = _ => {
+            selectedImageView.foreach(imageView => imageView.fitHeight = 150)
+            selectedCard.foreach(card => card.selected = false)
+
+            imageView.fitHeight = 135
+
+            selectedImageView = Some(imageView)
+            selectedCard = Some(card)
+            selectedCard.foreach(card => card.selected = true)
+          }
+        }
+
+        imageView
+      }
     }
   }
 
@@ -250,6 +276,21 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
   }
 
   def defendingVBox(own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], canceled: () => Unit, chosen: (Card, Card) => Boolean): VBox = {
+    val errorLabel = new Label
+
+    val errorVBox = new VBox {
+      alignment = Pos.Center
+
+      children = List(
+        new Region {
+          prefHeight = 20
+        },
+        errorLabel
+      )
+
+      visible = false
+    }
+
     new VBox {
       spacing = 10
       alignment = Pos.Center
@@ -265,17 +306,48 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
           children = List(
             new Button("Verteidigen") {
               style = "-fx-background-color: #FCFCFD; -fx-border-radius: 4px; -fxbox-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px,rgba(45, 35, 66, 0.3) 0 7px 13px -3px,#D6D6E7 0 -3px 0 inset; -fx-color: #FCFCFD; -fx-font-size: 16pt; -fx-font-weight: bold;"
+              onAction = _ => {
+                val undefendedCard = undefended.find(_.selected)
+                val ownCard = own.find(_.selected)
+
+                if (undefendedCard.isDefined && ownCard.isDefined) {
+                  if (!chosen.apply(ownCard.get.card, undefendedCard.get.card)) {
+                    errorLabel.text = "Mit dieser Karte kannst du nicht verteidigen."
+                    errorVBox.visible = true
+                  }
+                } else {
+                  errorLabel.text = "Du musst eine Karte zum Verteidigen und eine Karte zum Verwenden auswählen."
+                  errorVBox.visible = true
+                }
+              }
             },
-            new Button("Abbrechen") {
+            new Button("Aufnehmen") {
               style = "-fx-background-color: #FCFCFD; -fx-border-radius: 4px; -fxbox-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px,rgba(45, 35, 66, 0.3) 0 7px 13px -3px,#D6D6E7 0 -3px 0 inset; -fx-color: #FCFCFD; -fx-font-size: 16pt; -fx-font-weight: bold;"
+              onAction = _ => canceled.apply()
             }
           )
-        }
+        },
+        errorVBox
       )
     }
   }
 
   def attackingVBox(own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], canceled: () => Unit, chosen: (Card) => Boolean): VBox = {
+    val errorLabel = new Label
+
+    val errorVBox = new VBox {
+      alignment = Pos.Center
+
+      children = List(
+        new Region {
+          prefHeight = 20
+        },
+        errorLabel
+      )
+
+      visible = false
+    }
+
     new VBox {
       spacing = 10
       alignment = Pos.Center
@@ -289,19 +361,35 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
           style = "-fx-background-color: slategrey;"
           padding = Insets(40)
           children = List(
-            new Button("Verteidigen") {
+            new Button("Angreifen") {
               style = "-fx-background-color: #FCFCFD; -fx-border-radius: 4px; -fxbox-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px,rgba(45, 35, 66, 0.3) 0 7px 13px -3px,#D6D6E7 0 -3px 0 inset; -fx-color: #FCFCFD; -fx-font-size: 16pt; -fx-font-weight: bold;"
+              onAction = _ => {
+                val ownCard = own.find(_.selected)
+
+                if (ownCard.isDefined) {
+                  if (!chosen.apply(ownCard.get.card)) {
+                    errorLabel.text = "Mit dieser Karte kannst du nicht angreifen."
+                    errorVBox.visible = true
+                  }
+                } else {
+                  errorLabel.text = "Du musst eine Karte zum Angreifen auswählen."
+                  errorVBox.visible = true
+                }
+              }
             },
             new Button("Abbrechen") {
               style = "-fx-background-color: #FCFCFD; -fx-border-radius: 4px; -fxbox-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px,rgba(45, 35, 66, 0.3) 0 7px 13px -3px,#D6D6E7 0 -3px 0 inset; -fx-color: #FCFCFD; -fx-font-size: 16pt; -fx-font-weight: bold;"
+              visible = defended.nonEmpty || undefended.nonEmpty
+              onAction = _ => canceled.apply()
             }
           )
-        }
+        },
+        errorVBox
       )
     }
   }
 
-  def roundVBox(): VBox = {
+  def roundVBox(trump: Card, stack: List[Card], players: List[Player]): VBox = {
     new VBox {
       spacing = 10
       padding = Insets(40)
@@ -318,18 +406,18 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
         new Label("Trumpf-Karte:") {
           style = "-fx-font-size: 16pt; -fx-font-weight: bold;"
         },
-        new ImageView(new Image(controller.status.trump.get.getPath)) {
+        new ImageView(new Image(trump.getPath)) {
           fitHeight = 80
           preserveRatio = true
         },
         new Label("Deckgröße:") {
           style = "-fx-font-size: 16pt; -fx-font-weight: bold;"
         },
-        new Label(controller.status.stack.toString) {
+        new Label(stack.size.toString) {
           style = "-fx-font-size: 13pt; -fx-font-weight: bold;"
         },
         new VBox {
-          children = controller.status.players.map(player => new Label(s"${player.name}: ${player.turn}"))
+          children = players.map(player => new Label(s"${player.name}: ${player.turn}"))
         }
       )
     }
