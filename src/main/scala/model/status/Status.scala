@@ -2,8 +2,6 @@ package model.status
 
 import model.{Card, Player, Turn}
 
-import scala.util.Random
-
 case class Status(players: List[Player] = Nil,
                   stack: List[Card] = Nil,
                   trump: Option[Card] = None,
