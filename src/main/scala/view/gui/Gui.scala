@@ -30,6 +30,10 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
     stage = new JFXApp3.PrimaryStage {
       title = "Durak"
       icons.add(new Image("file:src/main/resources/durak_logo.png"))
+      onCloseRequest = _ => {
+        Platform.exit()
+        System.exit(0)
+      }
     }
 
     initialize()
