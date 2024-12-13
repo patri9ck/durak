@@ -154,6 +154,7 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
         )
       }
     }
+    stage.centerOnScreen()
   }
 
   def continue(): Unit = {
@@ -166,9 +167,9 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
     stage.scene = new Scene {
       root = new BorderPane() {
         center = if (turn == Turn.FirstlyAttacking || turn == Turn.SecondlyAttacking) {
-          attackingVBox(own, used, undefended, defended, deny, attack)
+          attackingVBox(controller.current.get.name, own, used, undefended, defended, deny, attack)
         } else if (turn == Turn.Defending) {
-          defendingVBox(own, used, undefended, defended, pickUp, defend)
+          defendingVBox(controller.current.get.name, own, used, undefended, defended, pickUp, defend)
         } else {
           VBox()
         }
@@ -190,6 +191,7 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
 
       }
     }
+    stage.centerOnScreen()
   }
 
   def deny(): Unit = {
@@ -264,18 +266,18 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
     }
   }
 
-  def roundCardsVBox(own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], selectable: Boolean): VBox = {
+  def roundCardsVBox(name: String, own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], selectable: Boolean): VBox = {
     new VBox {
       children = List(
         labeledCardsVBox("Zu Verteidigen", undefended, undefended.nonEmpty, selectable),
         labeledCardsVBox("Verteidigt", defended, defended.nonEmpty, false),
         labeledCardsVBox("Verwendet", used, used.nonEmpty, false),
-        labeledCardsVBox("Deine Karten", own, own.nonEmpty, true)
+        labeledCardsVBox(s"Deine Karten $name", own, own.nonEmpty, true)
       )
     }
   }
 
-  def defendingVBox(own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], canceled: () => Unit, chosen: (Card, Card) => Boolean): VBox = {
+  def defendingVBox(name: String, own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], canceled: () => Unit, chosen: (Card, Card) => Boolean): VBox = {
     val errorLabel = new Label
 
     val errorVBox = new VBox {
@@ -297,7 +299,7 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
       style = "-fx-background-color: slategrey;  -fx-border-color: transparent white transparent transparent; -fx-border-width: 2px;"
       padding = Insets(40)
       children = List(
-        roundCardsVBox(own, used, undefended, defended, true),
+        roundCardsVBox(name, own, used, undefended, defended, true),
         new HBox {
           spacing = 10
           alignment = Pos.Center
@@ -332,7 +334,7 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
     }
   }
 
-  def attackingVBox(own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], canceled: () => Unit, chosen: (Card) => Boolean): VBox = {
+  def attackingVBox(name: String, own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], canceled: () => Unit, chosen: (Card) => Boolean): VBox = {
     val errorLabel = new Label
 
     val errorVBox = new VBox {
@@ -354,7 +356,7 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
       style = "-fx-background-color: slategrey;  -fx-border-color: transparent white transparent transparent; -fx-border-width: 2px;"
       padding = Insets(40)
       children = List(
-        roundCardsVBox(own, used, undefended, defended, false),
+        roundCardsVBox(name, own, used, undefended, defended, false),
         new HBox {
           spacing = 10
           alignment = Pos.Center
@@ -377,7 +379,7 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
                 }
               }
             },
-            new Button("Abbrechen") {
+            new Button("Aufhören") {
               style = "-fx-background-color: #FCFCFD; -fx-border-radius: 4px; -fxbox-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px,rgba(45, 35, 66, 0.3) 0 7px 13px -3px,#D6D6E7 0 -3px 0 inset; -fx-color: #FCFCFD; -fx-font-size: 16pt; -fx-font-weight: bold;"
               visible = defended.nonEmpty || undefended.nonEmpty
               onAction = _ => canceled.apply()
@@ -397,12 +399,9 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
       style = "-fx-background-color: slategrey;"
       children = List(
         new Label("Spielinfo") {
-          style = "-fx-font-size: 22pt; -fx-font-weight: bold;"
+          style = "-fx-font-size: 24pt; -fx-font-weight: bold;"
         },
         new Region,
-        new Label("Trumpf:") {
-          style = "-fx-font-size: 16pt; -fx-font-weight: bold;"
-        },
         new Label("Trumpf-Karte:") {
           style = "-fx-font-size: 16pt; -fx-font-weight: bold;"
         },
@@ -416,8 +415,12 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
         new Label(stack.size.toString) {
           style = "-fx-font-size: 13pt; -fx-font-weight: bold;"
         },
+        new Label("Spieler") {
+          style = "-fx-font-size: 16pt; -fx-font-weight: bold;"
+        },
         new VBox {
           children = players.map(player => new Label(s"${player.name}: ${player.turn}"))
+          style = "-fx-font-size: 13pt; -fx-font-weight: bold;"
         }
       )
     }
