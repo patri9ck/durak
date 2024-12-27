@@ -1,29 +1,34 @@
 package model.status
 
-import model.status.Status
+import com.google.inject.Inject
+import com.google.inject.name.Named
 import model.{Card, Player, Turn}
 
-class MutableStatusBuilder(private var players: List[Player] = Nil,
-                           private var stack: List[Card] = Nil,
-                           private var trump: Option[Card] = None,
-                           private var amount: Int = 0,
-                           private var turn: Turn = Turn.Watching,
-                           private var defended: List[Card] = Nil,
-                           private var undefended: List[Card] = Nil,
-                           private var used: List[Card] = Nil,
-                           private var denied: Boolean = false,
-                           private var passed: Option[Player] = None) extends StatusBuilder {
+class MutableStatusBuilder @Inject()(@Named("players") private var players: List[Player],
+                                     @Named("stack") private var stack: List[Card],
+                                     @Named("trump") private var trump: Option[Card],
+                                     @Named("amount") private var amount: Int,
+                                     @Named("turn") private var turn: Turn,
+                                     @Named("defended") private var defended: List[Card],
+                                     @Named("undefended") private var undefended: List[Card],
+                                     @Named("used") private var used: List[Card],
+                                     @Named("denied") private var denied: Boolean,
+                                     @Named("passed") private var passed: Option[Player]) extends StatusBuilder {
 
-  def this(status: Status) = this(status.players,
-    status.stack,
-    status.trump,
-    status.amount,
-    status.turn,
-    status.defended,
-    status.undefended,
-    status.used,
-    status.denied,
-    status.passed)
+  override def setStatus(status: Status): StatusBuilder = {
+    players = status.players
+    stack = status.stack
+    trump = status.trump
+    amount = status.amount
+    turn = status.turn
+    defended = status.defended
+    undefended = status.undefended
+    used = status.used
+    denied = status.denied
+    passed = status.passed
+
+    this
+  }
 
   override def setPlayers(players: List[Player]): StatusBuilder = {
     this.players = players

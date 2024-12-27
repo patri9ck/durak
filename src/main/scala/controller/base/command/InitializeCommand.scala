@@ -1,13 +1,17 @@
 package controller.base.command
 
+import com.google.inject.Guice
 import controller.base.BaseController
+import model.status.StatusBuilder
 import model.{Card, Player, Turn}
-import model.status.MutableStatusBuilder
+import module.DurakModule
 
 import scala.util.Random
 
 class InitializeCommand(controller: BaseController, amount: Int, names: List[String], attacking: String) extends MementoCommand(controller) {
-  
+
+  private val injector = Guice.createInjector(DurakModule())
+
   override def execute(): Unit = {
     val deck = Card.getDeck
 
@@ -22,7 +26,8 @@ class InitializeCommand(controller: BaseController, amount: Int, names: List[Str
       Player(name, playerCards, Turn.Watching)
     }
 
-    controller.status = MutableStatusBuilder(controller.status)
+    controller.status = injector.getInstance(classOf[StatusBuilder])
+      .setStatus(controller.status)
       .setPlayers(controller.chooseAttacking(players, players.indexWhere(_.name == attacking)))
       .setStack(remaining)
       .setAmount(amount)

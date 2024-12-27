@@ -10,17 +10,17 @@ lazy val root = (project in file("."))
     name := "durak"
   )
 
-coverageExcludedPackages := ".*prototype.*"
+libraryDependencies += "org.playframework" %% "play-json" % "3.0.4"
+libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "2.3.0"
 
-libraryDependencies += "org.apache.xmlgraphics" % "batik-all" % "1.18"
-libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.18"
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.18" % "test"
+libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.19"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.19" % "test"
 
+libraryDependencies += "net.codingwell" %% "scala-guice" % "7.0.0"
+libraryDependencies += "com.google.inject" % "guice" % "7.0.0"
 
-coverageEnabled := true
 libraryDependencies += "org.scalafx" %% "scalafx" % "22.0.0-R33"
 libraryDependencies ++= {
-  // Determine OS version of JavaFX binaries
   lazy val osName = System.getProperty("os.name") match {
     case n if n.startsWith("Linux") => "linux"
     case n if n.startsWith("Mac") => "mac"
@@ -30,4 +30,6 @@ libraryDependencies ++= {
   Seq("base", "controls", "fxml", "graphics", "media", "swing", "web")
     .map(m => "org.openjfx" % s"javafx-$m" % "16" classifier osName)
 }
+
+coverageEnabled := true
 coverallsService := Some(TravisPro)

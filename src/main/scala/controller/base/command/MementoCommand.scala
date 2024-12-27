@@ -1,5 +1,7 @@
 package controller.base.command
 
+import com.google.inject.Inject
+import controller.Controller
 import controller.base.BaseController
 import model.status.Status
 import util.Command
