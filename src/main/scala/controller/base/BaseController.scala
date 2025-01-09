@@ -9,10 +9,10 @@ import model.status.{Status, StatusBuilder}
 import util.{Observable, UndoManager}
 
 import scala.annotation.tailrec
-import scala.util.{Failure, Random, Success}
+import scala.util.Random
 
 @Singleton
-class BaseController @Inject()(val fileIo: FileIo) extends Controller {
+class BaseController @Inject() (val fileIo: FileIo) extends Controller {
 
   var status: Status = Status()
 
@@ -191,25 +191,14 @@ class BaseController @Inject()(val fileIo: FileIo) extends Controller {
   }
 
   override def load(): Unit = {
-    fileIo.load match {
-      case Success(status) => status match {
-        case Some(status) =>
-          this.status = status
-
-        case None => println("Status konnte nicht dekodiert werden.")
-      }
-      case Failure(exception) => println(s"Fehler beim Laden: $exception")
-    }
+    undoManager.doStep(LoadCommand(this, fileIo))
 
     notifySubscribers()
   }
 
 
   override def save(): Unit = {
-    fileIo.save(status) match {
-      case Success(_) => println("Status gespeichert.")
-      case Failure(exception) => println(s"Fehler beim Speichern: $exception")
-    }
+    undoManager.doStep(SaveCommand(this, fileIo))
 
     notifySubscribers()
   }

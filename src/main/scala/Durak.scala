@@ -1,5 +1,4 @@
 import com.google.inject.Guice
-import model.io.XmlFileIo
 import module.DurakModule
 import view.gui.Gui
 import view.tui.Tui
