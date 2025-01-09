@@ -6,8 +6,6 @@ import model.{Card, Player, Turn}
 
 class StubController(val status: Status) extends Controller {
 
-  def this() = this(Status())
-
   override def initialize(amount: Int, names: List[String]): Unit = {}
 
   override def initialize(amount: Int, names: List[String], attacking: String): Unit = {}

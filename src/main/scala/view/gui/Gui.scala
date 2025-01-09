@@ -67,8 +67,8 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
     val errorVBox = createErrorVBox(errorLabel)
 
     val toolBar = new ToolBar {
-      visible = false
-      managed = false
+      visible = controllable
+      managed = controllable
       items = List(
         new Button("Laden") {
           onAction = _ => controller.load()
@@ -113,6 +113,7 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
                 toolBar.visible = controllable
                 toolBar.managed = controllable
               }
+              selected = controllable
             },
             new Region {
               prefHeight = 20

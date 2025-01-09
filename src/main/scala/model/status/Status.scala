@@ -55,18 +55,18 @@ case class Status(players: List[Player] = Nil,
 object Status {
   implicit val statusFormat: OFormat[Status] = Json.format[Status]
 
-  def fromXml(xml: Elem): Status = {
+  def fromXml(elem: Elem): Status = {
     Status(
-      (xml \ "players" \ "player").map(Player.fromXml).toList,
-      (xml \ "stack" \ "card").map(Card.fromXml).toList,
-      (xml \ "trump" \ "card").headOption.map(Card.fromXml),
-      (xml \ "amount").text.toInt,
-      Turn.valueOf((xml \ "turn").text),
-      (xml \ "defended" \ "card").map(Card.fromXml).toList,
-      (xml \ "undefended" \ "card").map(Card.fromXml).toList,
-      (xml \ "used" \ "card").map(Card.fromXml).toList,
-      (xml \ "denied").text.toBoolean,
-      (xml \ "passed" \ "player").headOption.map(Player.fromXml)
+      (elem \ "players" \ "player").map(Player.fromXml).toList,
+      (elem \ "stack" \ "card").map(Card.fromXml).toList,
+      (elem \ "trump" \ "card").headOption.map(Card.fromXml),
+      (elem \ "amount").text.toInt,
+      Turn.valueOf((elem \ "turn").text),
+      (elem \ "defended" \ "card").map(Card.fromXml).toList,
+      (elem \ "undefended" \ "card").map(Card.fromXml).toList,
+      (elem \ "used" \ "card").map(Card.fromXml).toList,
+      (elem \ "denied").text.toBoolean,
+      (elem \ "passed" \ "player").headOption.map(Player.fromXml)
     )
   }
 }
