@@ -1,10 +1,13 @@
 package view.tui.runner
 
+import com.google.inject.Singleton
+
 import java.util.concurrent.ExecutionException
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Promise}
 import scala.io.StdIn
 
+@Singleton
 class MultiRunner extends Thread with Runner {
 
   private var threads: Map[Thread, Option[Promise[String]]] = Map.empty

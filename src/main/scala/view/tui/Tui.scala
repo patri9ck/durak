@@ -1,43 +1,45 @@
 package view.tui
 
+import com.google.inject.Inject
+import com.google.inject.name.Named
 import controller.Controller
 import model.*
 import util.Observer
-import view.tui.runner.{MultiRunner, Runner}
+import view.tui.runner.Runner
 
 import scala.collection.mutable.ListBuffer
 
-class Tui(val controller: Controller, val runner: Runner, val seconds: Int = 3, val lines: Int = 100, var controllable: Boolean = false) extends Observer {
+class Tui @Inject()(val controller: Controller, val runner: Runner, @Named("seconds") val seconds: Int, @Named("lines") val lines: Int) extends Observer {
 
   controller.add(this)
 
-  def this(controller: Controller) = {
-    this(controller, MultiRunner())
-
-    runner.asInstanceOf[MultiRunner].start()
-  }
+  private var controllable: Boolean = false
 
   override def update(): Unit = {
-    runner.run(() => {
-      if (controllable) {
-        askForStep() match
-          case Step.Continue => continue()
-          case Step.Undo => controller.undo()
-          case Step.Redo => controller.redo()
-      } else {
-        continue()
-      }
-    })
+    runner.run(run)
   }
-  
+
   def start(): Unit = {
     runner.run(() => {
       println("Willkommen zu Durak!")
-      
+
       controllable = askForControllable()
-      
-      continue()
+
+      run()
     })
+  }
+
+  def run(): Unit = {
+    if (controllable) {
+      askForStep() match
+        case Step.Continue => continue()
+        case Step.Undo => controller.undo()
+        case Step.Redo => controller.redo()
+        case Step.Load => controller.load()
+        case Step.Save => controller.save()
+    } else {
+      continue()
+    }
   }
 
   def continue(): Unit = {
@@ -128,7 +130,20 @@ class Tui(val controller: Controller, val runner: Runner, val seconds: Int = 3, 
 
   def getCountdownDisplay(seconds: Int): List[String] = (1 to seconds).reverse.map(i => s"$i...").toList
 
-  def getPlayersDisplay(players: List[Player]): List[String] = players.map(player => s"${player.turn}: $player (Karten: ${player.cards.length})")
+  def askForStep(): Step = {
+    while (true) {
+      runner.readLine("[F]ortfahren/[R]ückgängig machen/[W]iederherstellen/[L]aden/[S]peichern? ").toLowerCase match {
+        case "f" => return Step.Continue
+        case "r" => return Step.Undo
+        case "w" => return Step.Redo
+        case "l" => return Step.Load
+        case "s" => return Step.Save
+        case _ =>
+      }
+    }
+
+    Step.Continue
+  }
 
   def getCardDisplay(card: Card): List[String] = card.toString.split("\n").toList
 
@@ -206,18 +221,7 @@ class Tui(val controller: Controller, val runner: Runner, val seconds: Int = 3, 
     false
   }
 
-  def askForStep(): Step = {
-    while (true) {
-      runner.readLine("[F]ortfahren/[R]ückgängig machen/[W]iederherstellen? ").toLowerCase match {
-        case "f" => return Step.Continue
-        case "r" => return Step.Undo
-        case "w" => return Step.Redo
-        case _ =>
-      }
-    }
-
-    Step.Continue
-  }
+  def getPlayersDisplay(players: List[Player]): List[String] = players.map(player => s"${player.turn.name}: $player (Karten: ${player.cards.length})")
 
   def askForCardAmount(playerAmount: Int): Int = {
     val limit = 52 / playerAmount
@@ -316,7 +320,7 @@ class Tui(val controller: Controller, val runner: Runner, val seconds: Int = 3, 
       }
 
       if (chosen.apply(card.get)) {
-        return;
+        return
       }
 
       println("Mit dieser Karte kannst du nicht angreifen.")
@@ -330,7 +334,7 @@ class Tui(val controller: Controller, val runner: Runner, val seconds: Int = 3, 
       if (undefendedCard.isEmpty) {
         canceled.apply()
 
-        return;
+        return
       }
 
       val usedCard = askForCard("Welche Karte möchtest du dafür nutzen?", defending.cards, true)
@@ -338,11 +342,11 @@ class Tui(val controller: Controller, val runner: Runner, val seconds: Int = 3, 
       if (usedCard.isEmpty) {
         canceled.apply()
 
-        return;
+        return
       }
 
       if (chosen.apply(usedCard.get, undefendedCard.get)) {
-        return;
+        return
       }
 
       println("Mit dieser Karte kannst du nicht verteidigen.")

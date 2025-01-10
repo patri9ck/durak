@@ -1,15 +1,20 @@
 package controller.base
 
+import com.google.inject.{Inject, Singleton}
 import controller.Controller
-import controller.base.command.{AttackCommand, DefendCommand, DenyCommand, InitializeCommand, PickUpCommand}
+import controller.base.command.*
 import model.*
+import model.io.FileIo
 import model.status.{Status, StatusBuilder}
 import util.{Observable, UndoManager}
 
 import scala.annotation.tailrec
 import scala.util.Random
 
-class BaseController(var status: Status = new Status) extends Controller {
+@Singleton
+class BaseController @Inject() (val fileIo: FileIo) extends Controller {
+
+  var status: Status = Status()
 
   private val undoManager = UndoManager()
 
@@ -183,5 +188,22 @@ class BaseController(var status: Status = new Status) extends Controller {
     undoManager.redoStep()
 
     notifySubscribers()
+  }
+
+  override def load(): Unit = {
+    undoManager.doStep(LoadCommand(this, fileIo))
+
+    notifySubscribers()
+  }
+
+
+  override def save(): Unit = {
+    undoManager.doStep(SaveCommand(this, fileIo))
+
+    notifySubscribers()
+  }
+
+  override def unbind(): Unit = {
+    fileIo.unbind()
   }
 }

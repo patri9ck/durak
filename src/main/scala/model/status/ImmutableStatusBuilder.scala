@@ -1,29 +1,25 @@
 package model.status
 
+import com.google.inject.Inject
+import com.google.inject.name.Named
 import model.{Card, Player, Turn}
 
-class ImmutableStatusBuilder(val players: List[Player] = Nil,
-                              val stack: List[Card] = Nil,
-                              val trump: Option[Card] = None,
-                              val amount: Int = 0,
-                              val turn: Turn = Turn.Watching,
-                              val defended: List[Card] = Nil,
-                              val undefended: List[Card] = Nil,
-                              val used: List[Card] = Nil,
-                              val denied: Boolean = false,
-                              val passed: Option[Player] = None
+class ImmutableStatusBuilder @Inject()(@Named("players") private val players: List[Player],
+                                       @Named("stack") private val stack: List[Card],
+                                       @Named("trump") private val trump: Option[Card],
+                                       @Named("amount") private val amount: Int,
+                                       @Named("turn") private val turn: Turn,
+                                       @Named("defended") private val defended: List[Card],
+                                       @Named("undefended") private val undefended: List[Card],
+                                       @Named("used") private val used: List[Card],
+                                       @Named("denied") private val denied: Boolean,
+                                       @Named("passed") private val passed: Option[Player]
                             ) extends StatusBuilder {
 
-  def this(status: Status) = this(status.players,
-    status.stack,
-    status.trump,
-    status.amount,
-    status.turn,
-    status.defended,
-    status.undefended,
-    status.used,
-    status.denied,
-    status.passed)
+  def this() = this(Nil, Nil, None, 0, Turn.Watching, Nil, Nil, Nil, false, None)
+
+  override def setStatus(status: Status): StatusBuilder =
+    ImmutableStatusBuilder(status.players, status.stack, status.trump, status.amount, status.turn, status.defended, status.undefended, status.used, status.denied, status.passed)
 
   override def setPlayers(players: List[Player]): StatusBuilder =
     ImmutableStatusBuilder(players, stack, trump, amount, turn, defended, undefended, used, denied, passed)

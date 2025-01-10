@@ -1,16 +1,21 @@
-import controller.base.BaseController
+import com.google.inject.Guice
+import module.DurakModule
 import view.gui.Gui
 import view.tui.Tui
-
-import scala.util.CommandLineParser
+import view.tui.runner.{MultiRunner, Runner}
 
 object Durak {
   @main
   def main(): Unit = {
-    val controller = BaseController()
+    val injector = Guice.createInjector(new DurakModule)
 
-    Tui(controller).start()
-    Gui(controller).main(Array.empty)
+    injector.getInstance(classOf[Runner]) match
+      case multiRunner: MultiRunner =>
+        multiRunner.start()
+      case _ =>
+
+    injector.getInstance(classOf[Tui]).start()
+    injector.getInstance(classOf[Gui]).main(Array.empty)
   }
 }
 
