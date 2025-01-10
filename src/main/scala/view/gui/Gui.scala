@@ -1,5 +1,6 @@
 package view.gui
 
+import com.google.inject.Inject
 import controller.Controller
 import model.*
 import scalafx.application.{JFXApp3, Platform}
@@ -11,9 +12,11 @@ import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout.*
 import util.Observer
 
-class Gui(val controller: Controller, var controllable: Boolean = true) extends JFXApp3, Observer {
+class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
 
   controller.add(this)
+
+  private var controllable: Boolean = false
 
   override def update(): Unit = {
     Platform.runLater(() =>
@@ -24,7 +27,6 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
       }
     )
   }
-
 
   override def start(): Unit = {
     stage = new JFXApp3.PrimaryStage {
@@ -52,45 +54,136 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
 
     val namesVBox = new VBox()
 
-    var nameTextFields = List[TextField](
-      new TextField {
-        promptText = s"Spieler 1"
-      },
-      new TextField {
-        promptText = s"Spieler 2"
-      }
-    )
-
     val attackingComboBox = new ComboBox[String](List("Zufällig")) {
       value = "Zufällig"
       prefWidth = 200
     }
 
-    nameTextFields.foreach { nameTextField =>
-      namesVBox.children.add(nameTextField)
-      nameTextField.text.onChange { (_, _, _) =>
-        attackingComboBox.items = ObservableBuffer("Zufällig") ++ nameTextFields.map(_.text.value).filter(_.nonEmpty)
-        attackingComboBox.value = "Zufällig"
-      }
-    }
+    var nameTextFields = createNameTextFields(2, attackingComboBox, namesVBox)
 
     playerAmountComboBox.delegate.setOnAction(_ => {
-      nameTextFields = List[TextField]()
-      namesVBox.children.clear()
+      nameTextFields = createNameTextFields(playerAmountComboBox.value.value.toInt, attackingComboBox, namesVBox)
 
-      for (i <- 1 to playerAmountComboBox.value.value.toInt) {
-        val nameTextField = new TextField {
-          promptText = s"Spieler $i"
-        }
-
-        nameTextFields = nameTextFields :+ nameTextField
-        namesVBox.children.add(nameTextField)
-      }
+      updateAttackingComboBox(attackingComboBox, nameTextFields)
     })
 
     val errorLabel = new Label
+    val errorVBox = createErrorVBox(errorLabel)
 
-    val errorVBox = new VBox {
+    val toolBar = new ToolBar {
+      visible = controllable
+      managed = controllable
+      items = List(
+        new Button("Laden") {
+          onAction = _ => controller.load()
+        },
+        new Button("Speichern") {
+          onAction = _ => controller.save()
+        }
+      )
+    }
+
+    stage.scene = new Scene {
+      root = new BorderPane() {
+        center = new VBox {
+          spacing = 10
+          alignment = Pos.Center
+          style = "-fx-background-color: slategrey;"
+          padding = Insets(40)
+          children = List(
+            new ImageView("file:src/main/resources/durak_logo.png") {
+              fitWidth = 200
+              preserveRatio = true
+            },
+            new Label("Anzahl Spieler") {
+              style = "-fx-font-size: 16pt; -fx-font-weight: bold;"
+            },
+            playerAmountComboBox,
+            new Label("Spielernamen") {
+              style = "-fx-font-size: 16pt; -fx-font-weight: bold;"
+            },
+            namesVBox,
+            new Label("Kartenanzahl") {
+              style = "-fx-font-size: 16pt; -fx-font-weight: bold;"
+            },
+            cardAmountComboBox,
+            new Region {
+              prefHeight = 20
+            },
+            new CheckBox("Steuerbar") {
+              onAction = _ => {
+                controllable = !controllable
+
+                toolBar.visible = controllable
+                toolBar.managed = controllable
+              }
+              selected = controllable
+            },
+            new Region {
+              prefHeight = 20
+            },
+            new Button("Spiel Starten") {
+              style = "-fx-background-color: #FCFCFD; -fx-border-radius: 4px; -fxbox-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px,rgba(45, 35, 66, 0.3) 0 7px 13px -3px,#D6D6E7 0 -3px 0 inset; -fx-color: #FCFCFD; -fx-font-size: 16pt; -fx-font-weight: bold;"
+              onAction = _ => {
+                val names = nameTextFields.map(nameTextField => nameTextField.text.value)
+
+                if (names.distinct.size != nameTextFields.size) {
+                  errorLabel.text = "Die Namen müssen einzigartig sein."
+                  errorVBox.visible = true
+                } else if (names.exists(_.isBlank)) {
+                  errorLabel.text = "Es müssen alle Namen gesetzt sein sein."
+                  errorVBox.visible = true
+
+                } else {
+                  if (attackingComboBox.value.value == "Zufällig") {
+                    controller.initialize(cardAmounts.indexOf(cardAmountComboBox.value.value) + 1, names)
+                  } else {
+                    controller.initialize(cardAmounts.indexOf(cardAmountComboBox.value.value) + 1, names, attackingComboBox.value.value)
+                  }
+                }
+              }
+            },
+            new Region {
+              prefHeight = 20
+            },
+            attackingComboBox,
+            errorVBox
+          )
+        }
+        top = toolBar
+      }
+    }
+    stage.centerOnScreen()
+  }
+
+  def createNameTextFields(amount: Int, attackingComboBox: ComboBox[String], namesVBox: VBox): List[TextField] = {
+    namesVBox.children.clear()
+
+    var nameTextFields = List[TextField]()
+
+    for (i <- 1 to amount) {
+      val nameTextField = new TextField {
+        promptText = s"Spieler $i"
+      }
+
+      nameTextField.text.onChange { (_, _, _) =>
+        updateAttackingComboBox(attackingComboBox, nameTextFields)
+      }
+
+      nameTextFields = nameTextFields :+ nameTextField
+      namesVBox.children.add(nameTextField)
+    }
+
+    nameTextFields
+  }
+
+  def updateAttackingComboBox(attackingComboBox: ComboBox[String], nameTextFields: List[TextField]): Unit = {
+    attackingComboBox.items = ObservableBuffer("Zufällig") ++ nameTextFields.map(_.text.value).filter(_.nonEmpty)
+    attackingComboBox.value = "Zufällig"
+  }
+
+  def createErrorVBox(errorLabel: Label): VBox = {
+    new VBox {
       alignment = Pos.Center
 
       children = List(
@@ -102,63 +195,6 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
 
       visible = false
     }
-
-    stage.scene = new Scene {
-      root = new VBox {
-        spacing = 10
-        alignment = Pos.Center
-        style = "-fx-background-color: slategrey;"
-        padding = Insets(40)
-        children = List(
-          new ImageView("file:src/main/resources/durak_logo.png") {
-            fitWidth = 200
-            preserveRatio = true
-          },
-          new Label("Anzahl Spieler") {
-            style = "-fx-font-size: 16pt; -fx-font-weight: bold;"
-          },
-          playerAmountComboBox,
-          new Label("Spielernamen") {
-            style = "-fx-font-size: 16pt; -fx-font-weight: bold;"
-          },
-          namesVBox,
-          new Label("Kartenanzahl") {
-            style = "-fx-font-size: 16pt; -fx-font-weight: bold;"
-          },
-          cardAmountComboBox,
-          new Region {
-            prefHeight = 20
-          },
-          new Button("Spiel Starten") {
-            style = "-fx-background-color: #FCFCFD; -fx-border-radius: 4px; -fxbox-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px,rgba(45, 35, 66, 0.3) 0 7px 13px -3px,#D6D6E7 0 -3px 0 inset; -fx-color: #FCFCFD; -fx-font-size: 16pt; -fx-font-weight: bold;"
-            onAction = _ => {
-              val names = nameTextFields.map(nameTextField => nameTextField.text.value)
-
-              if (names.distinct.size != nameTextFields.size) {
-                errorLabel.text = "Die Namen müssen einzigartig sein."
-                errorVBox.visible = true
-              } else if (names.exists(_.isBlank)) {
-                errorLabel.text = "Es müssen alle Namen gesetzt sein sein."
-                errorVBox.visible = true
-
-              } else {
-                if (attackingComboBox.value.value == "Zufällig") {
-                  controller.initialize(cardAmounts.indexOf(cardAmountComboBox.value.value) + 1, names)
-                } else {
-                  controller.initialize(cardAmounts.indexOf(cardAmountComboBox.value.value) + 1, names, attackingComboBox.value.value)
-                }
-              }
-            }
-          },
-          new Region {
-            prefHeight = 20
-          },
-          attackingComboBox,
-          errorVBox
-        )
-      }
-    }
-    stage.centerOnScreen()
   }
 
   def continue(): Unit = {
@@ -171,26 +207,32 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
     stage.scene = new Scene {
       root = new BorderPane() {
         center = if (turn == Turn.FirstlyAttacking || turn == Turn.SecondlyAttacking) {
-          attackingVBox(controller.current.get.name, own, used, undefended, defended, deny, attack)
+          createAttackingVBox(controller.current.get.name, own, used, undefended, defended, deny, attack)
         } else if (turn == Turn.Defending) {
-          defendingVBox(controller.current.get.name, own, used, undefended, defended, pickUp, defend)
+          createDefendingVBox(controller.current.get.name, own, used, undefended, defended, pickUp, defend)
         } else {
           VBox()
         }
 
-        right = roundVBox(controller.status.trump.get, controller.status.stack, controller.status.players)
+        right = getRoundVBox(controller.status.trump.get, controller.status.stack, controller.status.players)
 
-        if (controllable) {
-          top = new ToolBar {
-            items = List(
-              new Button("Undo") {
-                onAction = _ => controller.undo()
-              },
-              new Button("Redo") {
-                onAction = _ => controller.redo()
-              }
-            )
-          }
+        top = new ToolBar {
+          visible = controllable
+          managed = controllable
+          items = List(
+            new Button("Rückgängig machen") {
+              onAction = _ => controller.undo()
+            },
+            new Button("Wiederherstellen") {
+              onAction = _ => controller.redo()
+            },
+            new Button("Laden") {
+              onAction = _ => controller.load()
+            },
+            new Button("Speichern") {
+              onAction = _ => controller.save()
+            }
+          )
         }
 
       }
@@ -226,7 +268,7 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
     false
   }
 
-  def cardsHBox(cards: List[SelectableCard], selectable: Boolean): HBox = {
+  def createCardsHBox(cards: List[SelectableCard], selectable: Boolean): HBox = {
     var selectedImageView: Option[ImageView] = None
     var selectedCard: Option[SelectableCard] = None
 
@@ -257,45 +299,33 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
     }
   }
 
-  def labeledCardsVBox(label: String, cards: List[SelectableCard], show: Boolean, selectable: Boolean): VBox = {
+  def createLabeledCardsVBox(label: String, cards: List[SelectableCard], show: Boolean, selectable: Boolean): VBox = {
     new VBox {
       children = List(
         new Label(label) {
           style = "-fx-font-size: 16pt; -fx-font-weight: bold;"
         },
-        cardsHBox(cards, selectable)
+        createCardsHBox(cards, selectable)
       )
 
       visible = show
     }
   }
 
-  def roundCardsVBox(name: String, own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], selectable: Boolean): VBox = {
+  def createRoundCardsVBox(name: String, own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], selectable: Boolean): VBox = {
     new VBox {
       children = List(
-        labeledCardsVBox("Zu Verteidigen", undefended, undefended.nonEmpty, selectable),
-        labeledCardsVBox("Verteidigt", defended, defended.nonEmpty, false),
-        labeledCardsVBox("Verwendet", used, used.nonEmpty, false),
-        labeledCardsVBox(s"Deine Karten $name", own, own.nonEmpty, true)
+        createLabeledCardsVBox("Zu Verteidigen", undefended, undefended.nonEmpty, selectable),
+        createLabeledCardsVBox("Verteidigt", defended, defended.nonEmpty, false),
+        createLabeledCardsVBox("Verwendet", used, used.nonEmpty, false),
+        createLabeledCardsVBox(s"Deine Karten $name", own, own.nonEmpty, true)
       )
     }
   }
 
-  def defendingVBox(name: String, own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], canceled: () => Unit, chosen: (Card, Card) => Boolean): VBox = {
+  def createDefendingVBox(name: String, own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], canceled: () => Unit, chosen: (Card, Card) => Boolean): VBox = {
     val errorLabel = new Label
-
-    val errorVBox = new VBox {
-      alignment = Pos.Center
-
-      children = List(
-        new Region {
-          prefHeight = 20
-        },
-        errorLabel
-      )
-
-      visible = false
-    }
+    val errorVBox = createErrorVBox(errorLabel)
 
     new VBox {
       spacing = 10
@@ -303,7 +333,7 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
       style = "-fx-background-color: slategrey;  -fx-border-color: transparent white transparent transparent; -fx-border-width: 2px;"
       padding = Insets(40)
       children = List(
-        roundCardsVBox(name, own, used, undefended, defended, true),
+        createRoundCardsVBox(name, own, used, undefended, defended, true),
         new HBox {
           spacing = 10
           alignment = Pos.Center
@@ -338,21 +368,9 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
     }
   }
 
-  def attackingVBox(name: String, own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], canceled: () => Unit, chosen: (Card) => Boolean): VBox = {
+  def createAttackingVBox(name: String, own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], canceled: () => Unit, chosen: Card => Boolean): VBox = {
     val errorLabel = new Label
-
-    val errorVBox = new VBox {
-      alignment = Pos.Center
-
-      children = List(
-        new Region {
-          prefHeight = 20
-        },
-        errorLabel
-      )
-
-      visible = false
-    }
+    val errorVBox = createErrorVBox(errorLabel)
 
     new VBox {
       spacing = 10
@@ -360,7 +378,7 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
       style = "-fx-background-color: slategrey;  -fx-border-color: transparent white transparent transparent; -fx-border-width: 2px;"
       padding = Insets(40)
       children = List(
-        roundCardsVBox(name, own, used, undefended, defended, false),
+        createRoundCardsVBox(name, own, used, undefended, defended, false),
         new HBox {
           spacing = 10
           alignment = Pos.Center
@@ -395,7 +413,7 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
     }
   }
 
-  def roundVBox(trump: Card, stack: List[Card], players: List[Player]): VBox = {
+  def getRoundVBox(trump: Card, stack: List[Card], players: List[Player]): VBox = {
     new VBox {
       spacing = 10
       padding = Insets(40)
@@ -423,7 +441,7 @@ class Gui(val controller: Controller, var controllable: Boolean = true) extends 
           style = "-fx-font-size: 16pt; -fx-font-weight: bold;"
         },
         new VBox {
-          children = players.map(player => new Label(s"${player.name}: ${player.turn}"))
+          children = players.map(player => new Label(s"${player.name}: ${player.turn.name}"))
           style = "-fx-font-size: 13pt; -fx-font-weight: bold;"
         }
       )

@@ -4,6 +4,8 @@ import model.{Card, Player, Turn}
 
 trait StatusBuilder {
 
+  def setStatus(status: Status): StatusBuilder
+
   def setPlayers(players: List[Player]): StatusBuilder
 
   def setStack(stack: List[Card]): StatusBuilder
