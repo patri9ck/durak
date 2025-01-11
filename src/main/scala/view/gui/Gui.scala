@@ -10,6 +10,7 @@ import scalafx.scene.Scene
 import scalafx.scene.control.*
 import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout.*
+import scalafx.scene.shape.StrokeType.Inside
 import util.Observer
 
 class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
@@ -81,7 +82,9 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
       )
     }
 
-    val errorLabel = new Label
+    val errorLabel = new Label {
+      style = "-fx-font-size: 8pt; -fx-font-weight: bold; -fx-text-fill: #dfdfdf"
+    }
 
     val errorVBox = new VBox {
       alignment = Pos.Center
@@ -96,34 +99,42 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
       visible = false
     }
 
+    val backgroundImage = new BackgroundImage(
+      new Image("file:src/main/resources/Durak-main-menu.png"),
+      BackgroundRepeat.NoRepeat,
+      BackgroundRepeat.NoRepeat,
+      BackgroundPosition.Center,
+      new BackgroundSize(100, 100, true, true, true, false)
+    )
+
+    stage.width = 428
+    stage.height = 760
+
     stage.scene = new Scene {
       root = new BorderPane() {
+        background = new Background(Array(backgroundImage))
         center = new VBox {
+          padding = Insets(170, 100, 0, 100)
           spacing = 10
           alignment = Pos.Center
-          style = "-fx-background-color: slategrey;"
-          padding = Insets(40)
           children = List(
-            new ImageView("file:src/main/resources/durak_logo.png") {
-              fitWidth = 200
-              preserveRatio = true
-            },
             new Label("Anzahl Spieler") {
-              style = "-fx-font-size: 16pt; -fx-font-weight: bold;"
+              style = "-fx-font-size: 16pt; -fx-font-weight: bold; -fx-text-fill: #dfdfdf"
             },
             playerAmountComboBox,
             new Label("Spielernamen") {
-              style = "-fx-font-size: 16pt; -fx-font-weight: bold;"
+              style = "-fx-font-size: 16pt; -fx-font-weight: bold; -fx-text-fill: #dfdfdf"
             },
             namesVBox,
             new Label("Kartenanzahl") {
-              style = "-fx-font-size: 16pt; -fx-font-weight: bold;"
+              style = "-fx-font-size: 16pt; -fx-font-weight: bold; -fx-text-fill: #dfdfdf"
             },
             cardAmountComboBox,
             new Region {
               prefHeight = 20
             },
             new CheckBox("Steuerbar") {
+              style = "-fx-font-size: 8pt; -fx-font-weight: bold; -fx-text-fill: #dfdfdf"
               onAction = _ => {
                 controllable = !controllable
 
