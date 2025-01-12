@@ -13,6 +13,8 @@ import scalafx.scene.layout.*
 import scalafx.scene.shape.StrokeType.Inside
 import util.Observer
 
+import scala.util.Random
+
 class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
 
   controller.add(this)
@@ -215,12 +217,34 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
 
     val errorLabel = new Label {
       style = "-fx-font-size: 13pt; -fx-font-weight: bold; -fx-text-fill: #575a57"
+      wrapText = true
+      maxWidth = 200
+    }
+
+    // Function to get the card back based on the suit of the cards
+    def getCardBack(suit: Suit): String = {
+      suit match {
+        case Suit.Hearts | Suit.Diamonds => "backside-red.png"
+        case Suit.Clubs | Suit.Spades => "backside-blue.png"
+        case _ => "backside-blue.png" // Default case
+      }
+    }
+
+    // Create a list of ImageView objects based on the card count with card backs based on the suit
+    val otherPlayerCards = controller.status.players.find(player => player != controller.current.get).map(_.cards).getOrElse(List())
+    val cardImages = otherPlayerCards.map { card =>
+      val cardBack = getCardBack(card.suit)
+      new ImageView(new Image(s"file:src/main/resources/cards/$cardBack")) {
+        fitWidth = 120
+        fitHeight = 120
+        preserveRatio = true
+      }
     }
 
     stage.width = 1175
     stage.height = 832
 
-    stage.scene = new Scene{
+    stage.scene = new Scene {
       root = new GridPane {
         background = new Background(Array(new BackgroundImage(
           new Image("file:src/main/resources/Durak-background.png"),
@@ -232,11 +256,9 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
 
         // Define column constraints
         columnConstraints = List(
-          // Spielbereich
           new ColumnConstraints {
             percentWidth = 80
           },
-          // Info-Bereich
           new ColumnConstraints {
             percentWidth = 20
           }
@@ -244,71 +266,36 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
 
         // Define row constraints
         rowConstraints = List(
-          // Zugedeckte Karten
           new RowConstraints {
             vgrow = Priority.Always
           },
-          // Gelegte Karten 1
           new RowConstraints {
             vgrow = Priority.Always
           },
-          // Gelegte Karten 2
           new RowConstraints {
             vgrow = Priority.Always
           },
-          // Spielerkarten
           new RowConstraints {
             vgrow = Priority.Always
           }
         )
 
-
-
-        // Add components to the grid with white borders
+        // Add components to the grid
         add(new HBox {
-          children = List(
-            new ImageView(new Image("file:src/main/resources/cards/backside-blue.png")) {
-              fitWidth = 120
-              fitHeight = 120
-              preserveRatio = true
-            },
-            new ImageView(new Image("file:src/main/resources/cards/backside-blue.png")) {
-              fitWidth = 120
-              fitHeight = 120
-              preserveRatio = true
-            },
-            new ImageView(new Image("file:src/main/resources/cards/backside-blue.png")) {
-              fitWidth = 120
-              fitHeight = 120
-              preserveRatio = true
-            },
-            new ImageView(new Image("file:src/main/resources/cards/backside-blue.png")) {
-              fitWidth = 120
-              fitHeight = 120
-              preserveRatio = true
-            },
-            new ImageView(new Image("file:src/main/resources/cards/backside-red.png")) {
-              fitWidth = 120
-              fitHeight = 120
-              preserveRatio = true
-            },
-            new ImageView(new Image("file:src/main/resources/cards/backside-red.png")) {
-              fitWidth = 120
-              fitHeight = 120
-              preserveRatio = true
-            }
-          )
+          padding = Insets(40, 0, 0, 0)
+          children = cardImages
           alignment = Pos.Center
         }, 0, 0) // Top-left cell
-        add(createBoxForDefendingCards(controller.status.turn, controller.current.get.name, own, used, undefended, defended, deny, attack, pickUp, defend), 0, 1) // Middle1-left cell
 
-        add(createBoxForAttackingCards(controller.status.turn, controller.current.get.name, own, used, undefended, defended, deny, attack, pickUp, defend), 0, 2) // Middle2-left cell
+        add(createBoxForDefendingCards(controller.status.turn, undefended, undefended.nonEmpty), 0, 1) // Middle1-left cell
+
+        add(createBoxForAttackingCards(controller.status.turn, used), 0, 2) // Middle2-left cell
 
         add(new VBox {
           spacing = 20
           children = List(
-            createBoxForPlayerCards(controller.status.turn, controller.current.get.name, own, used, undefended, defended, deny, attack, pickUp, defend),
-            createButtons(turn, controller.current.get.name, own, used, undefended, defended, deny, attack)
+            createBoxForPlayerCards(controller.status.turn, controller.current.get.name, own, own.nonEmpty),
+            createButtons(turn, controller.current.get.name, own, used, undefended, defended, deny, attack, errorLabel)
           )
         }, 0, 3) // Bottom-left cell
 
@@ -317,18 +304,17 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
           )
         }, 1, 0) // Top-right cell
 
-        add(getInfoVBox(controller.status.trump.get, controller.status.stack, controller.status.players), 1, 1, 1, 2)
-        // Right column spanning middle two rows
+        add(getInfoVBox(controller.status.trump.get, controller.status.stack, controller.status.players), 1, 1, 1, 2) // Right column spanning middle two rows
 
         add(new VBox {
-          children = List (
+          children = List(
             new Label("Infofeld") {
               style = "-fx-font-size: 16pt; -fx-font-weight: bold; -fx-text-fill: #575a57"
             },
             errorLabel
           )
           alignment = Pos.Center
-        },1, 3) // bottom-right cell
+        }, 1, 3) // bottom-right cell
       }
     }
     stage.centerOnScreen()
@@ -441,40 +427,34 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
     }
   }
 
-  def createBoxForPlayerCards(turn: Turn, name: String, own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], deny: () => Unit, attack: Card => Boolean, pickUp: () => Unit, defend: (Card, Card) => Boolean): VBox = {
+  def createBoxForPlayerCards(turn: Turn, name: String, own: List[SelectableCard], selectable: Boolean): VBox = {
     turn match {
-      case Turn.FirstlyAttacking | Turn.SecondlyAttacking =>
-        createLabeledCardsVBox(s"Deine Karten $name", own, own.nonEmpty, true)
-      case Turn.Defending =>
-        createLabeledCardsVBox(s"Deine Karten $name", own, own.nonEmpty, true)
+      case Turn.FirstlyAttacking | Turn.SecondlyAttacking | Turn.Defending =>
+        createLabeledCardsVBox(s"Deine Karten $name", own, own.nonEmpty, selectable)
       case _ =>
         new VBox()
     }
   }
 
-  def createBoxForDefendingCards(turn: Turn, name: String, own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], deny: () => Unit, attack: Card => Boolean, pickUp: () => Unit, defend: (Card, Card) => Boolean): VBox = {
+  def createBoxForDefendingCards(turn: Turn, undefended: List[SelectableCard], selectable: Boolean): VBox = {
     turn match {
-      case Turn.FirstlyAttacking | Turn.SecondlyAttacking =>
-        createLabeledCardsVBox("Zu Verteidigen", undefended, undefended.nonEmpty, false)
-      case Turn.Defending =>
-        createLabeledCardsVBox("Zu Verteidigen", undefended, undefended.nonEmpty, true)
+      case Turn.FirstlyAttacking | Turn.SecondlyAttacking | Turn.Defending =>
+        createLabeledCardsVBox("Zu Verteidigen", undefended, undefended.nonEmpty, selectable)
       case _ =>
         new VBox()
     }
   }
 
-  def createBoxForAttackingCards(turn: Turn, name: String, own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], deny: () => Unit, attack: Card => Boolean, pickUp: () => Unit, defend: (Card, Card) => Boolean): VBox = {
+  def createBoxForAttackingCards(turn: Turn, used: List[SelectableCard]): VBox = {
     turn match {
-      case Turn.FirstlyAttacking | Turn.SecondlyAttacking =>
-        createLabeledCardsVBox("Verwendet", used, used.nonEmpty, false)
-      case Turn.Defending =>
+      case Turn.FirstlyAttacking | Turn.SecondlyAttacking | Turn.Defending =>
         createLabeledCardsVBox("Verwendet", used, used.nonEmpty, false)
       case _ =>
         new VBox()
     }
   }
 
-  def createBoxForDefenderButtons(name: String, own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], canceled: () => Unit, chosen: (Card, Card) => Boolean): HBox = {
+  def createBoxForDefenderButtons(name: String, own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], canceled: () => Unit, chosen: (Card, Card) => Boolean, errorLabel: Label): HBox = {
     new HBox {
       spacing = 10
       alignment = Pos.Center
@@ -487,12 +467,10 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
 
             if (undefendedCard.isDefined && ownCard.isDefined) {
               if (!chosen.apply(ownCard.get.card, undefendedCard.get.card)) {
-                //errorLabel.text = "Mit dieser Karte kannst du nicht verteidigen."
-                //errorVBox.visible = true
+                errorLabel.text = "Mit dieser Karte kannst du nicht verteidigen."
               }
             } else {
-              //errorLabel.text = "Du musst eine Karte zum Verteidigen und eine Karte zum Verwenden auswählen."
-              //errorVBox.visible = true
+              errorLabel.text = "Du musst eine Karte zum Verteidigen und eine Karte zum Verwenden auswählen."
             }
           }
         },
@@ -504,7 +482,7 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
     }
   }
 
-  def createBoxForAttackingButtons(name: String, own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], canceled: () => Unit, chosen: Card => Boolean): HBox = {
+  def createBoxForAttackingButtons(name: String, own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], canceled: () => Unit, chosen: Card => Boolean, errorLabel: Label): HBox = {
     new HBox {
       spacing = 10
       alignment = Pos.Center
@@ -517,12 +495,10 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
 
             if (ownCard.isDefined) {
               if (!chosen.apply(ownCard.get.card)) {
-                //errorLabel.text = "Mit dieser Karte kannst du nicht angreifen."
-                //errorVBox.visible = true
+                errorLabel.text = "Mit dieser Karte kannst du nicht angreifen."
               }
             } else {
-              //errorLabel.text = "Du musst eine Karte zum Angreifen auswählen."
-              //errorVBox.visible = true
+              errorLabel.text = "Du musst eine Karte zum Angreifen auswählen."
             }
           }
         },
@@ -540,12 +516,10 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
 
               if (ownCard.isDefined) {
                 if (!chosen.apply(ownCard.get.card)) {
-                  //errorLabel.text = "Mit dieser Karte kannst du nicht angreifen."
-                  //errorVBox.visible = true
+                  errorLabel.text = "Mit dieser Karte kannst du nicht angreifen."
                 }
               } else {
-                //errorLabel.text = "Du musst eine Karte zum Angreifen auswählen."
-                //errorVBox.visible = true
+                errorLabel.text = "Du musst eine Karte zum Angreifen auswählen."
               }
             }
           }
@@ -555,11 +529,11 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
     }
   }
 
-  def createButtons(turn: Turn, name: String, own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], canceled: () => Unit, chosen: Card => Boolean): HBox = {
+  def createButtons(turn: Turn, name: String, own: List[SelectableCard], used: List[SelectableCard], undefended: List[SelectableCard], defended: List[SelectableCard], canceled: () => Unit, chosen: Card => Boolean, errorLabel: Label): HBox = {
     if (turn == Turn.FirstlyAttacking || turn == Turn.SecondlyAttacking) {
-      createBoxForAttackingButtons(controller.current.get.name, own, used, undefended, defended, deny, attack)
+      createBoxForAttackingButtons(controller.current.get.name, own, used, undefended, defended, deny, attack, errorLabel)
     } else if (turn == Turn.Defending) {
-      createBoxForDefenderButtons(controller.current.get.name, own, used, undefended, defended, pickUp, defend)
+      createBoxForDefenderButtons(controller.current.get.name, own, used, undefended, defended, pickUp, defend, errorLabel)
     } else {
       HBox()
     }
