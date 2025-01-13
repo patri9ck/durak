@@ -1,22 +1,21 @@
 package model.status
 
 import com.google.inject.Inject
-import com.google.inject.name.Named
 import model.{Card, Player, Turn}
 
-class ImmutableStatusBuilder @Inject()(@Named("players") private val players: List[Player],
-                                       @Named("stack") private val stack: List[Card],
-                                       @Named("trump") private val trump: Option[Card],
-                                       @Named("amount") private val amount: Int,
-                                       @Named("turn") private val turn: Turn,
-                                       @Named("defended") private val defended: List[Card],
-                                       @Named("undefended") private val undefended: List[Card],
-                                       @Named("used") private val used: List[Card],
-                                       @Named("denied") private val denied: Boolean,
-                                       @Named("passed") private val passed: Option[Player]
+class ImmutableStatusBuilder @Inject()(private val players: List[Player],
+                                       private val stack: List[Card],
+                                       private val trump: Option[Card],
+                                       private val amount: Int,
+                                       private val turn: Turn,
+                                       private val defended: List[Card],
+                                       private val undefended: List[Card],
+                                       private val used: List[Card],
+                                       private val denied: Boolean,
+                                       private val passed: Option[Player]
                             ) extends StatusBuilder {
 
-  def this() = this(Nil, Nil, None, 0, Turn.Watching, Nil, Nil, Nil, false, None)
+  override def this() = this(Nil, Nil, None, 0, Turn.Uninitialized, Nil, Nil, Nil, false, None)
 
   override def setStatus(status: Status): StatusBuilder =
     ImmutableStatusBuilder(status.players, status.stack, status.trump, status.amount, status.turn, status.defended, status.undefended, status.used, status.denied, status.passed)

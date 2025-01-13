@@ -34,6 +34,8 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
       icons.add(new Image("file:src/main/resources/durak_logo.png"))
     }
 
+    stage.setOnCloseRequest(_ => System.exit(0))
+
     initialize()
   }
 
@@ -66,18 +68,7 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
     val errorLabel = new Label
     val errorVBox = createErrorVBox(errorLabel)
 
-    val toolBar = new ToolBar {
-      visible = controllable
-      managed = controllable
-      items = List(
-        new Button("Laden") {
-          onAction = _ => controller.load()
-        },
-        new Button("Speichern") {
-          onAction = _ => controller.save()
-        }
-      )
-    }
+    val toolBar = createToolBar
 
     stage.scene = new Scene {
       root = new BorderPane() {
@@ -149,7 +140,6 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
         top = toolBar
       }
     }
-    stage.centerOnScreen()
   }
 
   def createNameTextFields(amount: Int, attackingComboBox: ComboBox[String], namesVBox: VBox): List[TextField] = {
@@ -212,28 +202,10 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
 
         right = getRoundVBox(controller.status.trump.get, controller.status.stack, controller.status.players)
 
-        top = new ToolBar {
-          visible = controllable
-          managed = controllable
-          items = List(
-            new Button("Rückgängig machen") {
-              onAction = _ => controller.undo()
-            },
-            new Button("Wiederherstellen") {
-              onAction = _ => controller.redo()
-            },
-            new Button("Laden") {
-              onAction = _ => controller.load()
-            },
-            new Button("Speichern") {
-              onAction = _ => controller.save()
-            }
-          )
-        }
+        top = createToolBar
 
       }
     }
-    stage.centerOnScreen()
   }
 
   def deny(): Unit = {
@@ -262,6 +234,25 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
     }
 
     false
+  }
+
+  def createToolBar: ToolBar = new ToolBar {
+    visible = controllable
+    managed = controllable
+    items = List(
+      new Button("Rückgängig machen") {
+        onAction = _ => controller.undo()
+      },
+      new Button("Wiederherstellen") {
+        onAction = _ => controller.redo()
+      },
+      new Button("Laden") {
+        onAction = _ => controller.load()
+      },
+      new Button("Speichern") {
+        onAction = _ => controller.save()
+      }
+    )
   }
 
   def createCardsHBox(cards: List[SelectableCard], selectable: Boolean): HBox = {

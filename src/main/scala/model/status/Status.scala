@@ -60,12 +60,12 @@ object Status {
       (elem \ "players" \ "player").map(Player.fromXml).toList,
       (elem \ "stack" \ "card").map(Card.fromXml).toList,
       (elem \ "trump" \ "card").headOption.map(Card.fromXml),
-      (elem \ "amount").text.toInt,
-      Turn.valueOf((elem \ "turn").text),
+      (elem \ "amount").text.trim.toInt,
+      Turn.valueOf((elem \ "turn").text.trim),
       (elem \ "defended" \ "card").map(Card.fromXml).toList,
       (elem \ "undefended" \ "card").map(Card.fromXml).toList,
       (elem \ "used" \ "card").map(Card.fromXml).toList,
-      (elem \ "denied").text.toBoolean,
+      (elem \ "denied").text.trim.toBoolean,
       (elem \ "passed" \ "player").headOption.map(Player.fromXml)
     )
   }

@@ -15,7 +15,7 @@ class DefendCommand(controller: BaseController, used: Card, undefended: Card) ex
 
     val updated = defending.copy(cards = defending.cards.filterNot(_ == used))
 
-    val statusBuilder = injector.getInstance(classOf[StatusBuilder])
+    var statusBuilder = injector.getInstance(classOf[StatusBuilder])
       .setStatus(controller.status)
       .setPlayers(controller.updatePlayers(controller.status.players, defending, updated))
       .setUndefended(controller.status.undefended.filterNot(_ == undefended))
@@ -24,7 +24,7 @@ class DefendCommand(controller: BaseController, used: Card, undefended: Card) ex
       .setTurn(Turn.FirstlyAttacking)
 
     if (controller.hasFinished(updated, statusBuilder)) {
-      controller.finish(updated, statusBuilder)
+      statusBuilder = controller.finish(updated, statusBuilder)
     }
 
     controller.status = statusBuilder.status

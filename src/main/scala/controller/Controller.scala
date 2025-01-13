@@ -9,7 +9,7 @@ import scala.util.Random
 
 trait Controller extends Observable {
 
-  def status: Status
+  var status: Status
 
   def initialize(amount: Int, names: List[String]): Unit
 
@@ -38,6 +38,8 @@ trait Controller extends Observable {
   def load(): Unit
 
   def save(): Unit
+  
+  def isOver: Boolean
 
   def unbind(): Unit
 }

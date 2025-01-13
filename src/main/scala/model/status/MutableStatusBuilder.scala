@@ -1,19 +1,19 @@
 package model.status
 
-import com.google.inject.Inject
-import com.google.inject.name.Named
 import model.{Card, Player, Turn}
 
-class MutableStatusBuilder @Inject()(@Named("players") private var players: List[Player],
-                                     @Named("stack") private var stack: List[Card],
-                                     @Named("trump") private var trump: Option[Card],
-                                     @Named("amount") private var amount: Int,
-                                     @Named("turn") private var turn: Turn,
-                                     @Named("defended") private var defended: List[Card],
-                                     @Named("undefended") private var undefended: List[Card],
-                                     @Named("used") private var used: List[Card],
-                                     @Named("denied") private var denied: Boolean,
-                                     @Named("passed") private var passed: Option[Player]) extends StatusBuilder {
+class MutableStatusBuilder(private var players: List[Player],
+                           private var stack: List[Card],
+                           private var trump: Option[Card],
+                           private var amount: Int,
+                           private var turn: Turn,
+                           private var defended: List[Card],
+                           private var undefended: List[Card],
+                           private var used: List[Card],
+                           private var denied: Boolean,
+                           private var passed: Option[Player]) extends StatusBuilder {
+
+  override def this() = this(Nil, Nil, None, 0, Turn.Uninitialized, Nil, Nil, Nil, false, None)
 
   override def setStatus(status: Status): StatusBuilder = {
     players = status.players
