@@ -25,7 +25,7 @@ class CardSpec extends AnyWordSpec with Matchers {
     "toString" should {
       "return the card's rank and suit" in {
         val card = Card(Rank.Ace, Suit.Spades)
- 
+
         card.toString should be(
           """┌─────┐
             |│A    │
@@ -34,7 +34,7 @@ class CardSpec extends AnyWordSpec with Matchers {
             |└─────┘""".stripMargin)
       }
     }
-    
+
     "getDeck" should {
       "return a shuffled deck of cards" in {
         val deck = Card.getDeck

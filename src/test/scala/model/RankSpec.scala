@@ -11,7 +11,7 @@ class RankSpec extends AnyWordSpec with Matchers {
         Rank.Ace.toString should be(Rank.Ace.display)
       }
     }
-    
+
     "getBiggestRankLength" should {
       "return the biggest rank display length" in {
         Rank.getBiggestRankLength should be(2)

@@ -1,6 +1,5 @@
 package controller.base
 
-import com.google.inject.Guice
 import model.*
 import model.io.JsonFileIo
 import model.status.{MutableStatusBuilder, Status, StatusBuilder}
@@ -13,7 +12,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
     "chooseAttacking(List[Player], Int)" should {
       "set one player to FirstlyAttacking and the other to Defending when there are two players" in {
         val controller = BaseController(JsonFileIo())
-        
+
         val updatedPlayers = controller.chooseAttacking(List(
           Player("Player1", Nil, Turn.Watching),
           Player("Player2", Nil, Turn.Watching),
@@ -25,7 +24,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
       "ignore finished players" in {
         val controller = BaseController(JsonFileIo())
-        
+
         val updatedPlayers = controller.chooseAttacking(List(
           Player("Player1", Nil, Turn.Watching),
           Player("Player2", Nil, Turn.Finished),
@@ -63,7 +62,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
           Player("Player4", Nil, Turn.FirstlyAttacking),
           Player("Player5", Nil, Turn.SecondlyAttacking),
         )
-        
+
         val updatedPlayers = controller.chooseAttacking(players, 2)
 
         updatedPlayers(3).turn should be(Turn.Watching)
@@ -74,9 +73,9 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
     "chooseNextAttacking(List[Player], Player)" should {
       "set the player previous in the list to the one specified to FirstlyAttacking" in {
         val controller = BaseController(JsonFileIo())
-        
+
         val previous = Player("Player3", Nil, Turn.Watching)
-        
+
         val updatedPlayers = controller.chooseNextAttacking(List(Player("Player1", Nil, Turn.Watching), Player("Player2", Nil, Turn.Watching), previous), previous)
 
         updatedPlayers(1).turn should be(Turn.FirstlyAttacking)
@@ -147,7 +146,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
     "hasFinished(Player, StatusBuilder)" should {
       "return false if the stack is not empty" in {
         val controller = BaseController(JsonFileIo())
-        
+
         val finished = Player("Player1", Nil, Turn.Defending)
 
         val statusBuilder = MutableStatusBuilder()
@@ -158,20 +157,20 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
       "return false if the player still has cards" in {
         val controller = BaseController(JsonFileIo())
-        
+
         val finished = Player("Player1", List(Card(Rank.Ace, Suit.Hearts)), Turn.Defending)
-        
+
         controller.hasFinished(finished, MutableStatusBuilder()) should be(false)
       }
 
       "return false if the player is Defending and there are undefended cards" in {
         val controller = BaseController(JsonFileIo())
-        
+
         val finished = Player("Player1", Nil, Turn.Defending)
 
         val statusBuilder = MutableStatusBuilder()
           .setUndefended(List(Card(Rank.Three, Suit.Clubs)))
-        
+
         controller.hasFinished(finished, statusBuilder) should be(false)
       }
 
@@ -185,17 +184,17 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
       "return false if the player is Watching" in {
         val controller = BaseController(JsonFileIo())
-        
+
         val finished = Player("Player1", Nil, Turn.Watching)
-        
+
         controller.hasFinished(finished, MutableStatusBuilder()) should be(false)
       }
 
       "return true if the player is either FirstlyAttacking or SecondlyAttacking, has no cards and the stack is empty" in {
         val controller = BaseController(JsonFileIo())
-        
+
         val finished = Player("Player1", Nil, Turn.FirstlyAttacking)
-        
+
         controller.hasFinished(finished, MutableStatusBuilder()) should be(true)
       }
 
