@@ -27,7 +27,7 @@ class JsonFileIo extends FileIo {
   override def save(status: Status): Try[Unit] = {
     Try {
       Using(new PrintWriter(FileName)) { writer =>
-        writer.write(Json.stringify(Json.toJson(status)))
+        writer.write(Json.prettyPrint(Json.toJson(status)))
       }
     }
   }
