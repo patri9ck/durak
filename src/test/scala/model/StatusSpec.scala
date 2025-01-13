@@ -7,6 +7,6 @@ import org.scalatest.wordspec.AnyWordSpec
 class StatusSpec extends AnyWordSpec with Matchers {
 
   "Status" should {
-  
+
   }
 }

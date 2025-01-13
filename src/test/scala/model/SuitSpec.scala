@@ -4,7 +4,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class SuitSpec extends AnyWordSpec with Matchers {
-  
+
   "Suit" should {
     "toString" should {
       "return the suit's display" in {

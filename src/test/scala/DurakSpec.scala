@@ -5,7 +5,7 @@ class DurakSpec extends AnyWordSpec with Matchers {
 
   "Durak" should {
     "main()" should {
-    
+
     }
   }
 }
