@@ -32,6 +32,10 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
     stage = new JFXApp3.PrimaryStage {
       title = "Durak"
       icons.add(new Image("file:src/main/resources/durak_logo.png"))
+      onCloseRequest = _ => {
+        Platform.exit()
+        System.exit(0)
+      }
     }
 
     stage.setOnCloseRequest(_ => System.exit(0))
