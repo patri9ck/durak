@@ -33,3 +33,6 @@ libraryDependencies ++= {
 
 coverageEnabled := true
 coverallsService := Some(TravisPro)
+
+
+
