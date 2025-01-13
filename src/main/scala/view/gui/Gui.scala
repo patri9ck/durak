@@ -71,18 +71,7 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
     })
 
 
-    val toolBar = new ToolBar {
-      visible = controllable
-      managed = controllable
-      items = List(
-        new Button("Laden") {
-          onAction = _ => controller.load()
-        },
-        new Button("Speichern") {
-          onAction = _ => controller.save()
-        }
-      )
-    }
+    val toolBar = createToolBar
 
     val errorLabel = new Label {
       style = "-fx-font-size: 8pt; -fx-font-weight: bold; -fx-text-fill: #dfdfdf"
@@ -277,19 +266,26 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
           },
           new RowConstraints {
             vgrow = Priority.Always
+          },
+          new RowConstraints {
+            vgrow = Priority.Always
           }
         )
+        add(new HBox {
+          padding = Insets(0)
+          children = createToolBar
+        }, 0, 0)
 
         // Add components to the grid
         add(new HBox {
           padding = Insets(40, 0, 0, 0)
           children = cardImages
           alignment = Pos.Center
-        }, 0, 0) // Top-left cell
+        }, 0, 1) // Top-left cell
 
-        add(createBoxForDefendingCards(controller.status.turn, undefended, undefended.nonEmpty), 0, 1) // Middle1-left cell
+        add(createBoxForDefendingCards(controller.status.turn, undefended, undefended.nonEmpty), 0, 2) // Middle1-left cell
 
-        add(createBoxForAttackingCards(controller.status.turn, used), 0, 2) // Middle2-left cell
+        add(createBoxForAttackingCards(controller.status.turn, used), 0, 3) // Middle2-left cell
 
         add(new VBox {
           spacing = 20
@@ -297,14 +293,14 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
             createBoxForPlayerCards(controller.status.turn, controller.current.get.name, own, own.nonEmpty),
             createButtons(turn, controller.current.get.name, own, used, undefended, defended, deny, attack, errorLabel)
           )
-        }, 0, 3) // Bottom-left cell
+        }, 0, 4) // Bottom-left cell
 
         add(new HBox {
           children = List(
           )
         }, 1, 0) // Top-right cell
 
-        add(getInfoVBox(controller.status.trump.get, controller.status.stack, controller.status.players), 1, 1, 1, 2) // Right column spanning middle two rows
+        add(getInfoVBox(controller.status.trump.get, controller.status.stack, controller.status.players), 1, 1, 1, 3) // Right column spanning middle two rows
 
         add(new VBox {
           children = List(
@@ -314,7 +310,7 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
             errorLabel
           )
           alignment = Pos.Center
-        }, 1, 3) // bottom-right cell
+        }, 1, 4) // bottom-right cell
       }
     }
     stage.centerOnScreen()
@@ -537,5 +533,26 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
     } else {
       HBox()
     }
+  }
+
+  def createToolBar: ToolBar = new ToolBar {
+    visible = controllable
+    managed = controllable
+    background = null
+    style = "-fx-background-color: transparent;"
+    items = List(
+      new Button("Rückgängig machen") {
+        onAction = _ => controller.undo()
+      },
+      new Button("Wiederherstellen") {
+        onAction = _ => controller.redo()
+      },
+      new Button("Laden") {
+        onAction = _ => controller.load()
+      },
+      new Button("Speichern") {
+        onAction = _ => controller.save()
+      }
+    )
   }
 }
