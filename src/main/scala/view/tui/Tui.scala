@@ -1,7 +1,6 @@
 package view.tui
 
 import com.google.inject.Inject
-import com.google.inject.name.Named
 import controller.Controller
 import model.*
 import util.Observer
@@ -9,7 +8,10 @@ import view.tui.runner.Runner
 
 import scala.collection.mutable.ListBuffer
 
-class Tui @Inject()(val controller: Controller, val runner: Runner, @Named("seconds") val seconds: Int, @Named("lines") val lines: Int) extends Observer {
+class Tui(val controller: Controller, val runner: Runner, val seconds: Int, val lines: Int) extends Observer {
+
+  @Inject()
+  def this(controller: Controller, runner: Runner) = this(controller, runner, 3, 100)
 
   controller.add(this)
 

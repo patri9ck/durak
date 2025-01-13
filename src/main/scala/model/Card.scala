@@ -52,8 +52,8 @@ object Card {
 
   def fromXml(node: Node): Card = {
     Card(
-      Rank.valueOf((node \ "rank").text),
-      Suit.valueOf((node \ "suit").text)
+      Rank.valueOf((node \ "rank").text.trim),
+      Suit.valueOf((node \ "suit").text.trim)
     )
   }
 }

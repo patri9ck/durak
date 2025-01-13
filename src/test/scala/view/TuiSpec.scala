@@ -12,42 +12,9 @@ import scala.io.StdIn
 
 class TuiSpec extends AnyWordSpec with Matchers {
 
-  class MockController extends Controller {
-
-    var status: Status = status.Status(List(Player("Mock", List(Card(Rank.Ace, Suit.Hearts)), Turn.FirstlyAttacking)), Nil, Some(Card(Rank.Ace, Suit.Spades)), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
-
-    override def initialize(amount: Int, names: List[String]): Unit = {}
-    
-    override def byTurn(turn: Turn): Option[Player] =
-      if (status.turn == turn) Some(status.players.head) else None
-
-    override def current: Option[Player] = Some(status.players.head)
-
-    override def chooseAttacking(player: Player): Unit = {}
-
-    override def chooseAttacking(): Unit = {}
-
-    override def pickUp(): Unit = {}
-
-    override def attack(card: Card): Unit = {}
-
-    override def defend(used: Card, undefended: Card): Unit = {}
-
-    override def deny(): Unit = {}
-
-    override def canAttack(card: Card): Boolean = true
-
-    override def canDefend(used: Card, undefended: Card): Boolean = true
-    
-    override def undo(): Unit = {}
-
-    override def redo(): Unit = {}
-  }
-
   "Tui" should {
     "displayPlayerCards(List[Player])" should {
       "display player cards" in {
-        val mockController = new MockController()
         val tui = new Tui(mockController, false)
         tui.countdown = () => {}
 

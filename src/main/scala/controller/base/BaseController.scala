@@ -65,7 +65,7 @@ class BaseController @Inject() (val fileIo: FileIo) extends Controller {
     }
   }
 
-  def drawFromStack(statusBuilder: StatusBuilder): Unit = {
+  def drawFromStack(statusBuilder: StatusBuilder): StatusBuilder = {
     val start = statusBuilder.getPassed.orElse(statusBuilder.byTurn(Turn.FirstlyAttacking)).map(statusBuilder.getPlayers.indexOf).get
 
     var updatedStack = statusBuilder.getStack
@@ -91,6 +91,10 @@ class BaseController @Inject() (val fileIo: FileIo) extends Controller {
   }
 
   def hasFinished(finished: Player, statusBuilder: StatusBuilder): Boolean = {
+    if (finished.turn == Turn.Finished) {
+      return true
+    }
+    
     if (finished.turn == Turn.FirstlyAttacking || finished.turn == Turn.SecondlyAttacking) {
       return statusBuilder.getStack.isEmpty && finished.cards.isEmpty
     }
@@ -99,23 +103,25 @@ class BaseController @Inject() (val fileIo: FileIo) extends Controller {
       return statusBuilder.getStack.isEmpty && statusBuilder.getUndefended.isEmpty && finished.cards.isEmpty
     }
 
-    true
+    false
   }
 
-  def finish(finished: Player, statusBuilder: StatusBuilder): Unit = {
+  def finish(finished: Player, statusBuilder: StatusBuilder): StatusBuilder = {
     val updated = finished.copy(turn = Turn.Finished)
 
-    statusBuilder.setPlayers(updatePlayers(statusBuilder.getPlayers, finished, updated))
+    var updatedStatusBuilder = statusBuilder.setPlayers(updatePlayers(statusBuilder.getPlayers, finished, updated))
 
     if (finished.turn == Turn.Defending) {
-      statusBuilder
-        .setPlayers(chooseNextAttacking(statusBuilder.getPlayers, updated))
+      updatedStatusBuilder = statusBuilder
+        .setPlayers(chooseNextAttacking(updatedStatusBuilder.getPlayers, updated))
         .resetRound
     } else if (finished.turn == Turn.FirstlyAttacking && statusBuilder.byTurn(Turn.SecondlyAttacking).isEmpty || finished.turn == Turn.SecondlyAttacking) {
-      statusBuilder.setTurn(Turn.Defending)
+      updatedStatusBuilder = statusBuilder.setTurn(Turn.Defending)
     } else {
-      statusBuilder.setTurn(Turn.SecondlyAttacking)
+      updatedStatusBuilder = statusBuilder.setTurn(Turn.SecondlyAttacking)
     }
+    
+    updatedStatusBuilder
   }
 
   
@@ -202,6 +208,8 @@ class BaseController @Inject() (val fileIo: FileIo) extends Controller {
 
     notifySubscribers()
   }
+  
+  override def isOver: Boolean = status.players.count(_.turn != Turn.Finished) == 1
 
   override def unbind(): Unit = {
     fileIo.unbind()
