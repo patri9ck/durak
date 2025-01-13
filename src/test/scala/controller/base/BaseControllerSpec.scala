@@ -4,7 +4,6 @@ import com.google.inject.Guice
 import model.*
 import model.io.JsonFileIo
 import model.status.{MutableStatusBuilder, Status, StatusBuilder}
-import module.DurakModule
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -171,7 +170,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
         val finished = Player("Player1", Nil, Turn.Defending)
 
         val statusBuilder = MutableStatusBuilder()
-          .setUndefended(List(Card(Rank.Three, Suit.Clubs), Card(Rank.Ten, Suit.Spades)))
+          .setUndefended(List(Card(Rank.Three, Suit.Clubs)))
         
         controller.hasFinished(finished, statusBuilder) should be(false)
       }
@@ -201,73 +200,61 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
       }
 
       "return true if the player is Defending, has no cards, the stack is empty and there are no undefended cards" in {
-        val player = Player("Player1", Nil, Turn.Defending)
-
-        controller.status = model.status.Status(List(player), Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.Watching, Nil, Nil, Nil, false, None)
         val controller = BaseController(JsonFileIo())
 
-        controller.hasFinished(player, MutableStatusBuilder()) should be(true)
+        val finished = Player("Player1", Nil, Turn.Defending)
+
+        controller.hasFinished(finished, MutableStatusBuilder()) should be(true)
       }
 
     }
 
     "finish(Player)" should {
       "set the finished player to Finished" in {
-        val finished = Player("Player1", Nil, Turn.Defending)
-
-        controller.status = model.status.Status(List(finished,
-          Player("Player2", Nil, Turn.FirstlyAttacking)), Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Hearts)), Nil, Nil, false, None)
-        val statusBuilder = MutableStatusBuilder()
         val controller = BaseController(JsonFileIo())
 
-        controller.finish(finished, statusBuilder)
+        val finished = Player("Player1", Nil, Turn.Defending)
+
+        val statusBuilder = controller.finish(finished, MutableStatusBuilder()
+          .setPlayers(List(finished, Player("Player2", Nil, Turn.FirstlyAttacking))))
 
         statusBuilder.getPlayers.head.turn should be(Turn.Finished)
       }
 
       "set the next turn to FirstlyAttacking and reset the defended, undefended and used List if the player was Defending" in {
-        val defending = Player("Player1", Nil, Turn.Defending)
-
-        controller.status = model.status.Status(List(defending,
-          Player("Player2", Nil, Turn.FirstlyAttacking),
-          Player("Player3", Nil, Turn.SecondlyAttacking)), Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Hearts)), Nil, Nil, false, None)
-        val statusBuilder = MutableStatusBuilder()
         val controller = BaseController(JsonFileIo())
 
-        controller.finish(defending, statusBuilder)
+        val finished = Player("Player1", Nil, Turn.Defending)
+
+        val statusBuilder = controller.finish(finished, MutableStatusBuilder()
+          .setPlayers(List(finished, Player("Player2", Nil, Turn.FirstlyAttacking)))
+          .setDefended(List(Card(Rank.Ace, Suit.Hearts)))
+          .setUndefended(List(Card(Rank.Two, Suit.Hearts)))
+          .setUsed(List(Card(Rank.Three, Suit.Hearts))))
 
         statusBuilder.getTurn should be(Turn.FirstlyAttacking)
-        statusBuilder.getPlayers.last.turn should be(Turn.FirstlyAttacking)
         statusBuilder.getDefended should be(empty)
         statusBuilder.getUndefended should be(empty)
         statusBuilder.getUsed should be(empty)
       }
 
       "set the next turn to Defending if the player was FirstlyAttacking and there is no SecondlyAttacking player or if the player was SecondlyAttacking" in {
-        val attacking = Player("Player1", Nil, Turn.FirstlyAttacking)
-
-        controller.status = model.status.Status(List(attacking,
-          Player("Player2", Nil, Turn.Defending)), Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Hearts)), Nil, Nil, false, None)
-        val statusBuilder = MutableStatusBuilder()
         val controller = BaseController(JsonFileIo())
 
-        controller.finish(attacking, statusBuilder)
+        val finished = Player("Player1", Nil, Turn.FirstlyAttacking)
+
+        val statusBuilder = controller.finish(finished, MutableStatusBuilder())
 
         statusBuilder.getTurn should be(Turn.Defending)
       }
 
       "set the next turn to SecondlyAttacking if the player was FirstlyAttacking and there is a SecondlyAttacking player" in {
-        val attacking = Player("Player1", Nil, Turn.FirstlyAttacking)
-
         val controller = BaseController(JsonFileIo())
 
-        controller.status = model.status.Status(List(attacking,
-          Player("Player3", Nil, Turn.SecondlyAttacking),
-          Player("Player3", Nil, Turn.Defending)), Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Hearts)), Nil, Nil, false, None)
+        val finished = Player("Player1", Nil, Turn.FirstlyAttacking)
 
-        val statusBuilder = MutableStatusBuilder()
-
-        controller.finish(attacking, statusBuilder)
+        val statusBuilder = controller.finish(finished, MutableStatusBuilder()
+          .setPlayers(List(finished, Player("Player2", Nil, Turn.SecondlyAttacking))))
 
         statusBuilder.getTurn should be(Turn.SecondlyAttacking)
       }
@@ -279,7 +266,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
         val card = Card(Rank.Ace, Suit.Spades)
 
-        controller.status = model.status.Status(Nil, Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
+        controller.status = Status(Nil, Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
 
         controller.canAttack(card) should be(true)
       }
@@ -289,7 +276,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
         val card = Card(Rank.Ace, Suit.Spades)
 
-        controller.status = model.status.Status(Nil, Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.FirstlyAttacking, Nil, Nil, List(card), false, None)
+        controller.status = Status(Nil, Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.FirstlyAttacking, Nil, Nil, List(card), false, None)
 
         controller.canAttack(card) should be(true)
       }
@@ -299,7 +286,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
         val card = Card(Rank.Ace, Suit.Spades)
 
-        controller.status = model.status.Status(Nil, Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.FirstlyAttacking, List(card), Nil, Nil, false, None)
+        controller.status = Status(Nil, Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.FirstlyAttacking, List(card), Nil, Nil, false, None)
 
         controller.canAttack(card) should be(true)
       }
@@ -309,7 +296,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
         val card = Card(Rank.Ace, Suit.Spades)
 
-        controller.status = model.status.Status(Nil, Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.FirstlyAttacking, Nil, List(card), Nil, false, None)
+        controller.status = Status(Nil, Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.FirstlyAttacking, Nil, List(card), Nil, false, None)
 
         controller.canAttack(card) should be(true)
       }
@@ -337,17 +324,23 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
       "return true if the suit of the first card is the trump suit and the second card is not" in {
         val controller = BaseController(JsonFileIo())
 
+        controller.status = Status(trump = Some(Card(Rank.Ten, Suit.Spades)))
+
         controller.canDefend(Card(Rank.Three, Suit.Spades), Card(Rank.King, Suit.Hearts)) should be(true)
       }
 
       "return true if the suit of both the first and the second card is the trump suit and the first card beats the second" in {
         val controller = BaseController(JsonFileIo())
 
+        controller.status = Status(trump = Some(Card(Rank.Ten, Suit.Spades)))
+
         controller.canDefend(Card(Rank.Ace, Suit.Spades), Card(Rank.King, Suit.Spades)) should be(true)
       }
 
       "return false if the first card is not a trump and lower than the second" in {
         val controller = BaseController(JsonFileIo())
+
+        controller.status = Status(trump = Some(Card(Rank.Ten, Suit.Spades)))
 
         controller.canDefend(Card(Rank.Three, Suit.Hearts), Card(Rank.King, Suit.Hearts)) should be(false)
       }
@@ -361,7 +354,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
       "return the player with the current turn" in {
         val controller = BaseController(JsonFileIo())
 
-        controller.status = model.status.Status(List(Player("Player1", Nil, Turn.FirstlyAttacking), Player("Player2", Nil, Turn.Defending)), Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
+        controller.status = Status(List(Player("Player1", Nil, Turn.FirstlyAttacking), Player("Player2", Nil, Turn.Defending)), Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
 
         controller.current should be(Some(controller.status.players.head))
       }
@@ -371,7 +364,7 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
       "find a player by his turn" in {
         val controller = BaseController(JsonFileIo())
 
-        controller.status = model.status.Status(List(Player("Player1", Nil, Turn.FirstlyAttacking), Player("Player2", Nil, Turn.Defending),), Nil, Some(Card(Rank.Ten, Suit.Spades)), 3, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
+        controller.status = Status(List(Player("Player1", Nil, Turn.FirstlyAttacking), Player("Player2", Nil, Turn.Defending)), Nil, Some(Card(Rank.Ten, Suit.Spades)), 3, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
 
         controller.byTurn(Turn.FirstlyAttacking) should be(Some(controller.status.players.head))
       }

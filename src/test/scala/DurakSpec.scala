@@ -4,7 +4,7 @@ import org.scalatest.wordspec.AnyWordSpec
 class DurakSpec extends AnyWordSpec with Matchers {
 
   "Durak" should {
-    "main(Boolean)" should {
+    "main()" should {
     
     }
   }
