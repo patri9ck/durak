@@ -187,6 +187,25 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
     }
   }
 
+  def createToolBar: ToolBar = new ToolBar {
+    visible = controllable
+    managed = controllable
+    items = List(
+      new Button("Rückgängig machen") {
+        onAction = _ => controller.undo()
+      },
+      new Button("Wiederherstellen") {
+        onAction = _ => controller.redo()
+      },
+      new Button("Laden") {
+        onAction = _ => controller.load()
+      },
+      new Button("Speichern") {
+        onAction = _ => controller.save()
+      }
+    )
+  }
+
   def continue(): Unit = {
     val turn = controller.status.turn
     val undefended = Card.toSelectableCards(controller.status.undefended)
@@ -238,25 +257,6 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
     }
 
     false
-  }
-
-  def createToolBar: ToolBar = new ToolBar {
-    visible = controllable
-    managed = controllable
-    items = List(
-      new Button("Rückgängig machen") {
-        onAction = _ => controller.undo()
-      },
-      new Button("Wiederherstellen") {
-        onAction = _ => controller.redo()
-      },
-      new Button("Laden") {
-        onAction = _ => controller.load()
-      },
-      new Button("Speichern") {
-        onAction = _ => controller.save()
-      }
-    )
   }
 
   def createCardsHBox(cards: List[SelectableCard], selectable: Boolean): HBox = {

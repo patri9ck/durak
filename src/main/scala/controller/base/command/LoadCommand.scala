@@ -2,6 +2,7 @@ package controller.base.command
 
 import controller.base.BaseController
 import model.io.FileIo
+
 import scala.util.{Failure, Success}
 
 class LoadCommand(controller: BaseController, fileIo: FileIo) extends MementoCommand(controller) {

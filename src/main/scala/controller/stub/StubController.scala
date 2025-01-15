@@ -5,7 +5,7 @@ import model.status.Status
 import model.{Card, Player, Turn}
 
 class StubController extends Controller {
-  
+
   var status: Status = Status(Nil, Nil, None, 0, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
 
   override def initialize(amount: Int, names: List[String]): Unit = {}
@@ -35,7 +35,7 @@ class StubController extends Controller {
   override def save(): Unit = {}
 
   override def load(): Unit = {}
-  
+
   override def isOver: Boolean = false
 
   override def unbind(): Unit = {}

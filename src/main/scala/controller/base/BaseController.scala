@@ -12,11 +12,72 @@ import scala.annotation.tailrec
 import scala.util.Random
 
 @Singleton
-class BaseController @Inject() (val fileIo: FileIo) extends Controller {
-
-  var status: Status = Status()
+class BaseController @Inject()(val fileIo: FileIo) extends Controller {
 
   private val undoManager = UndoManager()
+  var status: Status = Status()
+
+  def drawFromStack(statusBuilder: StatusBuilder): StatusBuilder = {
+    val start = statusBuilder.getPassed.orElse(statusBuilder.byTurn(Turn.FirstlyAttacking)).map(statusBuilder.getPlayers.indexOf).get
+
+    var updatedStack = statusBuilder.getStack
+    var updatedPlayers = statusBuilder.getPlayers
+
+    for (step <- statusBuilder.getPlayers.indices) {
+      val index = (start - step + statusBuilder.getPlayers.size) % statusBuilder.getPlayers.size
+      val player = statusBuilder.getPlayers(index)
+      val amount = statusBuilder.getAmount - player.cards.length
+
+      if (player.turn != Turn.Watching && amount > 0) {
+        val (draw, remaining) = updatedStack.splitAt(amount)
+
+        updatedStack = remaining
+        updatedPlayers = updatedPlayers.updated(index, player.copy(cards = player.cards ++ draw))
+      }
+    }
+
+    statusBuilder
+      .setStack(updatedStack)
+      .setPlayers(updatedPlayers)
+      .removePassed()
+  }
+
+  def hasFinished(finished: Player, statusBuilder: StatusBuilder): Boolean = {
+    if (finished.turn == Turn.Finished) {
+      return true
+    }
+
+    if (finished.turn == Turn.FirstlyAttacking || finished.turn == Turn.SecondlyAttacking) {
+      return statusBuilder.getStack.isEmpty && finished.cards.isEmpty
+    }
+
+    if (finished.turn == Turn.Defending) {
+      return statusBuilder.getStack.isEmpty && statusBuilder.getUndefended.isEmpty && finished.cards.isEmpty
+    }
+
+    false
+  }
+
+  def finish(finished: Player, statusBuilder: StatusBuilder): StatusBuilder = {
+    val updated = finished.copy(turn = Turn.Finished)
+
+    var updatedStatusBuilder = statusBuilder.setPlayers(updatePlayers(statusBuilder.getPlayers, finished, updated))
+
+    if (finished.turn == Turn.Defending) {
+      updatedStatusBuilder = statusBuilder
+        .setPlayers(chooseNextAttacking(updatedStatusBuilder.getPlayers, updated))
+        .resetRound
+    } else if (finished.turn == Turn.FirstlyAttacking && statusBuilder.byTurn(Turn.SecondlyAttacking).isEmpty || finished.turn == Turn.SecondlyAttacking) {
+      updatedStatusBuilder = statusBuilder.setTurn(Turn.Defending)
+    } else {
+      updatedStatusBuilder = statusBuilder.setTurn(Turn.SecondlyAttacking)
+    }
+
+    updatedStatusBuilder
+  }
+
+  def chooseNextAttacking(players: List[Player], previous: Player): List[Player] =
+    chooseAttacking(players, (players.indexOf(previous) - 1 + players.size) % players.size)
 
   def chooseAttacking(players: List[Player], index: Int): List[Player] = {
     players.zipWithIndex.map { case (player, idx) =>
@@ -52,9 +113,6 @@ class BaseController @Inject() (val fileIo: FileIo) extends Controller {
     }
   }
 
-  def chooseNextAttacking(players: List[Player], previous: Player): List[Player] =
-    chooseAttacking(players, (players.indexOf(previous) - 1 + players.size) % players.size)
-
   def updatePlayers(players: List[Player], old: Player, updated: Player): List[Player] = {
     players.map { player =>
       if (old == player) {
@@ -65,66 +123,6 @@ class BaseController @Inject() (val fileIo: FileIo) extends Controller {
     }
   }
 
-  def drawFromStack(statusBuilder: StatusBuilder): StatusBuilder = {
-    val start = statusBuilder.getPassed.orElse(statusBuilder.byTurn(Turn.FirstlyAttacking)).map(statusBuilder.getPlayers.indexOf).get
-
-    var updatedStack = statusBuilder.getStack
-    var updatedPlayers = statusBuilder.getPlayers
-
-    for (step <- statusBuilder.getPlayers.indices) {
-      val index = (start - step + statusBuilder.getPlayers.size) % statusBuilder.getPlayers.size
-      val player = statusBuilder.getPlayers(index)
-      val amount = statusBuilder.getAmount - player.cards.length
-
-      if (player.turn != Turn.Watching && amount > 0) {
-        val (draw, remaining) = updatedStack.splitAt(amount)
-
-        updatedStack = remaining
-        updatedPlayers = updatedPlayers.updated(index, player.copy(cards = player.cards ++ draw))
-      }
-    }
-
-    statusBuilder
-      .setStack(updatedStack)
-      .setPlayers(updatedPlayers)
-      .removePassed()
-  }
-
-  def hasFinished(finished: Player, statusBuilder: StatusBuilder): Boolean = {
-    if (finished.turn == Turn.Finished) {
-      return true
-    }
-    
-    if (finished.turn == Turn.FirstlyAttacking || finished.turn == Turn.SecondlyAttacking) {
-      return statusBuilder.getStack.isEmpty && finished.cards.isEmpty
-    }
-
-    if (finished.turn == Turn.Defending) {
-      return statusBuilder.getStack.isEmpty && statusBuilder.getUndefended.isEmpty && finished.cards.isEmpty
-    }
-
-    false
-  }
-
-  def finish(finished: Player, statusBuilder: StatusBuilder): StatusBuilder = {
-    val updated = finished.copy(turn = Turn.Finished)
-
-    var updatedStatusBuilder = statusBuilder.setPlayers(updatePlayers(statusBuilder.getPlayers, finished, updated))
-
-    if (finished.turn == Turn.Defending) {
-      updatedStatusBuilder = statusBuilder
-        .setPlayers(chooseNextAttacking(updatedStatusBuilder.getPlayers, updated))
-        .resetRound
-    } else if (finished.turn == Turn.FirstlyAttacking && statusBuilder.byTurn(Turn.SecondlyAttacking).isEmpty || finished.turn == Turn.SecondlyAttacking) {
-      updatedStatusBuilder = statusBuilder.setTurn(Turn.Defending)
-    } else {
-      updatedStatusBuilder = statusBuilder.setTurn(Turn.SecondlyAttacking)
-    }
-    
-    updatedStatusBuilder
-  }
-
-  
   override def initialize(amount: Int, names: List[String]): Unit = {
     initialize(amount, names, Random.shuffle(names).head)
   }
@@ -137,7 +135,7 @@ class BaseController @Inject() (val fileIo: FileIo) extends Controller {
 
   override def deny(): Unit = {
     undoManager.doStep(DenyCommand(this))
-    
+
     notifySubscribers()
   }
 
@@ -159,13 +157,13 @@ class BaseController @Inject() (val fileIo: FileIo) extends Controller {
       || status.defended.exists(_.rank == card.rank)
       || status.undefended.exists(_.rank == card.rank)
   }
-  
+
   override def defend(used: Card, undefended: Card): Unit = {
     undoManager.doStep(DefendCommand(this, used, undefended))
 
     notifySubscribers()
   }
-  
+
   override def canDefend(used: Card, undefended: Card): Boolean = {
     if (used.beats(undefended)) {
       return true
@@ -178,11 +176,11 @@ class BaseController @Inject() (val fileIo: FileIo) extends Controller {
     false
   }
 
+  override def current: Option[Player] = byTurn(status.turn)
+
   override def byTurn(turn: Turn): Option[Player] = {
     status.players.find(_.turn == turn)
   }
-
-  override def current: Option[Player] = byTurn(status.turn)
 
   override def undo(): Unit = {
     undoManager.undoStep()
@@ -208,7 +206,7 @@ class BaseController @Inject() (val fileIo: FileIo) extends Controller {
 
     notifySubscribers()
   }
-  
+
   override def isOver: Boolean = status.players.count(_.turn != Turn.Finished) == 1
 
   override def unbind(): Unit = {
