@@ -4,11 +4,20 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class ObservableSpec extends AnyWordSpec with Matchers {
+  
+  class MockObserver extends Observer {
+    var updated = false
+
+    override def update(): Unit = {
+      updated = true
+    }
+  }
+  
   "Observer" should {
     "add(Observer)" should {
       "add an observer to the list of observers" in {
         val observable = Observable()
-        val observer = StubObserver()
+        val observer = MockObserver()
 
         observable.add(observer)
         observable.notifySubscribers()
@@ -20,7 +29,7 @@ class ObservableSpec extends AnyWordSpec with Matchers {
     "remove(Observer)" should {
       "remove an observer from the list of observers" in {
         val observable = Observable()
-        val observer = StubObserver()
+        val observer = MockObserver()
 
         observable.add(observer)
         observable.remove(observer)
@@ -35,8 +44,8 @@ class ObservableSpec extends AnyWordSpec with Matchers {
     "notifySubscribers()" should {
       "notify all observers" in {
         val observable = Observable()
-        val observer1 = StubObserver()
-        val observer2 = StubObserver()
+        val observer1 = MockObserver()
+        val observer2 = MockObserver()
 
         observable.add(observer1)
         observable.add(observer2)

@@ -25,7 +25,7 @@ class Tui(val controller: Controller, val runner: Runner, val seconds: Int, val 
     runner.run(() => {
       println("Willkommen zu Durak!")
 
-      controllable = askForControllable()
+      controllable = askForControllable
 
       run()
     })
@@ -33,7 +33,7 @@ class Tui(val controller: Controller, val runner: Runner, val seconds: Int, val 
 
   def run(): Unit = {
     if (controllable) {
-      askForStep() match
+      askForStep match
         case Step.Continue => continue()
         case Step.Undo => controller.undo()
         case Step.Redo => controller.redo()
@@ -132,7 +132,7 @@ class Tui(val controller: Controller, val runner: Runner, val seconds: Int, val 
 
   def getCountdownDisplay(seconds: Int): List[String] = (1 to seconds).reverse.map(i => s"$i...").toList
 
-  def askForStep(): Step = {
+  def askForStep: Step = {
     while (true) {
       runner.readLine("[F]ortfahren/[R]ückgängig machen/[W]iederherstellen/[L]aden/[S]peichern? ").toLowerCase match {
         case "f" => return Step.Continue
@@ -211,7 +211,7 @@ class Tui(val controller: Controller, val runner: Runner, val seconds: Int, val 
     s"$player, Deine Karten" :: getOrderedCardsDisplay(player.cards)
   }
 
-  def askForControllable(): Boolean = {
+  def askForControllable: Boolean = {
     while (true) {
       runner.readLine("Soll das Spiel steuerbar sein? (J/N) ").toLowerCase match {
         case "j" => return true
