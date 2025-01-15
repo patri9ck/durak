@@ -16,10 +16,7 @@ jobs:
           distribution: 'adopt'
       - name: Compile
         run: sbt compile
-      - name: Run tests
-        run: sbt test
-
-  coverage:
+  test:
     needs: build
     runs-on: ubuntu-22.04 
     steps:
@@ -29,9 +26,11 @@ jobs:
         with:
           java-version: '11'
           distribution: 'adopt'
+      - name: Run tests
+        run: sbt test
       - name: Generate coverage report
-        run: sbt coverageReport
+        run: sbt clean coverage test
       - name: Upload to Coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        run: sbt coveralls
+        run: sbt coverageReport coveralls
