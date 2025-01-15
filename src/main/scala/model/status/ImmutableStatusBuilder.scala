@@ -13,7 +13,7 @@ class ImmutableStatusBuilder @Inject()(private val players: List[Player],
                                        private val used: List[Card],
                                        private val denied: Boolean,
                                        private val passed: Option[Player]
-                            ) extends StatusBuilder {
+                                      ) extends StatusBuilder {
 
   override def this() = this(Nil, Nil, None, 0, Turn.Uninitialized, Nil, Nil, Nil, false, None)
 

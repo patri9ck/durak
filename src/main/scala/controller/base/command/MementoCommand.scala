@@ -7,9 +7,9 @@ import util.Command
 trait MementoCommand(val controller: BaseController) extends Command {
 
   private var memento: Status = controller.status
-  
+
   def execute(): Unit
-  
+
   override def doStep(): Unit = {
     memento = controller.status
 

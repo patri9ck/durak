@@ -32,7 +32,7 @@ class MutableStatusBuilder(private var players: List[Player],
 
   override def setPlayers(players: List[Player]): StatusBuilder = {
     this.players = players
-  
+
     this
   }
 

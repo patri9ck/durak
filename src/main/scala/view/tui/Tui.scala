@@ -10,12 +10,12 @@ import scala.collection.mutable.ListBuffer
 
 class Tui(val controller: Controller, val runner: Runner, val seconds: Int, val lines: Int) extends Observer {
 
-  @Inject()
-  def this(controller: Controller, runner: Runner) = this(controller, runner, 3, 100)
+  private var controllable: Boolean = false
 
   controller.add(this)
 
-  private var controllable: Boolean = false
+  @Inject()
+  def this(controller: Controller, runner: Runner) = this(controller, runner, 3, 100)
 
   override def update(): Unit = {
     runner.run(run)
@@ -49,7 +49,7 @@ class Tui(val controller: Controller, val runner: Runner, val seconds: Int, val 
       val playerAmount = askForPlayerAmount
       val cardAmount = askForCardAmount(playerAmount)
       val names = askForNames(playerAmount)
-      
+
       askForAttacking(names) match {
         case Some(name) => controller.initialize(cardAmount, names, name)
         case None => controller.initialize(cardAmount, names)
@@ -121,7 +121,7 @@ class Tui(val controller: Controller, val runner: Runner, val seconds: Int, val 
     countdown()
     println(getClearDisplay)
   }
-  
+
   def getClearDisplay: String = "\n" * lines
 
   def getStackDisplay(stack: List[Card]): String = s"Stapel: ${stack.length}"
@@ -182,7 +182,7 @@ class Tui(val controller: Controller, val runner: Runner, val seconds: Int, val 
     if (cards.isEmpty) {
       return Nil
     }
-    
+
 
     getCardsOrder(cards) :: getCardsDisplay(cards)
   }
