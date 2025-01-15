@@ -3,16 +3,16 @@ package model.status
 import com.google.inject.Inject
 import model.{Card, Player, Turn}
 
-class ImmutableStatusBuilder @Inject()(private val players: List[Player],
-                                       private val stack: List[Card],
-                                       private val trump: Option[Card],
-                                       private val amount: Int,
-                                       private val turn: Turn,
-                                       private val defended: List[Card],
-                                       private val undefended: List[Card],
-                                       private val used: List[Card],
-                                       private val denied: Boolean,
-                                       private val passed: Option[Player]
+class ImmutableStatusBuilder (private val players: List[Player] = Nil,
+                                       private val stack: List[Card] = Nil,
+                                       private val trump: Option[Card] = None,
+                                       private val amount: Int = 0,
+                                       private val turn: Turn = Turn.Uninitialized,
+                                       private val defended: List[Card] = Nil,
+                                       private val undefended: List[Card] = Nil,
+                                       private val used: List[Card] = Nil,
+                                       private val denied: Boolean = false,
+                                       private val passed: Option[Player] = None
                                       ) extends StatusBuilder {
 
   override def this() = this(Nil, Nil, None, 0, Turn.Uninitialized, Nil, Nil, Nil, false, None)

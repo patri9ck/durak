@@ -2,16 +2,16 @@ package model.status
 
 import model.{Card, Player, Turn}
 
-class MutableStatusBuilder(private var players: List[Player],
-                           private var stack: List[Card],
-                           private var trump: Option[Card],
-                           private var amount: Int,
-                           private var turn: Turn,
-                           private var defended: List[Card],
-                           private var undefended: List[Card],
-                           private var used: List[Card],
-                           private var denied: Boolean,
-                           private var passed: Option[Player]) extends StatusBuilder {
+class MutableStatusBuilder(private var players: List[Player] = Nil,
+                           private var stack: List[Card] = Nil,
+                           private var trump: Option[Card] = None,
+                           private var amount: Int = 0,
+                           private var turn: Turn = Turn.Uninitialized,
+                           private var defended: List[Card] = Nil,
+                           private var undefended: List[Card] = Nil,
+                           private var used: List[Card] = Nil,
+                           private var denied: Boolean = false,
+                           private var passed: Option[Player] = None) extends StatusBuilder {
 
   override def this() = this(Nil, Nil, None, 0, Turn.Uninitialized, Nil, Nil, Nil, false, None)
 

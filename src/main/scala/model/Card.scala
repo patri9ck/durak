@@ -26,7 +26,7 @@ case class Card(rank: Rank, suit: Suit) {
 
   def getPath: String = getClass.getResource("/cards/" + rank.char + suit.char + ".png").toString
 
-  def toSelectableCard: SelectableCard = SelectableCard(this)
+  def toSelectableCard: SelectableCard = new SelectableCard(this)
 
   def toXml: Elem = {
     <card>
