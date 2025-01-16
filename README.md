@@ -94,8 +94,8 @@ This structure ensures a clear separation of concerns, with the `model` handling
         ```bash
         sbt "runMain view.gui.Gui"
         ```
-**Play the Game**:
-**Follow the instructions in the console or GUI to play the game.**
+4. **Play the Game**:
+5. **Follow the instructions in the console or GUI to play the game.**
 6. **Enjoy the game!**
 7. **To run the tests**:
     ```bash
@@ -103,7 +103,6 @@ This structure ensures a clear separation of concerns, with the `model` handling
     ```
 8. **To generate the coverage report**:
     ```bash
-   
     sbt clean coverage test coverageReport
     ```
 9. **To view the coverage report**:
