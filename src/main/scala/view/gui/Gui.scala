@@ -205,6 +205,38 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
     attackingComboBox.value = "Zufällig"
   }
 
+  def createToolBar: ToolBar = new ToolBar {
+    visible = controllable
+    managed = controllable
+    background = null
+    style = "-fx-background-color: transparent;"
+    items = List(
+      new Button("Rückgängig machen") {
+        onAction = _ => controller.undo()
+      },
+      new Button("Wiederherstellen") {
+        onAction = _ => controller.redo()
+      },
+      new Button("Laden") {
+        onAction = _ => controller.load()
+      },
+      new Button("Speichern") {
+        onAction = _ => controller.save()
+      }
+    )
+  }
+
+  def buttonStyle: String =
+    "-fx-background-image: url('file:src/main/resources/button.png'); " +
+      "-fx-background-size: auto; " +
+      "-fx-background-repeat: no-repeat;" +
+      "-fx-background-position: center;" +
+      "-fx-text-fill: #CCCCCC; -fx-font-size: 16pt; -fx-font-weight: bold;" +
+      "-fx-background-color: transparent;" +
+      "-fx-border-color: transparent;" +
+      "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.75), 10, 0, 0, 4);" +
+      "-fx-font-family: 'Century Schoolbook';"
+
   def continue(): Unit = {
     val turn = controller.status.turn
     val undefended = Card.toSelectableCards(controller.status.undefended)
@@ -386,7 +418,8 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
           children = List(
             new Label(label) {
               style = "-fx-font-size: 16pt; -fx-font-weight: bold; -fx-text-fill: #575a57; -fx-font-family: 'Century Schoolbook';"
-            })},
+            })
+        },
         new HBox {
           padding = Insets(0, 0, 0, 200)
           alignment = Pos.Center
@@ -424,7 +457,9 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
           style = "-fx-font-size: 16pt; -fx-font-weight: bold; -fx-text-fill: #575a57; -fx-font-family: 'Century Schoolbook';"
         },
         new VBox {
-          children = players.map(player => new Label(s"${player.name}"){style = "-fx-font-size: 13pt; -fx-font-weight: bold; -fx-text-fill: #575a57; -fx-font-family: 'Century Schoolbook';"}) //: ${player.turn.name}
+          children = players.map(player => new Label(s"${player.name}") {
+            style = "-fx-font-size: 13pt; -fx-font-weight: bold; -fx-text-fill: #575a57; -fx-font-family: 'Century Schoolbook';"
+          }) //: ${player.turn.name}
           alignment = Pos.Center
         }
       )
@@ -513,30 +548,30 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
     new HBox {
       spacing = 10
       alignment = Pos.Center
-      if(defended.nonEmpty || undefended.nonEmpty) {
-        children = List (
+      if (defended.nonEmpty || undefended.nonEmpty) {
+        children = List(
           new Button("Angreifen") {
-          style = buttonStyle
-          prefWidth = 200
-          prefHeight = 70
-          onAction = _ => {
-            val ownCard = own.find(_.selected)
+            style = buttonStyle
+            prefWidth = 200
+            prefHeight = 70
+            onAction = _ => {
+              val ownCard = own.find(_.selected)
 
-            if (ownCard.isDefined) {
-              if (!chosen.apply(ownCard.get.card)) {
-                errorLabel.text = "Mit dieser Karte kannst du nicht angreifen."
+              if (ownCard.isDefined) {
+                if (!chosen.apply(ownCard.get.card)) {
+                  errorLabel.text = "Mit dieser Karte kannst du nicht angreifen."
+                }
+              } else {
+                errorLabel.text = "Du musst eine Karte zum Angreifen auswählen."
               }
-            } else {
-              errorLabel.text = "Du musst eine Karte zum Angreifen auswählen."
             }
+          },
+          new Button("Aufhören") {
+            style = buttonStyle
+            prefWidth = 200
+            prefHeight = 70
+            onAction = _ => canceled.apply()
           }
-        },
-        new Button("Aufhören") {
-          style = buttonStyle
-          prefWidth = 200
-          prefHeight = 70
-          onAction = _ => canceled.apply()
-        }
         )
       } else {
         children = List(
@@ -570,36 +605,4 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
       HBox()
     }
   }
-
-  def createToolBar: ToolBar = new ToolBar {
-    visible = controllable
-    managed = controllable
-    background = null
-    style = "-fx-background-color: transparent;"
-    items = List(
-      new Button("Rückgängig machen") {
-        onAction = _ => controller.undo()
-      },
-      new Button("Wiederherstellen") {
-        onAction = _ => controller.redo()
-      },
-      new Button("Laden") {
-        onAction = _ => controller.load()
-      },
-      new Button("Speichern") {
-        onAction = _ => controller.save()
-      }
-    )
-  }
-
-  def buttonStyle: String =
-    "-fx-background-image: url('file:src/main/resources/button.png'); " +
-    "-fx-background-size: auto; " +
-    "-fx-background-repeat: no-repeat;" +
-    "-fx-background-position: center;" +
-    "-fx-text-fill: #CCCCCC; -fx-font-size: 16pt; -fx-font-weight: bold;" +
-    "-fx-background-color: transparent;" +
-    "-fx-border-color: transparent;" +
-    "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.75), 10, 0, 0, 4);" +
-    "-fx-font-family: 'Century Schoolbook';"
 }

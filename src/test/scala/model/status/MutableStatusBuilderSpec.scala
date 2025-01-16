@@ -1,8 +1,8 @@
 package model.status
 
-import model.status.{MutableStatusBuilder, StatusBuilder}
 import model.*
 import model.Suit.Spades
+import model.status.{MutableStatusBuilder, StatusBuilder}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

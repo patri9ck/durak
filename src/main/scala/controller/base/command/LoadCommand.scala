@@ -9,12 +9,7 @@ class LoadCommand(controller: BaseController, fileIo: FileIo) extends MementoCom
 
   override def execute(): Unit = {
     fileIo.load match {
-      case Success(status) => status match {
-        case Some(status) =>
-          controller.status = status
-
-        case None => println("Status konnte nicht dekodiert werden.")
-      }
+      case Success(status) => controller.status = status
       case Failure(exception) => println(s"Fehler beim Laden: $exception")
     }
   }

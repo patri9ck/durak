@@ -60,8 +60,12 @@ class CardSpec extends AnyWordSpec with Matchers {
       "convert a Card into XML" in {
         val xml =
           <card>
-            <rank>{Rank.Ace}</rank>
-            <suit>{Suit.Spades}</suit>
+            <rank>
+              {Rank.Ace}
+            </rank>
+            <suit>
+              {Suit.Spades}
+            </suit>
           </card>
 
         Utility.trim(Card(Rank.Ace, Suit.Spades).toXml).toString should be(Utility.trim(xml).toString)
@@ -85,23 +89,23 @@ class CardSpec extends AnyWordSpec with Matchers {
         selectableCards.forall(!_.selected) should be(true)
       }
     }
-    
+
     "cardFormat" should {
       "convert a Card into JSON and get a Card from JSON" in {
         val json = """{"rank":"Ace","suit":"Spades"}"""
-        
+
         val card = Card(Rank.Ace, Suit.Spades)
-        
+
         Card.cardFormat.writes(card) should be(Json.parse(json))
         Card.cardFormat.reads(Json.parse(json)).get should be(card)
       }
     }
-    
+
     "fromXml(Node)" should {
       "get a Card from XML" in {
         val xml =
           <card>
-            <rank>Ace</rank> 
+            <rank>Ace</rank>
             <suit>Spades</suit>
           </card>
 
