@@ -64,14 +64,14 @@ This structure ensures a clear separation of concerns, with the `model` handling
 
 ### Text User Interface (TUI)
 
-![TUI Screenshot](src/main/resources/previews/tui_ingame1.png)
-![TUI Screenshot](src/main/resources/previews/tui_ingame2.png)
+![TUI Screenshot](src/main/resources/previews/TUI_Ingame1.png)
+![TUI Screenshot](src/main/resources/previews/TUI_Ingame2.png)
 
 
 ### Graphical User Interface (GUI)
-![GUI Screenshot](src/main/resources/previews/gui_startmenu.png)
-![GUI Screenshot](src/main/resources/previews/gui_ingame1.png)
-![GUI Screenshot](src/main/resources/previews/gui_ingame2.png)
+![GUI Screenshot](src/main/resources/previews/GUI_Startmenu.png)
+![GUI Screenshot](src/main/resources/previews/GUI_Ingame1.png)
+![GUI Screenshot](src/main/resources/previews/GUI_Ingame2.png)
 
 ## How to Run
 
