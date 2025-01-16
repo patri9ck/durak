@@ -46,18 +46,21 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
 
   def initialize(): Unit = {
     val playerAmountComboBox = new ComboBox[String](List("2", "3", "4", "5", "6")) {
+      style = "-fx-font-family: 'Century Schoolbook';"
       value = "2"
     }
 
     val cardAmounts = List("1 Karte", "2 Karten", "3 Karten", "4 Karten", "5 Karten", "6 Karten")
 
     val cardAmountComboBox = new ComboBox[String](cardAmounts) {
+      style = "-fx-font-family: 'Century Schoolbook';"
       value = cardAmounts.last
     }
 
     val namesVBox = new VBox()
 
     val attackingComboBox = new ComboBox[String](List("Zufällig")) {
+      style = "-fx-font-family: 'Century Schoolbook';"
       value = "Zufällig"
       prefWidth = 200
     }
@@ -74,7 +77,7 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
     val toolBar = createToolBar
 
     val errorLabel = new Label {
-      style = "-fx-font-size: 8pt; -fx-font-weight: bold; -fx-text-fill: #dfdfdf"
+      style = "-fx-font-size: 8pt; -fx-font-weight: bold; -fx-text-fill: #dfdfdf; -fx-font-family: 'Century Schoolbook';"
     }
 
     val errorVBox = new VBox {
@@ -111,22 +114,22 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
           alignment = Pos.Center
           children = List(
             new Label("Anzahl Spieler") {
-              style = "-fx-font-size: 16pt; -fx-font-weight: bold; -fx-text-fill: #dfdfdf"
+              style = "-fx-font-size: 16pt; -fx-font-weight: bold; -fx-text-fill: #CCCCCC; -fx-font-family: 'Century Schoolbook';"
             },
             playerAmountComboBox,
             new Label("Spielernamen") {
-              style = "-fx-font-size: 16pt; -fx-font-weight: bold; -fx-text-fill: #dfdfdf"
+              style = "-fx-font-size: 16pt; -fx-font-weight: bold; -fx-text-fill: #CCCCCC; -fx-font-family: 'Century Schoolbook';"
             },
             namesVBox,
             new Label("Kartenanzahl") {
-              style = "-fx-font-size: 16pt; -fx-font-weight: bold; -fx-text-fill: #dfdfdf"
+              style = "-fx-font-size: 16pt; -fx-font-weight: bold; -fx-text-fill: #CCCCCC; -fx-font-family: 'Century Schoolbook';"
             },
             cardAmountComboBox,
             new Region {
               prefHeight = 20
             },
             new CheckBox("Steuerbar") {
-              style = "-fx-font-size: 8pt; -fx-font-weight: bold; -fx-text-fill: #dfdfdf"
+              style = "-fx-font-size: 8pt; -fx-font-weight: bold; -fx-text-fill: #CCCCCC; -fx-font-family: 'Century Schoolbook';"
               onAction = _ => {
                 controllable = !controllable
 
@@ -139,7 +142,11 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
               prefHeight = 20
             },
             new Button("Spiel Starten") {
-              style = "-fx-background-color: #FCFCFD; -fx-border-radius: 4px; -fxbox-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px,rgba(45, 35, 66, 0.3) 0 7px 13px -3px,#D6D6E7 0 -3px 0 inset; -fx-color: #FCFCFD; -fx-font-size: 16pt; -fx-font-weight: bold;"
+              style = buttonStyle
+              prefWidth = 200
+              prefHeight = 70
+
+              //style = "-fx-background-color: #FCFCFD; -fx-border-radius: 4px; -fxbox-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px,rgba(45, 35, 66, 0.3) 0 7px 13px -3px,#D6D6E7 0 -3px 0 inset; -fx-color: #FCFCFD; -fx-font-size: 16pt; -fx-font-weight: bold;"
               onAction = _ => {
                 val names = nameTextFields.map(nameTextField => nameTextField.text.value)
 
@@ -206,7 +213,7 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
     val own = Card.toSelectableCards(controller.current.get.cards)
 
     val errorLabel = new Label {
-      style = "-fx-font-size: 13pt; -fx-font-weight: bold; -fx-text-fill: #575a57"
+      style = "-fx-font-size: 13pt; -fx-font-weight: bold; -fx-text-fill: #575a57; -fx-font-family: 'Century Schoolbook';"
       wrapText = true
       maxWidth = 200
     }
@@ -378,7 +385,7 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
           padding = Insets(0, 0, 0, 0)
           children = List(
             new Label(label) {
-              style = "-fx-font-size: 16pt; -fx-font-weight: bold; -fx-text-fill: #575a57;"
+              style = "-fx-font-size: 16pt; -fx-font-weight: bold; -fx-text-fill: #575a57; -fx-font-family: 'Century Schoolbook';"
             })},
         new HBox {
           padding = Insets(0, 0, 0, 200)
@@ -397,27 +404,27 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
 
   def getInfoVBox(trump: Card, stack: List[Card], players: List[Player]): VBox = {
     new VBox {
-      padding = Insets(50, 0, 0, 0)
+      padding = Insets(80, 0, 0, 0)
       spacing = 10
       children = List(
         new Label("Trumpf-Karte:") {
-          style = "-fx-font-size: 16pt; -fx-font-weight: bold; -fx-text-fill: #575a57"
+          style = "-fx-font-size: 16pt; -fx-font-weight: bold; -fx-text-fill: #575a57; -fx-font-family: 'Century Schoolbook';"
         },
         new ImageView(new Image(trump.getPath)) {
           fitHeight = 100
           preserveRatio = true
         },
         new Label("Deckgröße:") {
-          style = "-fx-font-size: 16pt; -fx-font-weight: bold; -fx-text-fill: #575a57"
+          style = "-fx-font-size: 16pt; -fx-font-weight: bold; -fx-text-fill: #575a57; -fx-font-family: 'Century Schoolbook';"
         },
         new Label(stack.size.toString) {
-          style = "-fx-font-size: 13pt; -fx-font-weight: bold; -fx-text-fill: #575a57"
+          style = "-fx-font-size: 13pt; -fx-font-weight: bold; -fx-text-fill: #575a57; -fx-font-family: 'Century Schoolbook';"
         },
         new Label("Spieler") {
-          style = "-fx-font-size: 16pt; -fx-font-weight: bold; -fx-text-fill: #575a57"
+          style = "-fx-font-size: 16pt; -fx-font-weight: bold; -fx-text-fill: #575a57; -fx-font-family: 'Century Schoolbook';"
         },
         new VBox {
-          children = players.map(player => new Label(s"${player.name}"){style = "-fx-font-size: 13pt; -fx-font-weight: bold; -fx-text-fill: #575a57"}) //: ${player.turn.name}
+          children = players.map(player => new Label(s"${player.name}"){style = "-fx-font-size: 13pt; -fx-font-weight: bold; -fx-text-fill: #575a57; -fx-font-family: 'Century Schoolbook';"}) //: ${player.turn.name}
           alignment = Pos.Center
         }
       )
@@ -476,7 +483,9 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
       alignment = Pos.Center
       children = List(
         new Button("Verteidigen") {
-          style = "-fx-background-color: #FCFCFD; -fx-border-radius: 4px; -fxbox-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px,rgba(45, 35, 66, 0.3) 0 7px 13px -3px,#D6D6E7 0 -3px 0 inset; -fx-color: #FCFCFD; -fx-font-size: 16pt; -fx-font-weight: bold;"
+          style = buttonStyle
+          prefWidth = 200
+          prefHeight = 70
           onAction = _ => {
             val undefendedCard = undefended.find(_.selected)
             val ownCard = own.find(_.selected)
@@ -491,7 +500,9 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
           }
         },
         new Button("Aufnehmen") {
-          style = "-fx-background-color: #FCFCFD; -fx-border-radius: 4px; -fxbox-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px,rgba(45, 35, 66, 0.3) 0 7px 13px -3px,#D6D6E7 0 -3px 0 inset; -fx-color: #FCFCFD; -fx-font-size: 16pt; -fx-font-weight: bold;"
+          style = buttonStyle
+          prefWidth = 200
+          prefHeight = 70
           onAction = _ => canceled.apply()
         }
       )
@@ -505,7 +516,9 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
       if(defended.nonEmpty || undefended.nonEmpty) {
         children = List (
           new Button("Angreifen") {
-          style = "-fx-background-color: #FCFCFD; -fx-border-radius: 4px; -fxbox-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px,rgba(45, 35, 66, 0.3) 0 7px 13px -3px,#D6D6E7 0 -3px 0 inset; -fx-color: #FCFCFD; -fx-font-size: 16pt; -fx-font-weight: bold;"
+          style = buttonStyle
+          prefWidth = 200
+          prefHeight = 70
           onAction = _ => {
             val ownCard = own.find(_.selected)
 
@@ -519,14 +532,18 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
           }
         },
         new Button("Aufhören") {
-          style = "-fx-background-color: #FCFCFD; -fx-border-radius: 4px; -fxbox-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px,rgba(45, 35, 66, 0.3) 0 7px 13px -3px,#D6D6E7 0 -3px 0 inset; -fx-color: #FCFCFD; -fx-font-size: 16pt; -fx-font-weight: bold;"
+          style = buttonStyle
+          prefWidth = 200
+          prefHeight = 70
           onAction = _ => canceled.apply()
         }
         )
       } else {
         children = List(
           new Button("Angreifen") {
-            style = "-fx-background-color: #FCFCFD; -fx-border-radius: 4px; -fxbox-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px,rgba(45, 35, 66, 0.3) 0 7px 13px -3px,#D6D6E7 0 -3px 0 inset; -fx-color: #FCFCFD; -fx-font-size: 16pt; -fx-font-weight: bold;"
+            style = buttonStyle
+            prefWidth = 200
+            prefHeight = 70
             onAction = _ => {
               val ownCard = own.find(_.selected)
 
@@ -574,4 +591,15 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
       }
     )
   }
+
+  def buttonStyle: String =
+    "-fx-background-image: url('file:src/main/resources/button.png'); " +
+    "-fx-background-size: auto; " +
+    "-fx-background-repeat: no-repeat;" +
+    "-fx-background-position: center;" +
+    "-fx-text-fill: #CCCCCC; -fx-font-size: 16pt; -fx-font-weight: bold;" +
+    "-fx-background-color: transparent;" +
+    "-fx-border-color: transparent;" +
+    "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.75), 10, 0, 0, 4);" +
+    "-fx-font-family: 'Century Schoolbook';"
 }
