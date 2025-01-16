@@ -104,6 +104,7 @@ This structure ensures a clear separation of concerns, with the `model` handling
 ### Requirements
  
 - Docker
+- xMing (for GUI)
 
 ### Steps
 
