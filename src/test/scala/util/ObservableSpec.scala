@@ -4,7 +4,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class ObservableSpec extends AnyWordSpec with Matchers {
-
+  
   class MockObserver extends Observer {
     var updated = false
 
@@ -12,50 +12,49 @@ class ObservableSpec extends AnyWordSpec with Matchers {
       updated = true
     }
   }
-
+  
   "Observer" should {
-
     "add(Observer)" should {
       "add an observer to the list of observers" in {
-      val observable = new Observable
-      val observer = new MockObserver
+        val observable = Observable()
+        val observer = MockObserver()
 
-      observable.add(observer)
-      observable.notifySubscribers()
+        observable.add(observer)
+        observable.notifySubscribers()
 
-      observer.updated shouldBe true
-    }
+        observer.updated shouldBe true
+      }
     }
 
     "remove(Observer)" should {
       "remove an observer from the list of observers" in {
-      val observable = new Observable
-      val observer = new MockObserver
+        val observable = Observable()
+        val observer = MockObserver()
 
-      observable.add(observer)
-      observable.remove(observer)
-      observer.updated = false
+        observable.add(observer)
+        observable.remove(observer)
+        observer.updated = false
 
-      observable.notifySubscribers()
+        observable.notifySubscribers()
 
-      observer.updated shouldBe false
-    }
+        observer.updated shouldBe false
+      }
     }
 
     "notifySubscribers()" should {
       "notify all observers" in {
-      val observable = new Observable
-      val observer1 = new MockObserver
-      val observer2 = new MockObserver
+        val observable = Observable()
+        val observer1 = MockObserver()
+        val observer2 = MockObserver()
 
-      observable.add(observer1)
-      observable.add(observer2)
+        observable.add(observer1)
+        observable.add(observer2)
 
-      observable.notifySubscribers()
+        observable.notifySubscribers()
 
-      observer1.updated shouldBe true
-      observer2.updated shouldBe true
+        observer1.updated shouldBe true
+        observer2.updated shouldBe true
+      }
     }
-  }
   }
 }

@@ -27,9 +27,9 @@ object Player {
 
   def fromXml(node: Node): Player = {
     Player(
-      (node \ "name").text,
+      (node \ "name").text.trim,
       (node \ "cards" \ "card").map(Card.fromXml).toList,
-      Turn.valueOf((node \ "turn").text)
+      Turn.valueOf((node \ "turn").text.trim)
     )
   }
 }

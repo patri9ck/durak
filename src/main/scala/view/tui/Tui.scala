@@ -1,7 +1,6 @@
 package view.tui
 
 import com.google.inject.Inject
-import com.google.inject.name.Named
 import controller.Controller
 import model.*
 import util.Observer
@@ -9,11 +8,14 @@ import view.tui.runner.Runner
 
 import scala.collection.mutable.ListBuffer
 
-class Tui @Inject()(val controller: Controller, val runner: Runner, @Named("seconds") val seconds: Int, @Named("lines") val lines: Int) extends Observer {
+class Tui(val controller: Controller, val runner: Runner, val seconds: Int, val lines: Int) extends Observer {
+
+  private var controllable: Boolean = false
 
   controller.add(this)
 
-  private var controllable: Boolean = false
+  @Inject()
+  def this(controller: Controller, runner: Runner) = this(controller, runner, 3, 100)
 
   override def update(): Unit = {
     runner.run(run)
@@ -23,7 +25,7 @@ class Tui @Inject()(val controller: Controller, val runner: Runner, @Named("seco
     runner.run(() => {
       println("Willkommen zu Durak!")
 
-      controllable = askForControllable()
+      controllable = askForControllable
 
       run()
     })
@@ -31,7 +33,7 @@ class Tui @Inject()(val controller: Controller, val runner: Runner, @Named("seco
 
   def run(): Unit = {
     if (controllable) {
-      askForStep() match
+      askForStep match
         case Step.Continue => continue()
         case Step.Undo => controller.undo()
         case Step.Redo => controller.redo()
@@ -47,7 +49,7 @@ class Tui @Inject()(val controller: Controller, val runner: Runner, @Named("seco
       val playerAmount = askForPlayerAmount
       val cardAmount = askForCardAmount(playerAmount)
       val names = askForNames(playerAmount)
-      
+
       askForAttacking(names) match {
         case Some(name) => controller.initialize(cardAmount, names, name)
         case None => controller.initialize(cardAmount, names)
@@ -119,7 +121,7 @@ class Tui @Inject()(val controller: Controller, val runner: Runner, @Named("seco
     countdown()
     println(getClearDisplay)
   }
-  
+
   def getClearDisplay: String = "\n" * lines
 
   def getStackDisplay(stack: List[Card]): String = s"Stapel: ${stack.length}"
@@ -130,7 +132,7 @@ class Tui @Inject()(val controller: Controller, val runner: Runner, @Named("seco
 
   def getCountdownDisplay(seconds: Int): List[String] = (1 to seconds).reverse.map(i => s"$i...").toList
 
-  def askForStep(): Step = {
+  def askForStep: Step = {
     while (true) {
       runner.readLine("[F]ortfahren/[R]ückgängig machen/[W]iederherstellen/[L]aden/[S]peichern? ").toLowerCase match {
         case "f" => return Step.Continue
@@ -180,7 +182,7 @@ class Tui @Inject()(val controller: Controller, val runner: Runner, @Named("seco
     if (cards.isEmpty) {
       return Nil
     }
-    
+
 
     getCardsOrder(cards) :: getCardsDisplay(cards)
   }
@@ -209,7 +211,7 @@ class Tui @Inject()(val controller: Controller, val runner: Runner, @Named("seco
     s"$player, Deine Karten" :: getOrderedCardsDisplay(player.cards)
   }
 
-  def askForControllable(): Boolean = {
+  def askForControllable: Boolean = {
     while (true) {
       runner.readLine("Soll das Spiel steuerbar sein? (J/N) ").toLowerCase match {
         case "j" => return true

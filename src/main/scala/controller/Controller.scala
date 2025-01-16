@@ -9,7 +9,7 @@ import scala.util.Random
 
 trait Controller extends Observable {
 
-  def status: Status
+  var status: Status
 
   def initialize(amount: Int, names: List[String]): Unit
 
@@ -17,14 +17,14 @@ trait Controller extends Observable {
 
   def deny(): Unit
 
-  def pickUp(): Unit 
+  def pickUp(): Unit
 
   def attack(card: Card): Unit
 
   def canAttack(card: Card): Boolean
 
   def defend(used: Card, undefended: Card): Unit
-  
+
   def canDefend(used: Card, undefended: Card): Boolean
 
   def byTurn(turn: Turn): Option[Player]
@@ -38,6 +38,8 @@ trait Controller extends Observable {
   def load(): Unit
 
   def save(): Unit
+
+  def isOver: Boolean
 
   def unbind(): Unit
 }

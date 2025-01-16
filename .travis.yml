@@ -1,9 +1,0 @@
-language: scala
-scala:
-  - 3.3.4
-
-script:
-  - sbt clean coverage test coverageReport
-
-after_success:
-  - sbt coverageReport coveralls

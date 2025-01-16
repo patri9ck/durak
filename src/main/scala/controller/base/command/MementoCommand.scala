@@ -1,7 +1,5 @@
 package controller.base.command
 
-import com.google.inject.Inject
-import controller.Controller
 import controller.base.BaseController
 import model.status.Status
 import util.Command
@@ -9,9 +7,9 @@ import util.Command
 trait MementoCommand(val controller: BaseController) extends Command {
 
   private var memento: Status = controller.status
-  
+
   def execute(): Unit
-  
+
   override def doStep(): Unit = {
     memento = controller.status
 

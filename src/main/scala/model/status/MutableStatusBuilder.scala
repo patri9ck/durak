@@ -1,19 +1,19 @@
 package model.status
 
-import com.google.inject.Inject
-import com.google.inject.name.Named
 import model.{Card, Player, Turn}
 
-class MutableStatusBuilder @Inject()(@Named("players") private var players: List[Player],
-                                     @Named("stack") private var stack: List[Card],
-                                     @Named("trump") private var trump: Option[Card],
-                                     @Named("amount") private var amount: Int,
-                                     @Named("turn") private var turn: Turn,
-                                     @Named("defended") private var defended: List[Card],
-                                     @Named("undefended") private var undefended: List[Card],
-                                     @Named("used") private var used: List[Card],
-                                     @Named("denied") private var denied: Boolean,
-                                     @Named("passed") private var passed: Option[Player]) extends StatusBuilder {
+class MutableStatusBuilder(private var players: List[Player] = Nil,
+                           private var stack: List[Card] = Nil,
+                           private var trump: Option[Card] = None,
+                           private var amount: Int = 0,
+                           private var turn: Turn = Turn.Uninitialized,
+                           private var defended: List[Card] = Nil,
+                           private var undefended: List[Card] = Nil,
+                           private var used: List[Card] = Nil,
+                           private var denied: Boolean = false,
+                           private var passed: Option[Player] = None) extends StatusBuilder {
+
+  override def this() = this(Nil, Nil, None, 0, Turn.Uninitialized, Nil, Nil, Nil, false, None)
 
   override def setStatus(status: Status): StatusBuilder = {
     players = status.players
@@ -32,7 +32,7 @@ class MutableStatusBuilder @Inject()(@Named("players") private var players: List
 
   override def setPlayers(players: List[Player]): StatusBuilder = {
     this.players = players
-  
+
     this
   }
 
