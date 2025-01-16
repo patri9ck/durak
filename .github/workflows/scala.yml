@@ -6,7 +6,7 @@ on:
     branches: [ main ]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 11
@@ -14,7 +14,23 @@ jobs:
         with:
           java-version: '11'
           distribution: 'adopt'
-      - name: compile
+      - name: Compile
         run: sbt compile
-      - name: run tests
+  test:
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Run tests
         run: sbt test
+      - name: Generate coverage report
+        run: sbt clean coverage test
+      - name: Upload to Coveralls
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        run: sbt coverageReport coveralls
