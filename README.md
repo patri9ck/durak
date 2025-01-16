@@ -72,39 +72,3 @@ This structure ensures a clear separation of concerns, with the `model` handling
 ![GUI Screenshot](src/main/resources/previews/GUI_Startmenu.png)
 ![GUI Screenshot](src/main/resources/previews/GUI_Ingame1.png)
 ![GUI Screenshot](src/main/resources/previews/GUI_Ingame2.png)
-
-## How to Run
-
-1. **Requirements**:
-    - Java 11 or higher
-    - Scala 2.13.6
-    - sbt 1.5.5
-
-2. **Clone the Repository**:
-    ```bash
-    git clone
-    ```
-3. **Run the Application**:
-
-    - To run the Text User Interface (TUI):
-        ```bash
-        sbt "runMain view.tui.Tui"
-        ```
-    - To run the Graphical User Interface (GUI):
-        ```bash
-        sbt "runMain view.gui.Gui"
-        ```
-4. **Play the Game**:
-5. **Follow the instructions in the console or GUI to play the game.**
-6. **Enjoy the game!**
-7. **To run the tests**:
-    ```bash
-    sbt test
-    ```
-8. **To generate the coverage report**:
-    ```bash
-    sbt clean coverage test coverageReport
-    ```
-9. **To view the coverage report**:
-10. **Open the generated HTML file in the `target/scala-2.13/scoverage-report` directory.**
- 
