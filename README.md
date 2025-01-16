@@ -72,3 +72,49 @@ This structure ensures a clear separation of concerns, with the `model` handling
 ![GUI Screenshot](src/main/resources/previews/GUI_Startmenu.png)
 ![GUI Screenshot](src/main/resources/previews/GUI_Ingame1.png)
 ![GUI Screenshot](src/main/resources/previews/GUI_Ingame2.png)
+
+## How to Run
+
+### Requirements
+
+- Java 11 or higher
+- sbt (Scala Build Tool)
+- ScalaFX (for GUI)
+
+### Steps
+
+1. Clone the repository:
+
+    ```bash
+    git clone
+    ```
+2. Change into the project directory:
+
+    ```bash
+    cd durak
+    ```
+3. Run the application using sbt:
+
+    ```bash
+    sbt "run"
+    ```
+   
+## Docker Support
+
+### Requirements
+ 
+- Docker
+
+### Steps
+
+1. Build the Docker image:
+
+    ```bash
+    docker build -t durak .
+    ```
+2. Run the Docker container:
+
+    ```bash
+    docker run -it durak-scala  
+    ```
+      
