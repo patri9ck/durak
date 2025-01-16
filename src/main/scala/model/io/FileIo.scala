@@ -6,7 +6,7 @@ import scala.util.Try
 
 trait FileIo {
 
-  def load: Try[Option[Status]]
+  def load: Try[Status]
 
   def save(status: Status): Try[Unit]
 

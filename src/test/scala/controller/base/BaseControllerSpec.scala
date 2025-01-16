@@ -2,11 +2,20 @@ package controller.base
 
 import model.*
 import model.io.JsonFileIo
-import model.status.{MutableStatusBuilder, Status, StatusBuilder}
+import model.status.{MutableStatusBuilder, Status}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import util.Observer
 
 class BaseControllerSpec extends AnyWordSpec with Matchers {
+
+  class MockObserver extends Observer {
+    var updated: Boolean = false
+
+    override def update(): Unit = {
+      updated = true
+    }
+  }
 
   "BaseController" should {
     "chooseAttacking(List[Player], Int)" should {
@@ -143,6 +152,30 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
       }
     }
 
+    "initialize(Int, List[String])" should {
+      "run the InitializeCommand with a random player attacking and notify observers" in {
+        val controller = BaseController(JsonFileIo())
+        val observer = MockObserver()
+
+        controller.add(observer)
+
+        noException should be thrownBy controller.initialize(6, List("Player1", "Player2"))
+        observer.updated should be(true)
+      }
+    }
+
+    "initialize(Int, List[String], String)" should {
+      "run the InitializeCommand and notify observers" in {
+        val controller = BaseController(JsonFileIo())
+        val observer = MockObserver()
+
+        controller.add(observer)
+
+        noException should be thrownBy controller.initialize(6, List("Player1", "Player2"), "Player1")
+        observer.updated should be(true)
+      }
+    }
+
     "hasFinished(Player, StatusBuilder)" should {
       "return false if the stack is not empty" in {
         val controller = BaseController(JsonFileIo())
@@ -205,7 +238,6 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
 
         controller.hasFinished(finished, MutableStatusBuilder()) should be(true)
       }
-
     }
 
     "finish(Player)" should {
@@ -302,15 +334,45 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
     }
 
     "deny()" should {
+      "run the DenyCommand and notify observers" in {
+        val controller = BaseController(JsonFileIo())
+        val observer = MockObserver()
 
+        controller.status = Status(List(Player("Player1", Nil, Turn.SecondlyAttacking), Player("Player2", Nil, Turn.Defending), Player("Player3", Nil, Turn.FirstlyAttacking)), Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.SecondlyAttacking, Nil, Nil, Nil, true, None)
+
+        controller.add(observer)
+
+        noException should be thrownBy controller.deny()
+        observer.updated should be(true)
+      }
     }
 
     "pickUp()" should {
+      "run the PickUpCommand and notify observers" in {
+        val controller = BaseController(JsonFileIo())
+        val observer = MockObserver()
 
+        controller.status = Status(List(Player("Player1", List(Card(Rank.Seven, Suit.Spades)), Turn.Defending), Player("Player2", Nil, Turn.FirstlyAttacking)), Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.Defending, List(Card(Rank.Ace, Suit.Spades)), List(Card(Rank.King, Suit.Spades), Card(Rank.Queen, Suit.Spades)), List(Card(Rank.Jack, Suit.Spades), Card(Rank.Ten, Suit.Spades)), false, None)
+
+        controller.add(observer)
+
+        noException should be thrownBy controller.pickUp()
+        observer.updated should be(true)
+      }
     }
 
     "attack(Card)" should {
+      "run the AttackCommand and notify observers" in {
+        val controller = BaseController(JsonFileIo())
+        val observer = MockObserver()
 
+        controller.status = Status(List(Player("Player1", List(Card(Rank.Ace, Suit.Spades), Card(Rank.Seven, Suit.Spades)), Turn.FirstlyAttacking), Player("Player2", Nil, Turn.Defending)), Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
+
+        controller.add(observer)
+
+        noException should be thrownBy controller.attack(Card(Rank.Ace, Suit.Spades))
+        observer.updated should be(true)
+      }
     }
 
     "canDefend(Card, Card)" should {
@@ -346,7 +408,17 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
     }
 
     "defend(Card, Card)" should {
+      "run the DefendCommand and notify observers" in {
+        val controller = BaseController(JsonFileIo())
+        val observer = MockObserver()
 
+        controller.status = Status(List(Player("Player1", List(Card(Rank.Ace, Suit.Spades)), Turn.Defending), Player("Player2", Nil, Turn.FirstlyAttacking)), Nil, Some(Card(Rank.Ten, Suit.Spades)), 6, Turn.Defending, Nil, List(Card(Rank.King, Suit.Spades)), Nil, false, None)
+
+        controller.add(observer)
+
+        noException should be thrownBy controller.defend(Card(Rank.Ace, Suit.Hearts), Card(Rank.King, Suit.Hearts))
+        observer.updated should be(true)
+      }
     }
 
     "current" should {
@@ -366,6 +438,69 @@ class BaseControllerSpec extends AnyWordSpec with Matchers {
         controller.status = Status(List(Player("Player1", Nil, Turn.FirstlyAttacking), Player("Player2", Nil, Turn.Defending)), Nil, Some(Card(Rank.Ten, Suit.Spades)), 3, Turn.FirstlyAttacking, Nil, Nil, Nil, false, None)
 
         controller.byTurn(Turn.FirstlyAttacking) should be(Some(controller.status.players.head))
+      }
+    }
+
+    "undo()" should {
+      "undo the last command" in {
+        val controller = BaseController(JsonFileIo())
+
+        controller.initialize(6, List("Player1", "Player2"))
+        controller.undo()
+
+        controller.status should be(Status())
+      }
+    }
+
+    "redo()" should {
+      "redo the last undone command" in {
+        val controller = BaseController(JsonFileIo())
+
+        controller.initialize(6, List("Player1", "Player2"))
+        controller.undo()
+        controller.redo()
+
+        controller.status.players.size should not be Status()
+      }
+    }
+
+    "load" should {
+      "run the LoadCommand and notify observers" in {
+        val controller = BaseController(JsonFileIo())
+        val observer = MockObserver()
+
+        controller.add(observer)
+
+        noException should be thrownBy controller.load()
+        observer.updated should be(true)
+      }
+    }
+
+    "save" should {
+      "run the SaveCommand and notify observers" in {
+        val controller = BaseController(JsonFileIo())
+        val observer = MockObserver()
+
+        controller.add(observer)
+
+        noException should be thrownBy controller.save()
+        observer.updated should be(true)
+      }
+    }
+
+    "isOver" should {
+      "return true if there is only one player whose turn is not Finished" in {
+        val controller = BaseController(JsonFileIo())
+
+        controller.status = Status(players = List(Player("Player1", Nil, Turn.Finished), Player("Player2", Nil, Turn.Finished), Player("Player3", Nil, Turn.Defending)))
+
+        controller.isOver should be(true)
+      }
+    }
+
+    "unbind()" should {
+      "run unbind of FileIo" in {
+        noException should be thrownBy BaseController(JsonFileIo()).unbind()
       }
     }
   }

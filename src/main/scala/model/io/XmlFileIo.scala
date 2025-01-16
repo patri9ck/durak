@@ -6,23 +6,25 @@ import java.io.PrintWriter
 import scala.util.{Try, Using}
 import scala.xml.{PrettyPrinter, XML}
 
-class XmlFileIo extends FileIo {
+class XmlFileIo(var fileName: String) extends FileIo {
 
-  private val FileName: String = "status.xml"
+  def this() = this(XmlFileIo.FileName)
 
   override def save(status: Status): Try[Unit] = {
-    Try {
-      Using(new PrintWriter(FileName)) { writer =>
-        writer.write(PrettyPrinter(120, 4).format(status.toXml))
-      }
+    Using(new PrintWriter(fileName)) { writer =>
+      writer.write(PrettyPrinter(120, 4).format(status.toXml))
     }
   }
 
-  override def load: Try[Option[Status]] = {
+  override def load: Try[Status] = {
     Try {
-      Some(Status.fromXml(XML.loadFile(FileName)))
+      Status.fromXml(XML.loadFile(fileName))
     }
   }
 
   override def unbind(): Unit = {}
+}
+
+object XmlFileIo {
+  val FileName: String = "status.xml"
 }

@@ -60,7 +60,7 @@ class PlayerSpec extends AnyWordSpec with Matchers {
             <turn>Watching</turn>
           </player>
 
-        Player.fromXml(xml) should be( Player("Player1", List(Card(Rank.Ace, Suit.Spades)), Turn.Watching))
+        Player.fromXml(xml) should be(Player("Player1", List(Card(Rank.Ace, Suit.Spades)), Turn.Watching))
       }
     }
   }
