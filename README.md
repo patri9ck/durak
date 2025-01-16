@@ -115,6 +115,6 @@ This structure ensures a clear separation of concerns, with the `model` handling
 2. Run the Docker container:
 
     ```bash
-    docker run -it durak-scala  
+    docker run --name durak durak-scala  
     ```
       
