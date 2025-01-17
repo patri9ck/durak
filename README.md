@@ -1,4 +1,6 @@
 # Durak
+![Durak Logo](src/main/resources/durak-logo-neu.png)
+
 [![Build Status](https://github.com/patri9ck/durak/actions/workflows/scala.yml/badge.svg)](https://github.com/patri9ck/durak/actions)
 [![Coverage Status](https://coveralls.io/repos/github/patri9ck/durak/badge.svg?branch=)](https://coveralls.io/github/patri9ck/durak?branch=)
 
@@ -110,6 +112,6 @@ This structure ensures a clear separation of concerns, with the models containin
 2. Run the Docker container:
 
     ```bash
-    docker run --name durak durak-scala  
+    docker run durak-scala  
     ```
       

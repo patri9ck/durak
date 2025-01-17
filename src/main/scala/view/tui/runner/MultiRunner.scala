@@ -14,7 +14,7 @@ class MultiRunner extends Thread with Runner {
 
   override def run(run: () => Unit): Unit = {
     Thread(() => {
-      this.synchronized {
+      threads.synchronized {
         threads.values.filter(promise => promise.isDefined).map(promise => promise.get).foreach(promise => promise.tryFailure(new InterruptedException()))
         threads.keys.foreach(thread => thread.interrupt())
         threads = Map(Thread.currentThread() -> None)
@@ -35,7 +35,7 @@ class MultiRunner extends Thread with Runner {
 
     val promise = Promise[String]()
 
-    this.synchronized {
+    threads.synchronized {
       threads += (Thread.currentThread() -> Some(promise))
     }
 
@@ -48,8 +48,10 @@ class MultiRunner extends Thread with Runner {
     while (true) {
       val line = StdIn.readLine()
 
-      this.synchronized {
-        threads.values.filter(promise => promise.isDefined).map(promise => promise.get).filter(promise => !promise.isCompleted).foreach(promise => promise.success(line))
+      if (line != null) {
+        threads.synchronized {
+          threads.values.filter(promise => promise.isDefined).map(promise => promise.get).filter(promise => !promise.isCompleted).foreach(promise => promise.success(line))
+        }
       }
     }
   }
