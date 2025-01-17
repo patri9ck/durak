@@ -58,9 +58,7 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
       - name: Create documentation
-        run: sbt doc
-      - name: Copy documentation to docs
-        run: cp -r target/scala-3.3.4/api docs
+        run: sbt clean doc
 
   publish-documentation:
     needs: build-documentation
@@ -75,6 +73,8 @@ jobs:
         with:
           java-version: '11'
           distribution: 'adopt'
+      - name: Print current directory
+        run: ls
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
