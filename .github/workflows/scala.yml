@@ -4,6 +4,10 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -61,7 +65,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "target/scala-3.3.4/api"
+          path: "."
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
