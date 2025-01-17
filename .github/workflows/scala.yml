@@ -16,7 +16,8 @@ jobs:
           distribution: 'adopt'
       - name: Compile
         run: sbt compile
-  test:
+
+  run-tests:
     needs: build
     runs-on: ubuntu-22.04
     steps:
@@ -28,13 +29,25 @@ jobs:
           distribution: 'adopt'
       - name: Run tests
         run: sbt test
+
+  upload-tests:
+    needs: run-tests
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
       - name: Generate coverage report
         run: sbt clean coverage test
       - name: Upload to Coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: sbt coverageReport coveralls
-  documentation:
+
+  build-documentation:
     needs: build
     runs-on: ubuntu-22.04
     steps:
@@ -48,3 +61,26 @@ jobs:
         run: sbt doc
       - name: Copy documentation to docs
         run: cp -r target/scala-3.3.4/api docs
+
+  publish-documentation:
+    needs: build-documentation
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+        - name: Set up JDK 11
+          uses: actions/setup-java@v2
+          with:
+            java-version: '11'
+            distribution: 'adopt'
+        - name: Setup Pages
+          uses: actions/configure-pages@v5
+        - name: Upload artifact
+          uses: actions/upload-pages-artifact@v3
+          with:
+            path: "target/scala-3.3.4/api"
+        - name: Deploy to GitHub Pages
+          id: deployment
+          uses: actions/deploy-pages@v4
