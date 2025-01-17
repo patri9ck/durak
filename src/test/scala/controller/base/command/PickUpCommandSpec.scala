@@ -4,7 +4,6 @@ import controller.base.BaseController
 import model.*
 import model.io.JsonFileIo
 import model.status.Status
-import module.DurakModule
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

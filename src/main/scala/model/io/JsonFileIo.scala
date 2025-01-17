@@ -1,36 +1,34 @@
 package model.io
 
+import com.fasterxml.jackson.core.JsonParseException
 import model.status.Status
 import play.api.libs.json.{JsError, JsSuccess, Json}
 
 import java.io.PrintWriter
 import scala.io.Source
-import scala.util.{Try, Using}
+import scala.util.{Failure, Success, Try, Using}
 
-class JsonFileIo extends FileIo {
+class JsonFileIo(val fileName: String) extends FileIo {
 
-  private val FileName: String = "status.json"
+  def this() = this(JsonFileIo.FileName)
 
-  override def load: Try[Option[Status]] = {
+  override def load: Try[Status] = {
     Try {
-      Using.resource(Source.fromFile(FileName)) { source =>
-        Json.parse(source.mkString).validate[Status] match {
-          case success: JsSuccess[Status] => Some(success.get)
-          case error: JsError =>
-            println(error)
-            None
-        }
+      Using.resource(Source.fromFile(fileName)) { source =>
+        Json.parse(source.mkString).as[Status]
       }
     }
   }
 
   override def save(status: Status): Try[Unit] = {
-    Try {
-      Using(new PrintWriter(FileName)) { writer =>
-        writer.write(Json.prettyPrint(Json.toJson(status)))
-      }
+    Using(PrintWriter(fileName)) { writer =>
+      writer.write(Json.prettyPrint(Json.toJson(status)))
     }
   }
 
   override def unbind(): Unit = {}
+}
+
+object JsonFileIo {
+  val FileName: String = "status.json"
 }

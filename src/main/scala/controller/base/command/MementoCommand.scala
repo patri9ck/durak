@@ -6,7 +6,7 @@ import util.Command
 
 trait MementoCommand(val controller: BaseController) extends Command {
 
-  private var memento: Status = controller.status
+  var memento: Status = controller.status
 
   def execute(): Unit
 

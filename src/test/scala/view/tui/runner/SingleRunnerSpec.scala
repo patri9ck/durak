@@ -21,10 +21,10 @@ class SingleRunnerSpec extends AnyWordSpec with Matchers {
     "readLine(String)" should {
       "return the user input from StdIn" in {
         val input = "Test"
-        val in =  ByteArrayInputStream(input.getBytes)
+        val in = ByteArrayInputStream(input.getBytes)
 
         Console.withIn(in) {
-          SingleRunner().readLine("") should be("Test")
+          SingleRunner().readLine("") should be(input)
         }
       }
 
