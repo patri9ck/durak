@@ -10,6 +10,7 @@ import view.tui.runner.Runner
 import java.io.ByteArrayOutputStream
 
 class TuiSpec extends AnyWordSpec with Matchers {
+  
   class MockRunner(var inputs: List[String]) extends Runner {
     override def run(run: () => Unit): Unit = run.apply()
 

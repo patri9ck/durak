@@ -10,14 +10,17 @@ import scala.io.StdIn
 @Singleton
 class MultiRunner extends Thread with Runner {
 
-  private var threads: Map[Thread, Option[Promise[String]]] = Map.empty
+  private var thread: Option[Thread] = None
+  private var promise: Option[Promise[String]] = None
 
   override def run(run: () => Unit): Unit = {
     Thread(() => {
-      threads.synchronized {
-        threads.values.filter(promise => promise.isDefined).map(promise => promise.get).foreach(promise => promise.tryFailure(new InterruptedException()))
-        threads.keys.foreach(thread => thread.interrupt())
-        threads = Map(Thread.currentThread() -> None)
+      this.synchronized {
+        thread.foreach(_.interrupt())
+        promise.filter(!_.isCompleted).foreach(_.tryFailure(new InterruptedException()))
+        
+        thread = Some(Thread.currentThread())
+        promise = None
       }
 
       try {
@@ -33,15 +36,13 @@ class MultiRunner extends Thread with Runner {
       throw new InterruptedException()
     }
 
-    val promise = Promise[String]()
-
-    threads.synchronized {
-      threads += (Thread.currentThread() -> Some(promise))
+    this.synchronized {
+      this.promise = Some(Promise[String]())
     }
 
     print(prompt)
 
-    Await.result(promise.future, Duration.Inf)
+    Await.result(promise.get.future, Duration.Inf)
   }
 
   override def run(): Unit = {
@@ -49,8 +50,8 @@ class MultiRunner extends Thread with Runner {
       val line = StdIn.readLine()
 
       if (line != null) {
-        threads.synchronized {
-          threads.values.filter(promise => promise.isDefined).map(promise => promise.get).filter(promise => !promise.isCompleted).foreach(promise => promise.success(line))
+        this.synchronized {
+          promise.filter(!_.isCompleted).foreach(_.success(line))
         }
       }
     }
