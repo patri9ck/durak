@@ -11,12 +11,21 @@ import util.{Observable, UndoManager}
 import scala.annotation.tailrec
 import scala.util.Random
 
+/**
+ * This is the base implementation of [[controller.Controller]]. Every method that does not implement [[controller.Controller]] does not change the status directly, but rather often acts upon a [[model.status.StatusBuilder]] object.
+ * @param fileIo the [[model.io.FileIo]] used for saving and loading the status
+ */
 @Singleton
 class BaseController @Inject()(val fileIo: FileIo) extends Controller {
 
   private val undoManager = UndoManager()
   var status: Status = Status()
 
+  /**
+   * Draws cards from the stack and fills every player's cards up to the set card amount. It will either start with [[model.status.StatusBuilder.getPassed]] or with the player who is [[Turn.FirstlyAttacking]].
+   * @param statusBuilder a [[model.status.StatusBuilder]] containing the initial status
+   * @return a [[model.status.StatusBuilder]] containing a status with cards drawn from the stack
+   */
   def drawFromStack(statusBuilder: StatusBuilder): StatusBuilder = {
     val start = statusBuilder.getPassed.orElse(statusBuilder.byTurn(Turn.FirstlyAttacking)).map(statusBuilder.getPlayers.indexOf).get
 
@@ -42,6 +51,12 @@ class BaseController @Inject()(val fileIo: FileIo) extends Controller {
       .removePassed()
   }
 
+  /**
+   * Checks whether the specified player is finished. A player is finished if he is attacking, having no cards left with the stack being empty. A player can also be finished if he is defending, has no cards left without there being undefended cards or cards on the stack.
+   * @param finished the player to check for being finished
+   * @param statusBuilder a [[model.status.StatusBuilder]] containing the current status
+   * @return whether the specified player is finished
+   */
   def hasFinished(finished: Player, statusBuilder: StatusBuilder): Boolean = {
     if (finished.turn == Turn.Finished) {
       return true
@@ -58,6 +73,12 @@ class BaseController @Inject()(val fileIo: FileIo) extends Controller {
     false
   }
 
+  /**
+   * Sets a player to finished and updates all other data accordingly. This method does not check whether [[hasFinished]] returns true.
+   * @param finished the player to be set to finished
+   * @param statusBuilder a [[model.status.StatusBuilder]] containing the current status
+   * @return an updated [[model.status.StatusBuilder]] containing the changes made after the specified player was set to finished
+   */
   def finish(finished: Player, statusBuilder: StatusBuilder): StatusBuilder = {
     val updated = finished.copy(turn = Turn.Finished)
 
@@ -76,9 +97,21 @@ class BaseController @Inject()(val fileIo: FileIo) extends Controller {
     updatedStatusBuilder
   }
 
+  /**
+   * Sets the specified player to [[model.turn.FirstlyAttacking]] and all other players' turn accordingly.
+   * @param players all players, must contain [[previous]]
+   * @param previous the player to set to [[model.turn.FirstlyAttacking]]
+   * @return a list of players with updated turns
+   */
   def chooseNextAttacking(players: List[Player], previous: Player): List[Player] =
     chooseAttacking(players, (players.indexOf(previous) - 1 + players.size) % players.size)
 
+  /**
+   * Sets the player at [[index]] to [[model.turn.FirstlyAttacking]] and all other players' turn accordingly.
+   * @param players  all players, must contain [[previous]]
+   * @param index the index of the player to set to [[model.turn.FirstlyAttacking]]
+   * @return a list of players with updated turns
+   */
   def chooseAttacking(players: List[Player], index: Int): List[Player] = {
     players.zipWithIndex.map { case (player, idx) =>
       if (player.turn == Turn.Finished) {
@@ -113,6 +146,13 @@ class BaseController @Inject()(val fileIo: FileIo) extends Controller {
     }
   }
 
+  /**
+   * Replaces [[old]] with [[updated]] in [[players]]
+   * @param players list of players to update
+   * @param old the player to be replaced with
+   * @param updated the player to replace [[old]]
+   * @return an updated list
+   */
   def updatePlayers(players: List[Player], old: Player, updated: Player): List[Player] = {
     players.map { player =>
       if (old == player) {
