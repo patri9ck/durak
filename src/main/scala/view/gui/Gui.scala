@@ -25,6 +25,8 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
     Platform.runLater(() =>
       if (controller.status.turn == Turn.Uninitialized) {
         initialize()
+      } else if (controller.isOver) {
+        showGameOverScene()
       } else {
         continue()
       }
@@ -605,4 +607,34 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
       HBox()
     }
   }
+
+  def showGameOverScene(): Unit = {
+    stage.scene = new Scene {
+      root = new VBox {
+        alignment = Pos.Center
+        spacing = 20
+        padding = Insets(20)
+        children = List(
+          new Label("Game Over") {
+            style = "-fx-font-size: 24pt; -fx-font-weight: bold; -fx-text-fill: #FF0000; -fx-font-family: 'Century Schoolbook';"
+          },
+          new Button("Restart") {
+            style = buttonStyle
+            onAction = _ => {
+              // Logic to restart the game
+              initialize()
+            }
+          },
+          new Button("Exit") {
+            style = buttonStyle
+            onAction = _ => {
+              Platform.exit()
+              System.exit(0)
+            }
+          }
+        )
+      }
+    }
+  }
+
 }
