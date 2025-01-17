@@ -7,6 +7,9 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Promise}
 import scala.io.StdIn
 
+/**
+ * A [[view.tui.runner.Runner]] implementation which uses multiple threads to make blocking code non-blocking.
+ */
 @Singleton
 class MultiRunner extends Thread with Runner {
 
@@ -45,6 +48,10 @@ class MultiRunner extends Thread with Runner {
     Await.result(promise.get.future, Duration.Inf)
   }
 
+  /**
+   * Reads constantly from standard input and succeeds all [[readLine]] calls.
+   * This method should be run once using [[view.tui.runner.MultiRunner.start]].
+   */
   override def run(): Unit = {
     while (true) {
       val line = StdIn.readLine()
