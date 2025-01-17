@@ -31,7 +31,7 @@ libraryDependencies ++= {
 }
 
 coverageEnabled := true
-coverageExcludedFiles := ".*Durak;.*Gui"
+coverageExcludedFiles := ".*Gui"
 
 
 
