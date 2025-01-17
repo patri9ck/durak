@@ -1,6 +1,6 @@
 package model.status
 
-import model.{Card, Player, Rank, Suit, Turn}
+import model.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -202,7 +202,7 @@ class ImmutableStatusBuilderSpec extends AnyWordSpec with Matchers {
         statusBuilder.getPassed should be(Some(passed))
       }
     }
-    
+
     "byTurn" should {
       "return a Player with the given turn" in {
         val player = Player("Player 1", List(), Turn.Watching)

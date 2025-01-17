@@ -4,7 +4,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class ObservableSpec extends AnyWordSpec with Matchers {
-  
+
   class MockObserver extends Observer {
     var updated = false
 
@@ -12,7 +12,7 @@ class ObservableSpec extends AnyWordSpec with Matchers {
       updated = true
     }
   }
-  
+
   "Observer" should {
     "add(Observer)" should {
       "add an observer to the list of observers" in {

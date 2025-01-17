@@ -10,7 +10,7 @@ import scala.collection.mutable.ListBuffer
 
 class Tui(val controller: Controller, val runner: Runner, val seconds: Int, val lines: Int) extends Observer {
 
-  private var controllable: Boolean = false
+  var controllable: Boolean = false
 
   controller.add(this)
 

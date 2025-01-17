@@ -1,5 +1,4 @@
-import org.scoverage.coveralls.Imports.CoverallsKeys.coverallsService
-import org.scoverage.coveralls.TravisPro
+
 
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
@@ -32,7 +31,7 @@ libraryDependencies ++= {
 }
 
 coverageEnabled := true
-coverallsService := Some(TravisPro)
+coverageExcludedFiles := ".*Durak;.*Gui"
 
 
 

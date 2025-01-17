@@ -58,12 +58,12 @@ class UndoManagerSpec extends AnyWordSpec with Matchers {
 
         command.redoCount should be(1)
       }
-    }
 
-    "do nothing if the redo stack is empty" in {
-      val undoManager = new UndoManager()
+      "do nothing if the redo stack is empty" in {
+        val undoManager = new UndoManager()
 
-      noException should be thrownBy undoManager.redoStep()
+        noException should be thrownBy undoManager.redoStep()
+      }
     }
   }
 }

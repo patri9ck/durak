@@ -49,7 +49,7 @@ class MultiRunner extends Thread with Runner {
       val line = StdIn.readLine()
 
       this.synchronized {
-        threads.values.filter(promise => promise.isDefined).map(promise => promise.get).foreach(promise => promise.success(line))
+        threads.values.filter(promise => promise.isDefined).map(promise => promise.get).filter(promise => !promise.isCompleted).foreach(promise => promise.success(line))
       }
     }
   }
