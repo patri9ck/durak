@@ -60,14 +60,12 @@ jobs:
           distribution: 'adopt'
       - name: Create documentation
         run: sbt clean doc
-      - name: Print current directory
-        run: ls
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "."
+          path: "target/scala-3.3.4/api"
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
