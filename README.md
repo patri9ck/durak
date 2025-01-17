@@ -6,7 +6,11 @@
 
 An implementation of Durak - a popular Russian card game where players aim to avoid being the last one holding cards, using strategy and clever defense to outwit their opponents.
 
+## Documentation
+[Documentaion](https://patri9ck.github.io/durak)
+
 ## Project Structure
+
 The project consists of different components, with each having its own package.
 - `src/main/scala/model`: Contains the data models for the game, such as `Status`, `Player`, and `Card`.
 - `src/main/scala/controller`: Contains the `Controller` class which contains business logic.
