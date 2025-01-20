@@ -6,11 +6,10 @@
 
 An implementation of Durak - a popular Russian card game where players aim to avoid being the last one holding cards, using strategy and clever defense to outwit their opponents.
 
-## Documentation
-[Documentaion](https://patri9ck.github.io/durak)
+## Code Documentation
+Documentation for all important interfaces and classes can be found [here](https://patri9ck.github.io/durak).
 
 ## Project Structure
-
 The project consists of different components, with each having its own package.
 - `src/main/scala/model`: Contains the data models for the game, such as `Status`, `Player`, and `Card`.
 - `src/main/scala/controller`: Contains the `Controller` class which contains business logic.
@@ -76,46 +75,43 @@ This structure ensures a clear separation of concerns, with the models containin
 ## How to Run
 
 ### Requirements
-
 - Java 11 or higher
 - sbt (Scala Build Tool)
-- ScalaFX (for GUI)
+- ScalaFX (for GUI support)
 
 ### Steps
-
 1. Clone the repository:
 
-    ```bash
-    git clone
+    ```
+    $ git clone
     ```
 2. Change into the project directory:
 
-    ```bash
-    cd durak
+    ```
+    $ cd durak
     ```
 3. Run the application using sbt:
 
-    ```bash
-    sbt "run"
+    ```
+    $ sbt "run"
     ```
    
 ## Docker Support
+A more convenient way as of installing all dependencies locally is to use the provided Docker image.
 
 ### Requirements
- 
 - Docker
-- xMing (for GUI)
+- xMing (for GUI support)
 
 ### Steps
-
 1. Build the Docker image:
-
-    ```bash
+   
+    ```
     docker build -t durak .
     ```
-2. Run the Docker container:
-
-    ```bash
+3. Run the Docker container:
+   
+    ```
     docker run durak-scala  
     ```
       

@@ -1,6 +1,5 @@
 package model.io
 
-import com.fasterxml.jackson.core.JsonParseException
 import model.status.Status
 import play.api.libs.json.{JsError, JsSuccess, Json}
 
@@ -8,8 +7,15 @@ import java.io.PrintWriter
 import scala.io.Source
 import scala.util.{Failure, Success, Try, Using}
 
+/**
+ * Implements [[model.io.FileIo]] using JSON.
+ * @param fileName the name of the file to read from and write to
+ */
 class JsonFileIo(val fileName: String) extends FileIo {
 
+  /**
+   * Uses [[JsonFileIo.FileName]] as the file name.
+   */
   def this() = this(JsonFileIo.FileName)
 
   override def load: Try[Status] = {
@@ -30,5 +36,8 @@ class JsonFileIo(val fileName: String) extends FileIo {
 }
 
 object JsonFileIo {
+  /**
+   * The default file name.
+   */
   val FileName: String = "status.json"
 }
