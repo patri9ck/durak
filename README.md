@@ -104,14 +104,16 @@ A more convenient way as of installing all dependencies locally is to use the pr
 - xMing (for GUI support)
 
 ### Steps
-1. Build the Docker image:
+1. Start XMing on your local machine
+2. Build the Docker image:
    
     ```
-    docker build -t durak .
+    set DOCKER_BUILDERKIT=1 
+   docker build -t durak .
     ```
 3. Run the Docker container:
    
     ```
-    docker run durak-scala  
+    docker run durak 
     ```
       
