@@ -36,7 +36,7 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
   override def start(): Unit = {
     stage = new JFXApp3.PrimaryStage {
       title = "Durak"
-      icons.add(new Image("file:src/main/resources/durak-logo-neu.png"))
+      icons.add(new Image("file:src/main/resources/icon.png"))
       onCloseRequest = _ => {
         Platform.exit()
         System.exit(0)
@@ -96,7 +96,7 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
     }
 
     val backgroundImage = new BackgroundImage(
-      new Image("file:src/main/resources/Durak-main-menu.png"),
+      new Image("file:src/main/resources/menu.png"),
       BackgroundRepeat.NoRepeat,
       BackgroundRepeat.NoRepeat,
       BackgroundPosition.Center,
@@ -277,7 +277,7 @@ class Gui @Inject()(val controller: Controller) extends JFXApp3, Observer {
     stage.scene = new Scene {
       root = new GridPane {
         background = new Background(Array(new BackgroundImage(
-          new Image("file:src/main/resources/Durak-background.png"),
+          new Image("file:src/main/resources/background.png"),
           BackgroundRepeat.NoRepeat,
           BackgroundRepeat.NoRepeat,
           BackgroundPosition.Center,
